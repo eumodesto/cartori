@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { MVP_CERTIFICATES } from "@/lib/catalog";
+import { SearchableSelect } from "@/components/SearchableSelect";
 import { CertificateCategory, CertificateTypeConfig, IBGEState, IBGECity, CartorioInfo } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -35,7 +36,7 @@ export default function HomePage() {
   const [cities, setCities] = useState<IBGECity[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [cartorios, setCartorios] = useState<CartorioInfo[]>([]);
-  const [cartorioSearch, setCartorioSearch] = useState<string>("");
+  const [selectedCartorio, setSelectedCartorio] = useState<string>("");
   const [loadingCities, setLoadingCities] = useState<boolean>(false);
   const [loadingCartorios, setLoadingCartorios] = useState<boolean>(false);
 
@@ -342,95 +343,79 @@ export default function HomePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Select UF */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Estado (UF) *
-                    </label>
-                    <select
-                      value={selectedUf}
-                      onChange={(e) => setSelectedUf(e.target.value)}
-                      className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:border-primary-600 font-medium"
-                    >
-                      <option value="">Selecione o Estado</option>
-                      {states.map((st) => (
-                        <option key={st.id} value={st.sigla}>
-                          {st.nome} ({st.sigla})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <SearchableSelect
+                    label="Estado (UF)"
+                    placeholder="Selecione ou digite o Estado..."
+                    options={states.map((st) => ({
+                      value: st.sigla,
+                      label: `${st.nome} (${st.sigla})`,
+                      badge: st.sigla,
+                    }))}
+                    value={selectedUf}
+                    onChange={(val) => {
+                      setSelectedUf(val);
+                      setSelectedCity("");
+                      setSelectedCartorio("");
+                    }}
+                    required
+                  />
 
                   {/* Select City */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Cidade / Município *
-                    </label>
-                    <select
-                      value={selectedCity}
-                      disabled={!selectedUf || loadingCities}
-                      onChange={(e) => setSelectedCity(e.target.value)}
-                      className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:border-primary-600 font-medium disabled:opacity-50"
-                    >
-                      <option value="">
-                        {loadingCities ? "Carregando cidades do IBGE..." : "Selecione o Município"}
-                      </option>
-                      {cities.map((city) => (
-                        <option key={city.id} value={city.nome}>
-                          {city.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <SearchableSelect
+                    label="Cidade / Município"
+                    placeholder={!selectedUf ? "Primeiro selecione o Estado" : "Selecione ou digite a Cidade..."}
+                    options={cities.map((c) => ({
+                      value: c.nome,
+                      label: c.nome,
+                    }))}
+                    value={selectedCity}
+                    disabled={!selectedUf}
+                    loading={loadingCities}
+                    loadingText="Carregando municípios do IBGE..."
+                    emptyText="Nenhum município encontrado"
+                    onChange={(val) => {
+                      setSelectedCity(val);
+                      setSelectedCartorio("");
+                    }}
+                    required
+                  />
                 </div>
 
                 {/* Cartorio Selector if requiresCartorio */}
                 {selectedCert.requiresCartorio && selectedCity && (
-                  <div className="pt-2 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold text-slate-700">
-                        Cartório / Serventia Oficial *
-                      </label>
-                      {cartorios.length > 0 && (
-                        <span className="text-[10px] font-bold text-primary-700 bg-primary-50 px-2 py-0.5 rounded border border-primary-200">
-                          {cartorios.length} serventias oficiais encontradas
-                        </span>
-                      )}
-                    </div>
-
-                    {loadingCartorios ? (
-                      <p className="text-xs text-slate-400 py-2">Consultando serventias registradas no CNJ...</p>
-                    ) : (
-                      <>
-                        {cartorios.length > 8 && (
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={cartorioSearch}
-                              onChange={(e) => setCartorioSearch(e.target.value)}
-                              placeholder="Filtrar por bairro / subdistrito (ex: Sé, Penha, Tatuapé, Mooca)..."
-                              className="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-600 placeholder:text-slate-400 font-medium"
-                            />
-                          </div>
-                        )}
-
-                        <select className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:border-primary-600 font-medium">
-                          <option value="">Selecione o Cartório ({cartorios.length} disponíveis)</option>
-                          {cartorios
-                            .filter((c) =>
-                              c.name.toLowerCase().includes(cartorioSearch.toLowerCase()) ||
-                              (c.cns && c.cns.includes(cartorioSearch))
-                            )
-                            .map((c) => (
-                              <option key={c.id} value={c.id}>
-                                {c.name} {c.cns ? `(CNS: ${c.cns})` : ""}
-                              </option>
-                            ))}
-                          <option value="unknown" className="font-bold text-amber-700">
-                            🔍 Não sei o cartório (Solicitar Busca Notarial Especializada + R$ 35,00)
-                          </option>
-                        </select>
-                      </>
-                    )}
+                  <div className="pt-2">
+                    <SearchableSelect
+                      label="Cartório / Serventia Oficial"
+                      rightBadge={
+                        cartorios.length > 0 ? (
+                          <span className="text-[10px] font-bold text-primary-700 bg-primary-50 px-2 py-0.5 rounded border border-primary-200">
+                            {cartorios.length} serventias oficiais encontradas
+                          </span>
+                        ) : undefined
+                      }
+                      placeholder="Digite o nome do cartório, bairro ou subdistrito..."
+                      options={[
+                        ...cartorios.map((c) => ({
+                          value: c.id,
+                          label: c.name,
+                          subtext: c.attribution,
+                          badge: c.cns ? `CNS: ${c.cns}` : undefined,
+                        })),
+                        {
+                          value: "unknown",
+                          label: "🔍 Não sei o cartório (Solicitar Busca Notarial Especializada)",
+                          subtext: "Nossa equipe de despachantes localizará a serventia exata",
+                          badge: "+ R$ 35,00",
+                          highlight: true,
+                        },
+                      ]}
+                      value={selectedCartorio}
+                      loading={loadingCartorios}
+                      loadingText="Consultando serventias registradas no CNJ..."
+                      emptyText="Nenhum cartório encontrado"
+                      onChange={(val) => setSelectedCartorio(val)}
+                      required
+                    />
                   </div>
                 )}
               </div>
