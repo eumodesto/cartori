@@ -23,18 +23,12 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
 
       {/* Main Nav */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center p-1 shadow-sm border border-slate-200 group-hover:scale-105 transition-transform">
-            <img src="/logo.png" alt="Cartori" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <span className="text-2xl font-black tracking-tight text-primary-950 font-serif">
-              CARTORI<span className="text-amber-500">.</span>
-            </span>
-            <span className="block text-[10px] uppercase font-bold tracking-widest text-slate-500 -mt-1">
-              Hub de Serviços Notariais
-            </span>
-          </div>
+        <Link href="/" className="flex items-center group py-1">
+          <img
+            src="/logo-horizontal.svg"
+            alt="Cartori - Hub de Serviços Notariais"
+            className="h-10 sm:h-11 w-auto object-contain group-hover:scale-[1.02] transition-transform"
+          />
         </Link>
 
         {/* Center Nav */}

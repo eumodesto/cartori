@@ -8,14 +8,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
           {/* Col 1 */}
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 shadow-sm border border-slate-700">
-                <img src="/logo.png" alt="Cartori" className="w-full h-full object-contain" />
-              </div>
-              <span className="text-2xl font-black tracking-tight text-white font-serif">
-                CARTORI<span className="text-amber-400">.</span>
-              </span>
-            </div>
+            <Link href="/" className="inline-block bg-white p-2 rounded-xl shadow-sm hover:opacity-95 transition-opacity">
+              <img
+                src="/logo-horizontal.svg"
+                alt="Cartori"
+                className="h-9 w-auto object-contain"
+              />
+            </Link>
             <p className="text-xs text-slate-400 leading-relaxed">
               Plataforma tecnológica especializada em gestão, busca e solicitação centralizada de certidões em cartórios de todo o Brasil.
             </p>
