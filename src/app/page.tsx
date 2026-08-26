@@ -33,6 +33,7 @@ export default function HomePage() {
   const [states, setStates] = useState<IBGEState[]>([]);
   const [selectedUf, setSelectedUf] = useState<string>("");
   const [cities, setCities] = useState<IBGECity[]>([]);
+  const [selectedCity, setSelectedCity] = useState<string>("");
   const [cartorios, setCartorios] = useState<CartorioInfo[]>([]);
   const [cartorioSearch, setCartorioSearch] = useState<string>("");
   const [loadingCities, setLoadingCities] = useState<boolean>(false);
