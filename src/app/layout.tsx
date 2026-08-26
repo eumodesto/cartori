@@ -4,6 +4,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Cartori - Plataforma Notarial & Emissão de Certidões",
   description: "SaaS de emissão de certidões em todo o Brasil para advogados, imobiliárias e cidadãos. Solicite múltiplas certidões em um único pedido.",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

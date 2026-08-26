@@ -24,8 +24,8 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
       {/* Main Nav */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-11 h-11 rounded-xl bg-primary-800 flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform">
-            <FileText className="w-6 h-6" />
+          <div className="w-11 h-11 rounded-xl bg-white flex items-center justify-center p-1 shadow-sm border border-slate-200 group-hover:scale-105 transition-transform">
+            <img src="/logo.png" alt="Cartori" className="w-full h-full object-contain" />
           </div>
           <div>
             <span className="text-2xl font-black tracking-tight text-primary-950 font-serif">
