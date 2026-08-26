@@ -1,0 +1,205 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  CLIENT
+  B2B_MEMBER
+  B2B_ADMIN
+  ADMIN
+  OPERATOR
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  IN_ANALYSIS
+  IN_CARTORIO_SEARCH
+  CERTIFICATE_ISSUED
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum CertificateFormat {
+  DIGITAL_ECERTIDAO // PDF assinado digitalmente ICP-Brasil
+  PHYSICAL_PAPER    // Papel moeda enviado pelos correios
+  BOTH              // Digital + Físico
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  BOLETO
+  B2B_INVOICE
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  IN_PROCESS
+  REJECTED
+  CANCELLED
+  REFUNDED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String?
+  cpf           String?        @unique
+  phone         String?
+  role          UserRole       @default(CLIENT)
+  organizationId String?
+  organization  Organization?  @relation(fields: [organizationId], references: [id])
+  orders        Order[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Organization {
+  id            String         @id @default(uuid())
+  name          String         // Razão social / Nome do escritório
+  tradeName     String?        // Nome fantasia
+  cnpj          String         @unique
+  oabNumber     String?        // Registro OAB (se advocacia)
+  creciNumber   String?        // Registro CRECI (se imobiliária)
+  phone         String
+  email         String
+  address       String?
+  city          String?
+  state         String?
+  cep           String?
+  members       User[]
+  orders        Order[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Order {
+  id             String         @id @default(uuid())
+  orderNumber    Int            @default(autoincrement())
+  userId         String?
+  user           User?          @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  
+  // Referência interna para B2B (ex: Número de processo judicial, código do imóvel, nome do cliente)
+  internalReference String?
+  
+  status         OrderStatus    @default(PENDING_PAYMENT)
+  totalAmount    Decimal        @db.Decimal(10, 2)
+  itemsTotal     Decimal        @db.Decimal(10, 2)
+  shippingTotal  Decimal        @default(0) @db.Decimal(10, 2)
+  discountTotal  Decimal        @default(0) @db.Decimal(10, 2)
+  
+  // Contato do Solicitante
+  customerName   String
+  customerEmail  String
+  customerPhone  String
+  customerCpfCnpj String
+
+  // Endereço de Entrega (se houver itens físicos)
+  shippingCep        String?
+  shippingStreet     String?
+  shippingNumber     String?
+  shippingComplement String?
+  shippingDistrict   String?
+  shippingCity       String?
+  shippingState      String?
+
+  items          OrderItem[]
+  payments       Payment[]
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model OrderItem {
+  id                  String             @id @default(uuid())
+  orderId             String
+  order               Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  // Categoria e Tipo de Certidão
+  category            String             // registro-civil, notas, imoveis, protesto, etc.
+  certificateType     String             // certidao-nascimento, certidao-casamento, certidao-negativa-testamento, etc.
+  certificateName     String             // Nome legível: Certidão de Nascimento
+  
+  // Localização Notarial
+  state               String             // SP, RJ, etc.
+  city                String             // São Paulo, etc.
+  cartorioId          String?            // ID ou CNS do cartório se selecionado
+  cartorioName        String?            // Nome do Cartório (ex: 1º Oficial de Registro Civil)
+  isUnknownCartorio   Boolean            @default(false) // Se o cliente solicitou busca
+  
+  // Dados do Documento (JSON estruturado com nome do titular, livro, folha, termo, data, filiação, etc.)
+  documentData        Json
+  
+  // Formato & Serviços Adicionais
+  format              CertificateFormat  @default(DIGITAL_ECERTIDAO)
+  hasApostille        Boolean            @default(false) // Apostilamento de Haia
+  hasShipping         Boolean            @default(false) // Envio físico
+  
+  // Valores
+  itemPrice           Decimal            @db.Decimal(10, 2)
+  searchFee           Decimal            @default(0) @db.Decimal(10, 2)
+  apostilleFee        Decimal            @default(0) @db.Decimal(10, 2)
+  totalPrice          Decimal            @db.Decimal(10, 2)
+
+  // Status & Entrega do Item
+  status              OrderStatus        @default(PENDING_PAYMENT)
+  issuedFileUrl       String?            // URL do PDF da e-certidão emitida
+  trackingCode        String?            // Código de rastreio Correios se físico
+  notes               String?
+
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+}
+
+model Payment {
+  id                  String             @id @default(uuid())
+  orderId             String
+  order               Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  provider            String             @default("MERCADOPAGO")
+  providerPaymentId   String?            @unique // ID retornado pelo Mercado Pago
+  paymentMethod       PaymentMethod      @default(PIX)
+  status              PaymentStatus      @default(PENDING)
+  amount              Decimal            @db.Decimal(10, 2)
+  
+  // Dados para PIX / Boleto
+  qrCode              String?            @db.Text // String copia e cola do PIX
+  qrCodeBase64        String?            @db.Text // Imagem base64 do QR Code
+  ticketUrl           String?            // Link do boleto / pagamento externo
+  
+  metadata            Json?
+  
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+}
+
+model Cartorio {
+  id                  String             @id @default(uuid())
+  cns                 String?            @unique // Código Nacional de Serventias CNJ
+  name                String             // Nome do Cartório
+  officialName        String?            // Razão Social
+  attributions        String[]           // ['REGISTRO_CIVIL', 'NOTAS', 'IMOVEIS', 'PROTESTO', etc.]
+  state               String             // UF
+  city                String             // Município
+  district            String?            // Bairro
+  address             String?            // Endereço completo
+  phone               String?
+  email               String?
+  officialInCharge    String?            // Nome do Titular / Oficial
+  
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([state, city])
+}
