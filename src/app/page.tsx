@@ -33,8 +33,8 @@ export default function HomePage() {
   const [states, setStates] = useState<IBGEState[]>([]);
   const [selectedUf, setSelectedUf] = useState<string>("");
   const [cities, setCities] = useState<IBGECity[]>([]);
-  const [selectedCity, setSelectedCity] = useState<string>("");
   const [cartorios, setCartorios] = useState<CartorioInfo[]>([]);
+  const [cartorioSearch, setCartorioSearch] = useState<string>("");
   const [loadingCities, setLoadingCities] = useState<boolean>(false);
   const [loadingCartorios, setLoadingCartorios] = useState<boolean>(false);
 
@@ -384,24 +384,51 @@ export default function HomePage() {
 
                 {/* Cartorio Selector if requiresCartorio */}
                 {selectedCert.requiresCartorio && selectedCity && (
-                  <div className="pt-2">
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Cartório / Serventia *
-                    </label>
+                  <div className="pt-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-semibold text-slate-700">
+                        Cartório / Serventia Oficial *
+                      </label>
+                      {cartorios.length > 0 && (
+                        <span className="text-[10px] font-bold text-primary-700 bg-primary-50 px-2 py-0.5 rounded border border-primary-200">
+                          {cartorios.length} serventias oficiais encontradas
+                        </span>
+                      )}
+                    </div>
+
                     {loadingCartorios ? (
-                      <p className="text-xs text-slate-400 py-2">Consultando serventias registradas...</p>
+                      <p className="text-xs text-slate-400 py-2">Consultando serventias registradas no CNJ...</p>
                     ) : (
-                      <select className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:border-primary-600 font-medium">
-                        <option value="">Selecione o Cartório</option>
-                        {cartorios.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
+                      <>
+                        {cartorios.length > 8 && (
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={cartorioSearch}
+                              onChange={(e) => setCartorioSearch(e.target.value)}
+                              placeholder="Filtrar por bairro / subdistrito (ex: Sé, Penha, Tatuapé, Mooca)..."
+                              className="w-full text-xs bg-white border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-600 placeholder:text-slate-400 font-medium"
+                            />
+                          </div>
+                        )}
+
+                        <select className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:border-primary-600 font-medium">
+                          <option value="">Selecione o Cartório ({cartorios.length} disponíveis)</option>
+                          {cartorios
+                            .filter((c) =>
+                              c.name.toLowerCase().includes(cartorioSearch.toLowerCase()) ||
+                              (c.cns && c.cns.includes(cartorioSearch))
+                            )
+                            .map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name} {c.cns ? `(CNS: ${c.cns})` : ""}
+                              </option>
+                            ))}
+                          <option value="unknown" className="font-bold text-amber-700">
+                            🔍 Não sei o cartório (Solicitar Busca Notarial Especializada + R$ 35,00)
                           </option>
-                        ))}
-                        <option value="unknown">
-                          🔍 Não sei o cartório (Solicitar Busca Especializada + R$ 35,00)
-                        </option>
-                      </select>
+                        </select>
+                      </>
                     )}
                   </div>
                 )}
