@@ -3,32 +3,192 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  /* ==========================================================================
+     1. PRIMITIVE TOKENS
+     ========================================================================== */
+
+  /* Cartori Brand Scale (Base: #011E37 - Cartori Navy) */
+  --brand-50:  #F0F8FB;
+  --brand-100: #D9EEF5;
+  --brand-200: #A5D5E5;
+  --brand-300: #67B6D2;
+  --brand-400: #2995BC;
+  --brand-500: #0876A5;
+  --brand-600: #075D86;
+  --brand-700: #0B496C;
+  --brand-800: #0A3856;
+  --brand-900: #062943;
+  --brand-950: #011E37;
+
+  /* Brand Accents (Identidade Visual) */
+  --accent-cyan:   #0091BB;
+  --accent-blue:   #0E6098;
+  --accent-green:  #74BE59;
+  --accent-teal:   #25AB9F;
+  --accent-yellow: #E3BF1E;
+
+  /* Neutral Scale */
+  --neutral-0:   #FFFFFF;
+  --neutral-50:  #F8FAFB;
+  --neutral-100: #F2F5F7;
+  --neutral-200: #E5EAEE;
+  --neutral-300: #D2DADF;
+  --neutral-400: #A8B4BD;
+  --neutral-500: #788895;
+  --neutral-600: #586975;
+  --neutral-700: #3D4E5A;
+  --neutral-800: #263945;
+  --neutral-900: #142A38;
+  --neutral-950: #081C29;
+
+  /* Semantic Base Colors */
+  --semantic-success:        #16835A;
+  --semantic-success-bg:     #E8F6EF;
+  --semantic-success-border: #A3DEC3;
+  --semantic-success-hover:  #116D4A;
+
+  --semantic-warning:        #B7791F;
+  --semantic-warning-bg:     #FEF7EB;
+  --semantic-warning-border: #F3D79B;
+  --semantic-warning-hover:  #976116;
+
+  --semantic-error:          #C93C37;
+  --semantic-error-bg:       #FDF2F2;
+  --semantic-error-border:   #F8B8B5;
+  --semantic-error-hover:    #B02F2B;
+
+  --semantic-info:           #2878B5;
+  --semantic-info-bg:        #EEF6FB;
+  --semantic-info-border:    #ADCDE6;
+  --semantic-info-hover:     #1E6296;
+
+  /* ==========================================================================
+     2. SEMANTIC TOKENS
+     ========================================================================== */
+
+  /* Backgrounds */
+  --bg-page:        var(--neutral-50);
+  --bg-surface:     var(--neutral-0);
+  --bg-subtle:      var(--neutral-100);
+  --bg-hover:       var(--neutral-100);
+  --bg-selected:    var(--brand-50);
+  --bg-inverse:     var(--brand-950);
+
+  /* Typography / Text */
+  --text-primary:   var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary:  var(--neutral-500);
+  --text-disabled:  var(--neutral-400);
+  --text-inverse:   var(--neutral-0);
+  --text-link:      var(--brand-500);
+
+  /* Borders */
+  --border-default: var(--neutral-200);
+  --border-subtle:  var(--neutral-100);
+  --border-strong:  var(--neutral-300);
+  --border-focus:   var(--brand-500);
+  --border-error:   var(--semantic-error);
+
+  /* Actions */
+  --action-primary:            var(--brand-950);
+  --action-primary-hover:      var(--brand-900);
+  --action-secondary:          var(--neutral-100);
+  --action-secondary-hover:    var(--neutral-200);
+  --action-destructive:        var(--semantic-error);
+  --action-destructive-hover:  var(--semantic-error-hover);
+
+  /* Status Tokens */
+  --status-neutral-bg:     var(--neutral-100);
+  --status-neutral-fg:     var(--neutral-700);
+  --status-neutral-border: var(--neutral-300);
+
+  --status-info-bg:        var(--semantic-info-bg);
+  --status-info-fg:        var(--semantic-info);
+  --status-info-border:    var(--semantic-info-border);
+
+  --status-success-bg:     var(--semantic-success-bg);
+  --status-success-fg:     var(--semantic-success);
+  --status-success-border: var(--semantic-success-border);
+
+  --status-warning-bg:     var(--semantic-warning-bg);
+  --status-warning-fg:     var(--semantic-warning);
+  --status-warning-border: var(--semantic-warning-border);
+
+  --status-error-bg:       var(--semantic-error-bg);
+  --status-error-fg:       var(--semantic-error);
+  --status-error-border:   var(--semantic-error-border);
+
+  /* ==========================================================================
+     3. SPACING, RADIUS, SHADOWS, MOTION
+     ========================================================================== */
+
+  /* Spacing Grid (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* Shadows (Tonalizadas com Cartori Navy) */
+  --shadow-xs: 0 1px 2px rgba(1, 30, 55, 0.05);
+  --shadow-sm: 0 4px 12px rgba(1, 30, 55, 0.08);
+  --shadow-md: 0 12px 32px rgba(1, 30, 55, 0.12);
+
+  /* Motion */
+  --motion-fast:   150ms;
+  --motion-normal: 200ms;
+  --motion-slow:   300ms;
+
+  /* Compatibility with existing layout */
+  --background: var(--bg-page);
+  --foreground: var(--text-primary);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  font-family: var(--font-inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
+/* Operational Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--neutral-100);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: var(--neutral-300);
+  border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--neutral-400);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
