@@ -69,15 +69,18 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           </div>
         ) : (
           <div className="flex items-center gap-2.5 truncate">
-            <img
-              src="/favicon.svg"
-              alt="Cartori"
-              className="w-8 h-8 object-contain shrink-0"
-            />
-            {!isCollapsed && (
-              <span className="font-semibold text-sm text-neutral-900 tracking-tight truncate">
-                Cartori B2B
-              </span>
+            {isCollapsed ? (
+              <img
+                src="/favicon.svg"
+                alt="Cartori"
+                className="w-8 h-8 object-contain shrink-0"
+              />
+            ) : (
+              <img
+                src="/logo-horizontal.svg"
+                alt="Cartori B2B"
+                className="h-7 w-auto object-contain dark:brightness-0 dark:invert"
+              />
             )}
           </div>
         )}

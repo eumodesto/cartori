@@ -103,18 +103,21 @@ export default function DashboardLayout({
         currentPath={pathname}
         groups={sidebarGroups}
         headerContent={
-          <div className="flex items-center gap-2.5">
-            <img
-              src="/favicon.svg"
-              alt="Cartori Símbolo"
-              className="w-8 h-8 object-contain shrink-0"
-            />
-            {!isSidebarCollapsed && (
-              <div className="truncate">
-                <span className="font-bold text-xs text-neutral-900 tracking-tight block">
-                  CARTORI<span className="text-amber-500">.</span>
-                </span>
-                <span className="text-[10px] text-neutral-500 block -mt-0.5">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            {isSidebarCollapsed ? (
+              <img
+                src="/favicon.svg"
+                alt="Cartori Símbolo"
+                className="w-8 h-8 object-contain shrink-0"
+              />
+            ) : (
+              <div className="flex flex-col">
+                <img
+                  src="/logo-horizontal.svg"
+                  alt="Cartori"
+                  className="h-7 w-auto object-contain dark:brightness-0 dark:invert"
+                />
+                <span className="text-[10px] text-neutral-500 font-medium tracking-tight -mt-0.5">
                   SaaS B2B Operacional
                 </span>
               </div>
