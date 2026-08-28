@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
-import { ChevronLeft, ChevronRight, LogOut, Settings, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
 
 export interface NavItem {
   id: string;
@@ -56,52 +56,65 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     <aside
       aria-label="Menu Lateral Principal"
       className={cn(
-        "relative flex flex-col h-full bg-neutral-0 border-r border-neutral-200 transition-all duration-normal ease-out select-none shadow-none z-20",
+        "relative flex flex-col h-full bg-neutral-0 dark:bg-neutral-0 border-r border-neutral-200 dark:border-neutral-200 transition-all duration-normal ease-out select-none shadow-none z-20 shrink-0",
         isCollapsed ? "w-16" : "w-64",
         className
       )}
     >
       {/* Sidebar Header */}
-      <div className="h-16 flex items-center justify-between px-3.5 border-b border-neutral-200 shrink-0">
-        {headerContent ? (
-          <div className="truncate flex items-center gap-2.5">
-            {headerContent}
-          </div>
-        ) : (
-          <div className="flex items-center gap-2.5 truncate">
-            {isCollapsed ? (
-              <img
-                src="/favicon.svg"
-                alt="Cartori"
-                className="w-8 h-8 object-contain shrink-0"
-              />
-            ) : (
-              <img
-                src="/logo-horizontal.svg"
-                alt="Cartori B2B"
-                className="h-7 w-auto object-contain dark:brightness-0 dark:invert"
-              />
-            )}
-          </div>
+      <div
+        className={cn(
+          "h-16 flex items-center border-b border-neutral-200 dark:border-neutral-200 shrink-0",
+          isCollapsed ? "justify-center px-2" : "justify-between px-3.5"
         )}
+      >
+        {isCollapsed ? (
+          <button
+            type="button"
+            onClick={handleToggle}
+            aria-label="Expandir menu lateral"
+            title="Clique para expandir o menu"
+            className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-100/50 transition-colors group cursor-pointer"
+          >
+            <img
+              src="/favicon.svg"
+              alt="Cartori Símbolo"
+              className="w-7 h-7 object-contain group-hover:scale-105 transition-transform"
+            />
+          </button>
+        ) : (
+          <>
+            {headerContent || (
+              <div className="flex items-center gap-2.5 truncate">
+                <img
+                  src="/logo-horizontal.svg"
+                  alt="Cartori B2B"
+                  className="h-7 w-auto object-contain dark:brightness-0 dark:invert"
+                />
+              </div>
+            )}
 
-        {/* Collapse Toggle Button */}
-        <button
-          type="button"
-          onClick={handleToggle}
-          aria-label={isCollapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-          className="p-1 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors ml-auto"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-4 h-4" />
-          ) : (
-            <ChevronLeft className="w-4 h-4" />
-          )}
-        </button>
+            {/* Collapse Toggle Button */}
+            <button
+              type="button"
+              onClick={handleToggle}
+              aria-label="Recolher menu lateral"
+              title="Recolher menu"
+              className="p-1.5 rounded-md text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-100/50 transition-colors ml-auto cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Navigation Groups */}
-      <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-6">
+      <div
+        className={cn(
+          "flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-6",
+          isCollapsed ? "px-1.5" : "px-2.5"
+        )}
+      >
         {groups.map((group, groupIdx) => (
           <div key={group.label || groupIdx} className="space-y-1">
             {group.label && !isCollapsed && (
@@ -110,28 +123,36 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               </h4>
             )}
 
-            <nav className="space-y-0.5">
+            {isCollapsed && group.label && (
+              <div className="w-8 h-[1px] bg-neutral-200 dark:bg-neutral-200/50 mx-auto my-2" />
+            )}
+
+            <nav className="space-y-1 flex flex-col items-center">
               {group.items.map((item) => {
                 const isActive =
                   item.isActive !== undefined
                     ? item.isActive
                     : currentPath === item.href;
 
-                const navLink = (
+                const linkElement = (
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-2.5 py-2 rounded-md text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
+                      "flex items-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
+                      isCollapsed
+                        ? "w-10 h-10 justify-center rounded-lg"
+                        : "w-full gap-3 px-2.5 py-2 rounded-md text-xs font-medium",
                       isActive
-                        ? "bg-brand-50 text-brand-950 font-semibold"
-                        : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100",
-                      isCollapsed && "justify-center px-0"
+                        ? "bg-brand-50 text-brand-950 dark:bg-brand-50/20 dark:text-brand-300 font-semibold shadow-xs"
+                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-100/40"
                     )}
                   >
                     <span
                       className={cn(
-                        "shrink-0",
-                        isActive ? "text-brand-950" : "text-neutral-500"
+                        "shrink-0 flex items-center justify-center",
+                        isActive
+                          ? "text-brand-950 dark:text-brand-300"
+                          : "text-neutral-500 dark:text-neutral-400"
                       )}
                     >
                       {item.icon}
@@ -145,8 +166,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                             className={cn(
                               "text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0",
                               isActive
-                                ? "bg-brand-200 text-brand-950"
-                                : "bg-neutral-200 text-neutral-700"
+                                ? "bg-brand-200 text-brand-950 dark:bg-brand-300 dark:text-neutral-950"
+                                : "bg-neutral-200 text-neutral-700 dark:bg-neutral-200 dark:text-neutral-300"
                             )}
                           >
                             {item.badge}
@@ -159,13 +180,19 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
                 if (isCollapsed) {
                   return (
-                    <Tooltip key={item.id} content={item.label} side="right">
-                      {navLink}
-                    </Tooltip>
+                    <div key={item.id} className="w-full flex justify-center">
+                      <Tooltip content={item.label} side="right">
+                        {linkElement}
+                      </Tooltip>
+                    </div>
                   );
                 }
 
-                return <div key={item.id}>{navLink}</div>;
+                return (
+                  <div key={item.id} className="w-full">
+                    {linkElement}
+                  </div>
+                );
               })}
             </nav>
           </div>
@@ -173,19 +200,38 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       </div>
 
       {/* Sidebar Footer */}
-      <div className="p-2.5 border-t border-neutral-200 bg-neutral-50/50 shrink-0">
+      <div className="p-2 border-t border-neutral-200 dark:border-neutral-200 bg-neutral-50/50 dark:bg-neutral-50/20 shrink-0">
         {footerContent || (
-          <div className="flex items-center justify-between text-xs text-neutral-500">
+          <div
+            className={cn(
+              "flex items-center text-xs text-neutral-500",
+              isCollapsed ? "flex-col gap-2 justify-center" : "justify-between px-1"
+            )}
+          >
             {!isCollapsed ? (
-              <span className="text-[11px] px-1.5 font-medium">Cartori v1.0</span>
-            ) : null}
-            <Link
-              href="/ajuda"
-              className="p-1.5 rounded-md hover:bg-neutral-200 hover:text-neutral-800 transition-colors"
-              title="Ajuda e Suporte"
-            >
-              <HelpCircle className="w-4 h-4" />
-            </Link>
+              <>
+                <span className="text-[11px] font-medium">Cartori v1.0</span>
+                <Link
+                  href="/ajuda"
+                  className="p-1.5 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-200/50 hover:text-neutral-800 dark:hover:text-neutral-100 transition-colors"
+                  title="Ajuda e Suporte"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleToggle}
+                  aria-label="Expandir menu lateral"
+                  title="Expandir menu lateral"
+                  className="p-2 rounded-md text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-200/50 transition-colors cursor-pointer"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
