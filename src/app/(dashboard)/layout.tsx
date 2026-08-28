@@ -103,15 +103,12 @@ export default function DashboardLayout({
         currentPath={pathname}
         groups={sidebarGroups}
         headerContent={
-          <div className="flex flex-col overflow-hidden">
+          <div className="flex items-center overflow-hidden py-1">
             <img
               src="/logo-horizontal.svg"
               alt="Cartori"
-              className="h-7 w-auto object-contain dark:brightness-0 dark:invert"
+              className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
             />
-            <span className="text-[10px] text-neutral-500 font-medium tracking-tight -mt-0.5">
-              SaaS B2B Operacional
-            </span>
           </div>
         }
       />
