@@ -69,9 +69,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           </div>
         ) : (
           <div className="flex items-center gap-2.5 truncate">
-            <div className="w-8 h-8 rounded-md bg-brand-950 flex items-center justify-center text-neutral-0 font-bold text-sm shrink-0">
-              C
-            </div>
+            <img
+              src="/favicon.svg"
+              alt="Cartori"
+              className="w-8 h-8 object-contain shrink-0"
+            />
             {!isCollapsed && (
               <span className="font-semibold text-sm text-neutral-900 tracking-tight truncate">
                 Cartori B2B

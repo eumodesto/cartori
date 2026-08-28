@@ -111,9 +111,11 @@ export default function DesignSystemShowcasePage() {
       {/* Top Banner Bar */}
       <header className="h-14 bg-brand-950 text-neutral-0 px-6 flex items-center justify-between border-b border-brand-900 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded bg-brand-500 flex items-center justify-center font-bold text-xs text-neutral-0">
-            C
-          </div>
+          <img
+            src="/favicon.svg"
+            alt="Cartori Símbolo"
+            className="w-7 h-7 object-contain shrink-0"
+          />
           <div>
             <span className="font-bold text-sm tracking-tight">CARTORI</span>
             <span className="text-[11px] text-brand-300 ml-2 font-mono">Design System v1.0</span>

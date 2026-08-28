@@ -104,9 +104,11 @@ export default function DashboardLayout({
         groups={sidebarGroups}
         headerContent={
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-brand-950 flex items-center justify-center text-neutral-0 font-bold text-sm shrink-0">
-              <img src="/logo.png" alt="Cartori" className="w-5 h-5 object-contain" />
-            </div>
+            <img
+              src="/favicon.svg"
+              alt="Cartori Símbolo"
+              className="w-8 h-8 object-contain shrink-0"
+            />
             {!isSidebarCollapsed && (
               <div className="truncate">
                 <span className="font-bold text-xs text-neutral-900 tracking-tight block">
