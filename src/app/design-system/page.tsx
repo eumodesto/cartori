@@ -18,6 +18,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Tabs } from "@/components/ui/tabs";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Stepper } from "@/components/ui/stepper";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Table,
   TableHeader,
@@ -120,12 +121,22 @@ export default function DesignSystemShowcasePage() {
         </div>
 
         <div className="flex items-center gap-4 text-xs">
+          {/* Theme Toggle Button */}
+          <ThemeToggle variant="outline" size="sm" showLabel />
+
           <Link
             href="/"
             className="text-neutral-300 hover:text-neutral-0 transition-colors flex items-center gap-1"
           >
             <Home className="w-3.5 h-3.5" />
             <span>Voltar ao B2C</span>
+          </Link>
+          <span className="text-neutral-600">|</span>
+          <Link
+            href="/dashboard"
+            className="text-brand-300 hover:text-neutral-0 transition-colors font-medium"
+          >
+            Ir ao Dashboard
           </Link>
           <span className="text-neutral-600">|</span>
           <span className="bg-brand-900 text-brand-200 px-2 py-0.5 rounded font-mono text-[10px]">

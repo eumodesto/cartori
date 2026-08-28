@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,9 +18,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-amber-100 selection:text-amber-900">
-        {children}
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col bg-surface-page text-neutral-900 selection:bg-brand-100 selection:text-brand-950">
+        <ThemeProvider defaultTheme="light" storageKey="cartori-theme">
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

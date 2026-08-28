@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Layers,
   FileText,
@@ -145,10 +146,13 @@ export default function DashboardLayout({
               </Button>
             </Link>
 
+            {/* Theme Toggle (Light / Dark) */}
+            <ThemeToggle variant="ghost" size="md" />
+
             {/* Notification Bell */}
             <button
               type="button"
-              className="relative p-2 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 transition-colors"
+              className="relative p-2 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-100/40 transition-colors"
               aria-label="Notificações operacionais"
             >
               <Bell className="w-4 h-4" />
