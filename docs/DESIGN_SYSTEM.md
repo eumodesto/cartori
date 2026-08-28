@@ -1,278 +1,284 @@
 # Cartori Design System V1 — Manual Técnico Oficial
 
-Documento mestre de especificações, diretrizes visuais, arquitetura de tokens e governança de componentes da plataforma **Cartori**.
+Documento mestre de especificações, diretrizes visuais, arquitetura de tokens, patterns operacionais e governança de componentes da plataforma **Cartori**.
+
+> **Status:** Fundação aprovada para implementação V1  
+> **Escopo:** SaaS B2B, Backoffice Cartorial e Superfícies Compartilhadas
 
 ---
 
-## 1. Purpose (Objetivo)
+## 01. Propósito e Escopo
 
-O **Cartori Design System V1** é a camada fundacional de interface e experiência de usuário para o ecossistema de produtos Cartori, com foco prioritário no **SaaS B2B para Empresas, Advocacias e Imobiliárias** e no **Backoffice Operacional Cartorial**.
+O **Cartori Design System** é a camada de referência visual, comportamental e técnica usada para construir interfaces consistentes dentro do ecossistema Cartori. Ele não substitui a arquitetura de produto ou o motor de negócio; ele define como esse produto deve aparecer e se comportar.
 
-Sua arquitetura foi concebida para atender à intersecção de:
-$$\text{LegalTech} + \text{FinTech} + \text{SaaS B2B Operacional}$$
+### Princípio Central
+Compartilhar regras de design e primitives, sem obrigar todas as superfícies a parecerem idênticas. O e-commerce B2C, o SaaS B2B, o backoffice e o white-label pertencem à mesma marca, mas possuem densidades e objetivos diferentes.
 
-Garantindo máxima velocidade na manipulação de altos volumes de documentos, pedidos e dados notariais com total segurança e previsibilidade.
+### Matriz de Superfícies Atendidas
 
----
+| Superfície | Objetivo | Características Visuais e Densidade | Navegação | Preço |
+| :--- | :--- | :--- | :--- | :--- |
+| **SaaS B2B** | Operação diária de empresas (Advocacias / Imobiliárias) | Alta clareza, boa densidade, tabelas operacionais, status e workflows | Sidebar + Header | Contextual / Faturamento |
+| **Backoffice Cartori** | Execução e conferência interna | Mais densidade, prioridade para fila de pedidos, SLA, pendências e ação | Sidebar operacional | Operacional |
+| **B2C Commerce** | Aquisição e compra via Google Ads | Mais comercial, foco em preço, catálogo, formulários e checkout | Marketing + Checkout | Visível e comercial |
+| **White-label B2B2C** | Coleta e pagamento pelo cliente final | Marca da organização parceira + estrutura controlada pela Cartori | Fluxo guiado | Definido pelo parceiro |
 
-## 2. Principles (Princípios de Design)
-
-* **Clareza:** A informação crítica (protocolo, status notarial, prazos e valores) é compreendida sem esforço cognitivo.
-* **Confiança:** Estética sóbria, elegante e profissional inspirada no rigor jurídico e financeiro, evitando exageros visuais (sem glassmorphism, sem neons, sem sombras pesadas).
-* **Organização:** Estrutura modular que mantém telas com centenas de solicitações fáceis de filtrar e escanear.
-* **Agilidade:** Fluxos de ações mais frequentes demandam o menor número de cliques e contam com barras de ação rápida (**IconBar**).
-* **Previsibilidade:** Padrões uniformes em botões, campos de texto (40px de altura, 8px de raio), menus e tabelas.
-* **Densidade Controlada:** Interface operacional compacta com espaçamento balanceado e legibilidade impecável.
-
----
-
-## 3. Brand (Identidade Institucional)
-
-* **Cor Institucional:** `Cartori Navy` (`#011E37`).
-* **Diretório de Ativos Oficiais:** `/public/brand/`
-  * `/public/brand/cartori-logo-horizontal.svg`: Versão horizontal oficial para cabeçalhos e relatórios.
-  * `/public/brand/cartori-symbol.svg`: Símbolo vetorial para ícones e avatares.
-* **Cores Secundárias de Identidade:**
-  * Cyan: `#0091BB`
-  * Blue: `#0E6098`
-  * Green: `#74BE59`
-  * Teal: `#25AB9F`
-  * Yellow: `#E3BF1E`
-  *(Nota: Cores de identidade visual não devem ser confundidas com estados semânticos de erro/sucesso).*
+### O Design System NÃO deve:
+* Refatorar a lógica de negócio do B2C.
+* Criar um tema independente para cada componente do 21st.dev.
+* Substituir clareza por efeitos visuais.
+* Transformar todo conteúdo em card.
+* Acoplar componentes a dados específicos da Cartori quando puderem ser genéricos.
 
 ---
 
-## 4. Primitive Tokens
+## 02. Princípios de Produto e Direção Visual
 
-Definidos centralmente como variáveis CSS em `src/app/globals.css`:
+| Princípio | Aplicação Prática |
+| :--- | :--- |
+| **Clareza** | O usuário entende rapidamente onde está, o que está acontecendo e qual é a próxima ação. |
+| **Confiança** | A interface comunica segurança para operações jurídicas, documentais e financeiras. |
+| **Organização** | Grandes volumes de clientes, solicitações e documentos continuam escaneáveis. |
+| **Agilidade** | Ações frequentes ficam visíveis e exigem poucos passos (**IconBar**). |
+| **Previsibilidade** | Um padrão aprendido se repete em todo o produto. |
+| **Densidade Controlada** | Mais informação útil por viewport, sem sacrificar legibilidade. |
 
-```css
-/* Brand Navy Scale */
---brand-50:  #F0F8FB;
---brand-100: #D9EEF5;
---brand-200: #A5D5E5;
---brand-300: #67B6D2;
---brand-400: #2995BC;
---brand-500: #0876A5;
---brand-600: #075D86;
---brand-700: #0B496C;
---brand-800: #0A3856;
---brand-900: #062943;
---brand-950: #011E37; /* Base Oficial */
+### Personalidade
+**LegalTech + FinTech + SaaS B2B.** A Cartori deve parecer uma ferramenta operacional madura e confiável, não um portal governamental e não uma interface experimental.
 
-/* Neutral Scale */
---neutral-0:   #FFFFFF;
---neutral-50:  #F8FAFB;
---neutral-100: #F2F5F7;
---neutral-200: #E5EAEE;
---neutral-300: #D2DADF;
---neutral-400: #A8B4BD;
---neutral-500: #788895;
---neutral-600: #586975;
---neutral-700: #3D4E5A;
---neutral-800: #263945;
---neutral-900: #142A38;
---neutral-950: #081C29;
-```
+### O que Evitar:
+* Glassmorphism forte, neon, glow e gradientes decorativos.
+* Sombras pesadas e excesso de elevação.
+* Radius exagerado e botões *pill* como padrão.
+* Animações decorativas permanentes.
+* Cores semânticas confundidas com cores do logotipo.
+* Gráficos genéricos sem utilidade operacional.
 
 ---
 
-## 5. Semantic Tokens
+## 03. Arquitetura do Design System
 
-Arquitetura em 3 camadas: `Primitive → Semantic → Component`.
+A arquitetura possui três níveis estruturais:
 
-| Token Semântico | Valor Referência | Uso Pretendido |
+$$\text{PRIMITIVE TOKEN} \longrightarrow \text{SEMANTIC TOKEN} \longrightarrow \text{COMPONENT}$$
+
+* *Exemplo:* `brand-950` (`#011E37`) $\longrightarrow$ `action-primary` $\longrightarrow$ `Button Primary`.
+* *Exemplo:* `neutral-900` (`#142A38`) $\longrightarrow$ `text-primary` $\longrightarrow$ `PageTitle`.
+
+### Taxonomia de Código
+
+| Camada | Localização | Exemplos |
 | :--- | :--- | :--- |
-| `--bg-page` | `#F8FAFB` (`neutral-50`) | Fundo geral da aplicação |
-| `--bg-surface` | `#FFFFFF` (`neutral-0`) | Superfície de cards, modais e tabelas |
-| `--bg-subtle` | `#F2F5F7` (`neutral-100`) | Fundo de cabeçalhos de tabela e painéis |
-| `--text-primary` | `#142A38` (`neutral-900`) | Títulos e textos principais |
-| `--text-secondary` | `#586975` (`neutral-600`) | Subtítulos e rótulos auxiliares |
-| `--text-tertiary` | `#788895` (`neutral-500`) | Descrições e metadados |
-| `--border-default` | `#E5EAEE` (`neutral-200`) | Bordas estruturais padrão |
-| `--action-primary` | `#011E37` (`brand-950`) | Botões e ações principais |
+| **Foundations** | `globals.css` / `tailwind.config.ts` | Cores, tipografia, spacing, radius, borders, shadows, icons, motion |
+| **UI Components** | `src/components/ui/` | Button, Input, Select, Badge, StatusBadge, Table, Dialog, Tabs, Stepper |
+| **Layout Components** | `src/components/layout/` | PageContainer, PageHeader, Section, Card (Surface), AppSidebar |
+| **Domain Components** | `src/components/cartori/` | RequestStatus, RequestTimeline, EarningSummary, ClientSelector |
+| **Patterns** | Rotas e Composições | Operational Dashboard, Request Builder, White-label Request Page |
+
+> **Regra de Dependência:** Componentes de domínio podem depender de componentes UI. Componentes UI não devem depender de conceitos de negócio como `Request`, `Customer` ou `Earning`.
 
 ---
 
-## 6. Typography (Tipografia)
+## 04. Foundations e Tokens
 
-* **Família Oficial:** `Inter` (com fallbacks `system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto`).
+### 4.1 Brand Palette (Cartori Navy)
+Definida centralmente em `src/app/globals.css`:
+
+| Token | HEX | Uso Principal |
+| :--- | :--- | :--- |
+| `--brand-950` | `#011E37` | **Texto institucional forte, navegação e ação primária (Base Oficial)** |
+| `--brand-900` | `#062943` | Superfícies escuras e variações de navegação |
+| `--brand-800` | `#0A3856` | Hover / pressed escuro |
+| `--brand-700` | `#0B496C` | Ações e ícones de marca |
+| `--brand-600` | `#075D86` | Ações secundárias de marca |
+| `--brand-500` | `#0876A5` | Destaque e links |
+| `--brand-400` | `#2995BC` | Informação visual leve |
+| `--brand-300` | `#67B6D2` | Elementos suaves |
+| `--brand-200` | `#A5D5E5` | Bordas de seleção |
+| `--brand-100` | `#D9EEF5` | Fundos brand |
+| `--brand-50` | `#F0F8FB` | Background selecionado e estados suaves (Active state de Sidebar) |
+
+### 4.2 Cores de Identidade (Símbolo da Marca)
+* `--accent-cyan`: `#0091BB` (Ciano do símbolo da marca)
+* `--accent-blue`: `#0E6098` (Azul secundário do símbolo)
+* `--accent-green`: `#74BE59` (Verde de identidade; não é Success por definição)
+* `--accent-teal`: `#25AB9F` (Acento secundário)
+* `--accent-yellow`: `#E3BF1E` (Amarelo de identidade; não é Warning por definição)
+
+### 4.3 Neutral Palette (90% da Interface Operacional)
+* `--neutral-0`: `#FFFFFF` (Surface principal)
+* `--neutral-50`: `#F8FAFB` (Page background)
+* `--neutral-100`: `#F2F5F7` (Subtle surface / cabeçalhos de tabela)
+* `--neutral-200`: `#E5EAEE` (Border default)
+* `--neutral-300`: `#D2DADF` (Border strong)
+* `--neutral-400`: `#A8B4BD` (Elementos disabled)
+* `--neutral-500`: `#788895` (Texto terciário / metadados)
+* `--neutral-600`: `#586975` (Texto secundário)
+* `--neutral-700`: `#3D4E5A` (Texto normal)
+* `--neutral-800`: `#263945` (Texto forte)
+* `--neutral-900`: `#142A38` (Heading principal)
+* `--neutral-950`: `#081C29` (Contraste máximo)
+
+### 4.4 Semantic Colors (Estados Operacionais)
+* **Success:** `#16835A` (Concluído, válido, disponível, assinado ICP-Brasil)
+* **Warning:** `#B7791F` (Pendência, espera, atenção, diligência)
+* **Error / Destructive:** `#C93C37` (Erro, falha, ação destrutiva, rejeição)
+* **Information:** `#2878B5` (Análise, processamento, informação notarial)
+
+### 4.5 Semantic Tokens
+* **Background:** `background-page`, `background-surface`, `background-subtle`, `background-hover`, `background-selected`, `background-inverse`.
+* **Text:** `text-primary`, `text-secondary`, `text-tertiary`, `text-disabled`, `text-inverse`, `text-link`.
+* **Border:** `border-default`, `border-subtle`, `border-strong`, `border-focus`, `border-error`.
+* **Action:** `action-primary`, `action-primary-hover`, `action-secondary`, `action-secondary-hover`, `action-destructive`.
+* **Status:** `status-neutral`, `status-info`, `status-success`, `status-warning`, `status-error`.
+
+---
+
+## 05. Tipografia, Espaçamento e Elevação
+
+### 5.1 Tipografia
+* **Fonte Recomendada:** `Inter`.
 * **Pesos Oficiais:** `400 Regular`, `500 Medium`, `600 SemiBold`.
 
-| Estilo | Tamanho / Line Height | Peso | Uso |
+| Token | Tamanho / Linha | Peso | Uso |
 | :--- | :--- | :--- | :--- |
-| **Display** | 40px / 48px | 600 SemiBold | Destaques de impacto |
-| **Heading 1** | 32px / 40px | 600 SemiBold | Título de página principal |
-| **Heading 2** | 24px / 32px | 600 SemiBold | Título de seção / modal |
-| **Heading 3** | 20px / 28px | 600 SemiBold | Subseções e cabeçalhos |
-| **Body Large** | 16px / 24px | 400 Regular | Textos introdutórios |
-| **Body** | 14px / 20px | 400 Regular | Texto padrão da aplicação |
-| **Label** | 14px / 20px | 500 Medium | Rótulos de formulários e botões |
-| **Small** | 12px / 16px | 400 Regular | Tabelas e notas auxiliares |
-| **Caption** | 11px / 16px | 500 Medium | Badges e micro-informações |
+| **Display** | 40px / 48px | 600 SemiBold | Marketing, onboarding e momentos institucionais |
+| **Heading 1** | 32px / 40px | 600 SemiBold | Título principal de página |
+| **Heading 2** | 24px / 32px | 600 SemiBold | Seções principais |
+| **Heading 3** | 20px / 28px | 600 SemiBold | Cards e blocos importantes |
+| **Body Large** | 16px / 24px | 400 Regular | Texto destacado |
+| **Body** | 14px / 20px | 400 Regular | Texto padrão de aplicação |
+| **Label** | 14px / 20px | 500 Medium | Labels de campos e botões |
+| **Small** | 12px / 16px | 400 Regular | Metadados, tabelas e apoio |
+| **Caption** | 11px / 16px | 500 Medium | Datas, códigos e informação compacta |
+
+### 5.2 Spacing (Grid de 4px)
+`space-1` (4px), `space-2` (8px), `space-3` (12px), `space-4` (16px), `space-5` (20px), `space-6` (24px), `space-8` (32px), `space-10` (40px), `space-12` (48px), `space-16` (64px).
+
+### 5.3 Radius
+* `radius-sm` (4px): Pequenos controles, tags e badges.
+* `radius-md` (8px): Inputs, selects e buttons (Padrão B2B).
+* `radius-lg` (12px): Cards, dropdowns e dialogs.
+* `radius-xl` (16px): Superfícies especiais.
+* `radius-full` (9999px): Avatar e badges quando necessário.
+
+### 5.4 Borders e Shadows
+* **Borda padrão:** `1px`, geralmente `neutral-200`. Preferir espaço, background e borda antes de adicionar sombra.
+* **Sombras tonalizadas:**
+  * `shadow-xs`: `0 1px 2px rgba(1, 30, 55, 0.05)` (controle levemente elevado)
+  * `shadow-sm`: `0 4px 12px rgba(1, 30, 55, 0.08)` (dropdown / popover)
+  * `shadow-md`: `0 12px 32px rgba(1, 30, 55, 0.12)` (dialog / modal)
+
+### 5.5 Iconografia e Motion
+* **Biblioteca Oficial:** `Lucide React`. Tamanhos: `16px`, `20px` e `24px`. Stroke: `1.5` a `1.75`.
+* **Motion Tokens:**
+  * `fast` (150ms): Hover e microfeedback.
+  * `normal` (200ms): Dropdown, seleção e transições comuns.
+  * `slow` (300ms): Drawer, dialog e mudanças de layout.
+  * `special` (400–650ms): Apenas interações fluidas justificadas, como **IconBar**.
 
 ---
 
-## 7. Spacing (Grid de Espaçamento)
+## 06. Acessibilidade e Responsividade
 
-Base aritmética de **4px**:
-* `--space-1`: 4px
-* `--space-2`: 8px
-* `--space-3`: 12px
-* `--space-4`: 16px
-* `--space-5`: 20px
-* `--space-6`: 24px
-* `--space-8`: 32px
-* `--space-10`: 40px
-* `--space-12`: 48px
-* `--space-16`: 64px
+### Acessibilidade Obrigatória (WCAG AA):
+* Contraste mínimo WCAG AA (4.5:1 para texto, 3:1 para controles).
+* Navegação por teclado em 100% dos elementos.
+* `focus-visible` em elementos interativos (`focus-visible:ring-2 focus-visible:ring-brand-500`).
+* `aria-label` em ações somente com ícone.
+* **Status nunca identificado apenas pela cor** (sempre com texto legível).
+* Labels associados a inputs via `htmlFor`/`id`.
+* Estados `disabled` e `loading` claros.
+* `@media (prefers-reduced-motion: reduce)` integrado globalmente.
+* Tooltips automáticos na sidebar recolhida.
 
----
-
-## 8. Radius (Raios de Arredondamento)
-
-* `--radius-sm` (4px): Pequenos controles, tags e badges.
-* `--radius-md` (8px): Inputs, selects e botões (Padrão B2B).
-* `--radius-lg` (12px): Cards, tabelas, dropdowns e dialogs.
-* `--radius-xl` (16px): Superfícies de destaque.
-* `--radius-full` (9999px): Avatares e indicadores de status.
+### Responsive Foundation:
+* **Desktop ($\ge 1024$px):** Page padding `32px`; sidebar aberta $\approx 256$px.
+* **Laptop ($768$px – $1023$px):** Page padding `24px`; sidebar $240$–$256$px.
+* **Tablet:** Sidebar recolhida ou drawer; grids adaptados.
+* **Mobile ($< 768$px):** Page padding `16px`; navegação em Sheet/Drawer; tabelas com ocultação de colunas secundárias ou scroll horizontal suave.
 
 ---
 
-## 9. Borders (Bordas)
+## 07. Componentes Base V1
 
-* Espessura padrão: **1px**.
-* Cores de estado:
-  * *Default:* `var(--neutral-200)` (`#E5EAEE`)
-  * *Hover:* `var(--neutral-400)` (`#A8B4BD`)
-  * *Focus:* `var(--brand-500)` (`#0876A5`) com anel sutil `ring-2`
-  * *Error:* `var(--semantic-error)` (`#C93C37`)
-
----
-
-## 10. Shadows (Elevação)
-
-Sombras tonalizadas com Cartori Navy (`rgba(1, 30, 55, ...)`):
-* `--shadow-xs`: `0 1px 2px rgba(1, 30, 55, 0.05)` (botões e controles)
-* `--shadow-sm`: `0 4px 12px rgba(1, 30, 55, 0.08)` (dropdowns, popovers, icon bar)
-* `--shadow-md`: `0 12px 32px rgba(1, 30, 55, 0.12)` (dialogs e sheets)
+* **Button:** Variants `primary`, `secondary`, `outline`, `ghost`, `destructive`. Altura padrão de 40px (`h-10`), radius 8px (`rounded-md`), Label 14/20 Medium.
+* **Input e Select:** Compartilham altura (40px), radius (8px), tipografia e estados. Anatomia: `Label → Control → Helper/Error`.
+* **Badge x StatusBadge:**
+  * `Badge`: Categórico (ex: *Registro Civil*, *Imóveis*, *B2B*).
+  * `StatusBadge`: Operacional com dot indicador e texto obrigatório (ex: *Em análise*, *Concluída*).
+* **Table / DataTable:** Alta escaneabilidade, linhas compactas, cabeçalho sutil em `neutral-50`, seleção de linhas, status operacional e menu de ações.
+* **Stepper:** Fluxos de etapas (`completed`, `current`, `upcoming`, `error`). Versão horizontal e arquitetura preparada para vertical.
+* **Surface (Card):** Componente estrutural simples. Default: `bg-surface`, `border-default`, `radius 12px`, sem sombra. Variantes: `default`, `subtle` e `interactive`.
 
 ---
 
-## 11. Icons (Iconografia)
+## 08. Componentes Aprovados como Referência
 
-* **Biblioteca Exclusiva:** `Lucide React`.
-* **Tamanhos Padrão:** `14px` (xs/inline), `16px` (sm/botões), `20px` (md/seções), `24px` (lg).
-* **Stroke:** `1.5` a `1.75`.
+### 8.1 IconBar (Quick Actions / Contextual Toolbar)
+* **Comportamento:** `[ícone] → hover/foco → [ícone + Label expandido]`
+* **Uso:** Ações contextuais de alta frequência (*Nova solicitação*, *Nova pesquisa*, *Novo cliente*, *Enviar documento*).
+* **Tokens:** Migrado para tokens oficiais Cartori com animação fluida e suporte completo a teclado.
 
----
-
-## 12. Motion (Animações e Transições)
-
-* `--motion-fast` (150ms): Hover de botões, checkboxes, menus simples.
-* `--motion-normal` (200ms): Abertura de dropdowns, expansão do IconBar, transição de abas.
-* `--motion-slow` (300ms): Abertura de drawers laterais (Sheet) e modais.
-* **Acessibilidade:** Suporte nativo a `@media (prefers-reduced-motion: reduce)` no `globals.css`.
+### 8.2 AppSidebar
+* **Dimensões:** Aberta $\approx 256$px | Fechada $\approx 64$px.
+* **Estado Recolhido:** Mantém ícones e ativa tooltips automaticamente.
+* **Active State:** `bg-brand-50`, `text-brand-950`, `icon-brand-700/950`, sem sombra permanente e sem bordas chamativas simultâneas.
 
 ---
 
-## 13. Components Catalog (Biblioteca V1)
+## 09. Patterns do Produto (Diretrizes das Próximas Fases)
 
-### Actions
-* `Button`: Variantes `primary`, `secondary`, `outline`, `ghost`, `destructive`; Tamanhos `sm`, `md` (40px), `lg`, `icon`.
-* `IconButton`: Controle quadrado com `aria-label` obrigatório para acessibilidade.
+### 9.1 Operational Dashboard
+O Dashboard não é um painel genérico de analytics. Ele responde: *"O que está acontecendo e o que precisa da minha atenção?"*.
+* `PageHeader` + Quick Actions (`IconBar`)
+* `MetricCards`: Solicitações ativas, Em processamento, Exigem atenção, Concluídas
+* `AttentionPanel` (Diligências e pendências cartoriais)
+* `RecentRequestsTable` (Tabela de pedidos recentes com status operacional)
+* `DeadlineList` (Prazos de cartório e SLA)
+* `EarningSummary` (Extrato e repasses)
 
-### Forms
-* `Input`: Altura de 40px, 8px de raio, suporte a ícone esquerdo/direito, label e mensagem de erro estruturada.
-* `Textarea`: Linguagem visual equivalente ao Input.
-* `Select`: Seleção com chevron e validação de erro.
-* `Checkbox`: Controle acessível com indicador visual nítido.
-* `RadioGroup`: Agrupamento de opções exclusivas com suporte a título e descrição.
-* `Switch`: Toggle switch para configurações operacionais.
+### 9.2 Request Builder
+Pattern principal para emissão dentro do SaaS. Reutiliza o motor de serviços, localização e formulários com experiência B2B:
+$$\text{Cliente} \longrightarrow \text{Contexto} \longrightarrow \text{Serviço} \longrightarrow \text{Localização} \longrightarrow \text{Dados} \longrightarrow \text{Revisão} \longrightarrow \text{Pagamento / Faturamento} \longrightarrow \text{Acompanhamento}$$
 
-### Feedback
-* `Badge`: Uso puramente categórico (Registro Civil, Imóveis, B2B).
-* `StatusBadge`: Uso estritamente operacional com dot indicador e texto obrigatório.
-* `Alert`: Avisos contextuais (Info, Success, Warning, Error) com ícone temático e botão de fechar opcional.
-* `Skeleton` & `Spinner`: Estados de carregamento acessíveis.
-
-### Navigation
-* `Tabs`: Abas com variantes `underline` (padrão) e `pill` (agrupamentos).
-* `Breadcrumb`: Trilha de navegação semântica.
-
-### Overlays
-* `Dialog`: Modal centralizado com 12px de raio, sombra média e bloqueio de scroll.
-* `Sheet`: Painel lateral (Drawer) deslizante para filtros e detalhes rápidos.
-* `DropdownMenu`: Menu flutuante de ações com atalhos de teclado e itens destrutivos.
-* `Popover` & `Tooltip`: Elementos flutuantes informativos.
-
-### Data
-* `Table`: Tabela densa com cabeçalho sutil, suporte a seleção de linhas e ações por linha.
-* `Pagination`: Navegação de páginas com contagem total de registros.
-
-### Workflow & Utilities
-* `Stepper`: Etapas de fluxo de trabalho (completed, current, upcoming, error).
-* `IconBar`: Barra de ações rápidas contextuais (Quick Actions) com expansão horizontal no hover/foco.
-
-### Layout
-* `PageContainer`: Espaçamentos responsivos (32px desktop, 24px laptop, 16px mobile).
-* `PageHeader`: Cabeçalho padrão de página com título, descrição, badges e ações.
-* `Section`: Separador de blocos lógicos.
-* `Card` (`Surface`): Variantes `default`, `subtle`, `interactive`.
-* `AppSidebar`: Barra lateral fundacional (256px aberta, 64px recolhida com tooltips).
+### 9.3 White-label Request Page
+Página pública enviada pela organização parceira ao cliente final. Permite logotipo, nome, cor principal e contato da organização, mantendo estrutura, tipografia, spacing, acessibilidade e componentes controlados pela Cartori (*Theming controlado sem CSS livre*).
 
 ---
 
-## 14. Status Semantics (Semântica Operacional)
+## 10. Integração com 21st.dev e Governança
 
-A plataforma utiliza 5 categorias de status obrigatórias:
+### Regra de Adaptação de Componentes:
+$$\text{21st.dev component} + \text{Cartori semantic tokens} + \text{Cartori accessibility} + \text{Cartori interaction rules} = \text{Cartori Component}$$
 
-| Status | Cor Semântica | Exemplos de Aplicação no Domínio |
+### Checklist de Adaptação:
+1. Remover ou mapear tokens locais conflitantes (`--component-background`, etc.).
+2. Adaptar cores aos semantic tokens (`brand-950`, `neutral-200`, `semantic-info`).
+3. Normalizar raios (8px para controles, 12px para surfaces) e altura (40px).
+4. Substituir iconografia para `lucide-react`.
+5. Validar navegação por teclado e `focus-visible`.
+
+### Regra de Localização de Arquivos:
+* `/src/components/ui/`: Primitives e componentes genéricos reutilizáveis.
+* `/src/components/layout/`: Estrutura de aplicação e páginas.
+* `/src/components/cartori/`: Componentes com semântica específica do domínio notarial.
+
+---
+
+## 11. Roadmap Visual do Ecossistema
+
+| Fase | Entrega | Status |
 | :--- | :--- | :--- |
-| **Neutral** | Cinza Neutro (`neutral-700`) | Solicitada, Aguardando Início, Cancelada |
-| **Info** | Azul Notarial (`semantic-info`) | Em Análise, Em Processamento no Cartório |
-| **Warning** | Âmbar Notarial (`semantic-warning`) | Aguardando Documento, Com Pendência, Em Diligência |
-| **Success** | Verde Confirmação (`semantic-success`) | Certidão Concluída, Assinada ICP-Brasil, Paga |
-| **Error** | Vermelho Alerta (`semantic-error`) | Rejeitada pelo Cartório, Erro no Assento, Estornada |
+| **Fase 1** | Auditar stack e componentes existentes | 🟢 Concluído |
+| **Fase 2** | Implementar primitive + semantic tokens | 🟢 Concluído |
+| **Fase 3** | Normalizar componentes base (Actions, Forms, Feedback, Data, Overlay) | 🟢 Concluído |
+| **Fase 4** | Integrar IconBar e Sidebar foundation | 🟢 Concluído |
+| **Fase 5** | Criar Design System Showcase (`/design-system`) | 🟢 Concluído |
+| **Fase 6** | Revisar visualmente e congelar V1 | 🟢 Concluído |
+| **Fase 7** | Construir App Shell + Operational Dashboard B2B | 🟡 Próxima Etapa |
+| **Fase 8** | Construir Request Builder B2B (Multi-itens & Dossiês) | ⚪ Planejado |
+| **Fase 9** | Expandir Domain Components e White-label Experience | ⚪ Planejado |
 
-> [!IMPORTANT]
-> **Regra de Acessibilidade de Status:** Nenhum status pode ser transmitido apenas por cor. Todos os `StatusBadge` exigem texto explícito.
-
----
-
-## 15. Accessibility (Acessibilidade WCAG AA)
-
-1. **Navegação por Teclado:** Todos os componentes interativos contam com anel de foco visível `focus-visible:ring-2 focus-visible:ring-brand-500`.
-2. **Atributos ARIA:** `aria-label`, `aria-expanded`, `aria-describedby`, `aria-selected`, `aria-busy` e `role` em todos os componentes.
-3. **Contraste de Cor:** Proporção mínima de contraste de 4.5:1 para textos comuns e 3:1 para elementos de controle.
-4. **Fechamento por Teclado:** Modais (`Dialog`) e gavetas (`Sheet`) fecham automaticamente com a tecla `Escape`.
-
----
-
-## 16. Responsive Behavior (Comportamento Responsivo)
-
-* **Desktop ($\ge 1024$px):** Padding horizontal de 32px, tabelas completas, Sidebar expandida por padrão.
-* **Laptop / Tablet ($768$px – $1023$px):** Padding horizontal de 24px, tabelas com scroll horizontal suave.
-* **Mobile ($< 768$px):** Padding horizontal de 16px, botões e tabelas adaptados para toque, Sheet para navegação.
-
----
-
-## 17. 21st.dev Integration Rules (Regras de Integração)
-
-Quando um novo componente for selecionado a partir do repositório `21st.dev`:
-1. **Eliminar tokens estrangeiros:** Variáveis como `--component-background`, `--ic-primary` ou classes arbitrárias de cores devem ser estritamente substituídas pelos tokens Cartori (`brand-950`, `neutral-200`, etc.).
-2. **Harmonizar Raios e Alturas:** Forçar `h-10` e `rounded-md` em inputs/botões e `rounded-lg` em superfícies.
-3. **Substituir Ícones:** Manter unicamente a biblioteca `lucide-react`.
-4. **Adicionar Acessibilidade:** Garantir `focus-visible`, suporte a teclado e `prefers-reduced-motion`.
-
----
-
-## 18. Component Contribution Rules (Governança)
-
-Antes de criar um novo componente:
-1. **Verificação de Equivalência:** Já existe um componente na biblioteca que resolve a necessidade?
-2. **Uso de Variantes:** O caso de uso pode ser atendido adicionando uma `variant` ou `size` a um componente existente?
-3. **Separação de Camadas:**
-   * `/src/components/ui/` $\rightarrow$ Componentes puramente visuais e genéricos (ex: `Button`, `Input`, `Table`).
-   * `/src/components/cartori/` $\rightarrow$ Componentes acoplados a regras de negócio e dados notariais futuros (ex: `ProtocolBadge`, `CartorioCard`, `DossierViewer`).
-4. **Validação:** Qualquer novo componente deve ser exposto e validado na rota interna `/design-system`.
+> **Critério de Decisão Absoluto:**  
+> $$\text{Clareza} > \text{Consistência} > \text{Legibilidade} > \text{Previsibilidade} > \text{Efeitos Visuais}$$
