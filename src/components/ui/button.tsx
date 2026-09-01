@@ -28,7 +28,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     // Base Classes (No pills, no heavy gradients, clean operational B2B styling)
     const baseStyles =
-      "inline-flex items-center justify-center font-medium rounded-md transition-colors duration-fast select-none outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed";
+      "inline-flex items-center justify-center whitespace-nowrap shrink-0 font-medium rounded-md transition-colors duration-fast select-none outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed";
 
     // Variants mapped to Semantic Tokens
     const variantStyles = {

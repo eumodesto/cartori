@@ -69,9 +69,9 @@ $$\text{PRIMITIVE TOKEN} \longrightarrow \text{SEMANTIC TOKEN} \longrightarrow \
 
 | Camada | Localização | Exemplos |
 | :--- | :--- | :--- |
-| **Foundations** | `globals.css` / `tailwind.config.ts` | Cores, tipografia, spacing, radius, borders, shadows, icons, motion |
-| **UI Components** | `src/components/ui/` | Button, Input, Select, Badge, StatusBadge, Table, Dialog, Tabs, Stepper |
-| **Layout Components** | `src/components/layout/` | PageContainer, PageHeader, Section, Card (Surface), AppSidebar |
+| **Foundations** | `globals.css` / `fonts.css` / `tailwind.config.ts` | Cores, tipografia (PP Mori + PP Editorial Sans), spacing, radius, borders, shadows, icons, motion |
+| **UI Components** | `src/components/ui/` | Button, GetStartedButton, Input, Select, Badge, StatusBadge, Table, Dialog, Tabs, Stepper, QuickTooltipActions |
+| **Layout Components** | `src/components/layout/` | PageContainer, PageHeader, Section, Card (Surface), AppSidebar, UserMenu |
 | **Domain Components** | `src/components/cartori/` | RequestStatus, RequestTimeline, EarningSummary, ClientSelector |
 | **Patterns** | Rotas e Composições | Operational Dashboard, Request Builder, White-label Request Page |
 
@@ -137,20 +137,30 @@ Definida centralmente em `src/app/globals.css`:
 ## 05. Tipografia, Espaçamento e Elevação
 
 ### 5.1 Tipografia
-* **Fonte Recomendada:** `Inter`.
-* **Pesos Oficiais:** `400 Regular`, `500 Medium`, `600 SemiBold`.
+Par oficial Pangram Pangram. As duas famílias trabalham juntas: **Mori** na interface, **Editorial Sans** nos títulos.
 
-| Token | Tamanho / Linha | Peso | Uso |
+| Papel | Família | Token Tailwind | Uso |
 | :--- | :--- | :--- | :--- |
-| **Display** | 40px / 48px | 600 SemiBold | Marketing, onboarding e momentos institucionais |
-| **Heading 1** | 32px / 40px | 600 SemiBold | Título principal de página |
-| **Heading 2** | 24px / 32px | 600 SemiBold | Seções principais |
-| **Heading 3** | 20px / 28px | 600 SemiBold | Cards e blocos importantes |
-| **Body Large** | 16px / 24px | 400 Regular | Texto destacado |
-| **Body** | 14px / 20px | 400 Regular | Texto padrão de aplicação |
-| **Label** | 14px / 20px | 500 Medium | Labels de campos e botões |
-| **Small** | 12px / 16px | 400 Regular | Metadados, tabelas e apoio |
-| **Caption** | 11px / 16px | 500 Medium | Datas, códigos e informação compacta |
+| **Interface / corpo** | `PP Mori` | `font-sans` | UI, formulários, tabelas, botões, dashboard |
+| **Display / títulos** | `PP Editorial Sans` | `font-serif` / `font-display` | Hero, H1, H2, títulos de catálogo e momentos institucionais |
+| **Código / protocolo** | `ui-monospace` | `font-mono` | IDs, tokens hex, números de referência |
+
+**PP Mori (sans)** — cortes do trial: `200 ExtraLight`, `400 Regular`, `600 SemiBold`, `900 Black` (+ itálicos). `500` cai em Regular; `700` cai em SemiBold.
+**PP Editorial Sans** — cortes do trial: `200 UltraLight`, `500 Medium`, `800 UltraBold` (+ itálicos UltraLight e UltraBold). `100–300` caem em UltraLight; `400–600` em Medium; `700–900` em UltraBold.
+
+| Token | Família | Tamanho / Linha | Peso | Uso |
+| :--- | :--- | :--- | :--- | :--- |
+| **Display** | Editorial Sans | 40px / 48px | 800 UltraBold | Marketing, onboarding e hero. Tracking `0.04em` |
+| **Heading 1** | Editorial Sans | 32px / 40px | 800 UltraBold | Título principal de página |
+| **Heading 2** | Editorial Sans | 24px / 32px | 500 Medium | Seções principais |
+| **Heading 3** | Mori | 20px / 28px | 600 SemiBold | Cards operacionais e blocos de UI |
+| **Body Large** | Mori | 16px / 24px | 400 Regular | Texto destacado |
+| **Body** | Mori | 14px / 20px | 400 Regular | Texto padrão de aplicação |
+| **Label** | Mori | 14px / 20px | 600 SemiBold | Labels de campos e botões |
+| **Small** | Mori | 12px / 16px | 400 Regular | Metadados, tabelas e apoio |
+| **Caption** | Mori | 11px / 16px | 600 SemiBold | Datas, códigos e informação compacta |
+
+Licença atual: *Free for Personal Use* (Pangram Pangram). Para produção comercial, substituir pelos cortes licenciados.
 
 ### 5.2 Spacing (Grid de 4px)
 `space-1` (4px), `space-2` (8px), `space-3` (12px), `space-4` (16px), `space-5` (20px), `space-6` (24px), `space-8` (32px), `space-10` (40px), `space-12` (48px), `space-16` (64px).
@@ -202,7 +212,8 @@ Definida centralmente em `src/app/globals.css`:
 
 ## 07. Componentes Base V1
 
-* **Button:** Variants `primary`, `secondary`, `outline`, `ghost`, `destructive`. Altura padrão de 40px (`h-10`), radius 8px (`rounded-md`), Label 14/20 Medium.
+* **Button:** Variants `primary`, `secondary`, `outline`, `ghost`, `destructive`. Altura padrão de 40px (`h-10`), radius 8px (`rounded-md`), Label 14/20 Medium. **O rótulo nunca quebra linha** (`whitespace-nowrap`); o botão cresce na horizontal em vez de ir para duas linhas.
+* **GetStartedButton:** CTA de início de fluxo. Hover: o rótulo some e a faixa da seta (`ChevronRight`) ocupa o botão. Tamanhos `sm` / `md` / `lg`. Uso nos cards do catálogo com o label **Solicitar**. Primitive em `src/components/ui/get-started-button.tsx`.
 * **Input e Select:** Compartilham altura (40px), radius (8px), tipografia e estados. Anatomia: `Label → Control → Helper/Error`.
 * **Badge x StatusBadge:**
   * `Badge`: Categórico (ex: *Registro Civil*, *Imóveis*, *B2B*).
@@ -224,6 +235,28 @@ Definida centralmente em `src/app/globals.css`:
 * **Dimensões:** Aberta $\approx 256$px | Fechada $\approx 64$px.
 * **Estado Recolhido:** Mantém ícones e ativa tooltips automaticamente.
 * **Active State:** `bg-brand-50`, `text-brand-950`, `icon-brand-700/950`, sem sombra permanente e sem bordas chamativas simultâneas.
+* **Rodapé padrão:** inclui o **UserMenu** (ícone de usuário + atalhos de recursos). Recolhida, o flyout abre à direita; expandida, abre para cima.
+
+### 8.3 UserMenu / QuickTooltipActions
+Padrão oficial do recurso de usuário no chrome da aplicação (Header B2C, header SaaS e rodapé da Sidebar).
+
+* **Comportamento:** `[ícone User circular] → hover / foco / toque → [atalhos de recursos]`
+* **Primitive:** `QuickTooltipActions` em `src/components/ui/` — trigger + ações genéricas, sem acoplamento a domínio.
+* **Composição:** `UserMenu` em `src/components/layout/` — trigger `User` (`rounded-full`, avatar) e recursos padrão: **Suporte**, **Perfil**, **Equipe**.
+* **Ações padrão:** `MessageCircle` → Suporte (`/contato`); `PersonStanding` → Perfil (`/minha-conta`); `Users` → Equipe (`/dashboard/equipe`).
+* **Posição do flyout:** `right` (sidebar recolhida), `bottom` (headers), `top` (rodapé expandido).
+* **Tokens:** superfície `neutral-0`, borda `neutral-200`, `radius-lg` (12px) no painel, `radius-md` nos atalhos, `shadow-sm`, hover `neutral-100`. Labels dos atalhos usam o tooltip oficial (`neutral-950` / `11px`).
+* **Acessibilidade:** `aria-label` no trigger, `aria-haspopup` / `aria-expanded`, `role="menu"` / `menuitem`, Escape e clique fora fecham, `focus-visible:ring-brand-500`.
+* **O que evitar:** pills como trigger padrão (o `rounded-full` vale só para o avatar de usuário); tokens genéricos de outros kits (`popover`, `muted-foreground`).
+
+### 8.4 GetStartedButton
+CTA de início de fluxo (catálogo B2C: **Solicitar**).
+
+* **Comportamento:** `[rótulo + seta à direita] → hover → [rótulo some, faixa da seta ocupa o botão]`
+* **Primitive:** `src/components/ui/get-started-button.tsx` (compõe `Button`)
+* **Tamanhos:** `sm` (cards), `md`, `lg`
+* **Tokens:** herda variantes do `Button`; nos cards escuros do catálogo usa âmbar (`amber-400`) e ícone `brand-950`
+* **Acessibilidade:** botão nativo, `ChevronRight` com `aria-hidden`, `group-active` com scale 95%
 
 ---
 

@@ -47,3 +47,18 @@ export function maskCep(value: string): string {
     .replace(/(\d{5})(\d)/, "$1-$2")
     .slice(0, 9);
 }
+
+export function digitsOnly(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+export function createId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
+    const random = (Math.random() * 16) | 0;
+    const value = char === "x" ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}

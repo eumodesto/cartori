@@ -15,6 +15,16 @@ enum UserRole {
   OPERATOR
 }
 
+enum OrderChannel {
+  CARTORI
+  PARTNER
+}
+
+enum OrderKind {
+  OWN
+  RESELL
+}
+
 enum OrderStatus {
   DRAFT
   PENDING_PAYMENT
@@ -84,12 +94,18 @@ model Organization {
 
 model Order {
   id             String         @id @default(uuid())
-  orderNumber    Int            @default(autoincrement())
+  orderNumber    Int            @unique
+  protocol       String         @unique
   userId         String?
   user           User?          @relation(fields: [userId], references: [id])
   organizationId String?
   organization   Organization?  @relation(fields: [organizationId], references: [id])
   
+  // Canal de venda: vitrine Cartori (Ads) vs loja do parceiro
+  channel        OrderChannel   @default(CARTORI)
+  kind           OrderKind      @default(OWN)
+  sellerOrgId    String?
+
   // Referência interna para B2B (ex: Número de processo judicial, código do imóvel, nome do cliente)
   internalReference String?
   
@@ -104,6 +120,9 @@ model Order {
   customerEmail  String
   customerPhone  String
   customerCpfCnpj String
+  isCompany      Boolean        @default(false)
+  companyName    String?
+  oabOrCreci     String?
 
   // Endereço de Entrega (se houver itens físicos)
   shippingCep        String?
@@ -119,6 +138,10 @@ model Order {
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+
+  @@index([status])
+  @@index([customerEmail])
+  @@index([channel, createdAt])
 }
 
 model OrderItem {
@@ -146,10 +169,12 @@ model OrderItem {
   hasApostille        Boolean            @default(false) // Apostilamento de Haia
   hasShipping         Boolean            @default(false) // Envio físico
   
-  // Valores
+  // Valores (snapshot no momento da venda)
+  listPrice           Decimal            @db.Decimal(10, 2)
   itemPrice           Decimal            @db.Decimal(10, 2)
   searchFee           Decimal            @default(0) @db.Decimal(10, 2)
   apostilleFee        Decimal            @default(0) @db.Decimal(10, 2)
+  shippingPrice       Decimal            @default(0) @db.Decimal(10, 2)
   totalPrice          Decimal            @db.Decimal(10, 2)
 
   // Status & Entrega do Item
@@ -157,6 +182,8 @@ model OrderItem {
   issuedFileUrl       String?            // URL do PDF da e-certidão emitida
   trackingCode        String?            // Código de rastreio Correios se físico
   notes               String?
+  referenceTag        String?
+  estimatedDays       String?
 
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
@@ -182,6 +209,8 @@ model Payment {
   
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
+
+  @@index([orderId])
 }
 
 model Cartorio {

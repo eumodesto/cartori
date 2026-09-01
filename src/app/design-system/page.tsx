@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { GetStartedButton } from "@/components/ui/get-started-button";
 import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,7 +49,9 @@ import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { Popover } from "@/components/ui/popover";
 import { Tooltip } from "@/components/ui/tooltip";
 import { IconBar } from "@/components/ui/icon-bar";
+import { QuickTooltipActions } from "@/components/ui/quick-tooltip-actions";
 import { PageContainer } from "@/components/layout/page-container";
+import { UserMenu, defaultUserMenuActions } from "@/components/layout/user-menu";
 import { PageHeader } from "@/components/layout/page-header";
 import { Section } from "@/components/layout/section";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/layout/card";
@@ -73,6 +76,7 @@ import {
   SlidersHorizontal,
   Home,
   Check,
+  User,
 } from "lucide-react";
 
 export default function DesignSystemShowcasePage() {
@@ -131,6 +135,8 @@ export default function DesignSystemShowcasePage() {
         </div>
 
         <div className="flex items-center gap-4 text-xs">
+          <UserMenu side="bottom" size="sm" />
+
           {/* Theme Toggle Button */}
           <ThemeToggle variant="outline" size="sm" showLabel />
 
@@ -309,6 +315,128 @@ export default function DesignSystemShowcasePage() {
         </Section>
 
         {/* =========================================================================
+            SECTION 1.1: TYPOGRAPHY
+           ========================================================================= */}
+        <Section
+          title="1.1 Tipografia — PP Mori & PP Editorial Sans"
+          description="Par Pangram Pangram. Mori na interface operacional. Editorial Sans nos títulos e na voz de marca."
+        >
+          {/* Display specimen */}
+          <div className="rounded-lg bg-brand-950 text-neutral-0 overflow-hidden border border-brand-900">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5 pb-3 text-[11px] uppercase tracking-[0.18em] text-neutral-400 font-sans">
+              <span className="font-serif text-lg text-neutral-0 normal-case">Editorial Sans</span>
+              <span className="hidden sm:inline">UltraLight · Medium · UltraBold · Italics</span>
+              <span className="font-sans text-[10px] tracking-widest">Display / Títulos</span>
+            </div>
+            <p className="px-6 pb-2 font-serif text-2xl sm:text-4xl lg:text-[2.75rem] font-bold leading-[1.2]">
+              Várias certidões.
+              <br />
+              Um único pedido.
+            </p>
+            <p className="px-6 pb-6 font-serif text-base sm:text-xl font-light italic text-neutral-300 leading-snug max-w-4xl">
+              Várias certidões. Diferentes cartórios. Um único pedido.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            {/* Mori */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-sans text-2xl font-black tracking-tight">PP Mori</CardTitle>
+                <CardDescription>
+                  Sans geométrica da interface. Corpo, labels, botões, tabelas e dashboard.
+                  Token: <span className="font-mono text-neutral-700">font-sans</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-0">
+                <div className="space-y-1.5 text-neutral-900">
+                  <p className="text-sm font-extralight">ExtraLight 200 — metadados e hero body</p>
+                  <p className="text-sm font-normal">Regular 400 — texto padrão da aplicação</p>
+                  <p className="text-sm font-semibold">SemiBold 600 — labels, botões e ênfase</p>
+                  <p className="text-sm font-black">Black 900 — números e destaques densos</p>
+                  <p className="text-sm italic text-neutral-600">Italic — citações e ênfase editorial</p>
+                </div>
+                <p className="text-sm text-neutral-600 leading-relaxed border-t border-neutral-200 pt-4">
+                  Centralize solicitações de Registro Civil, Imóveis, Notas e Protesto.
+                  Selecione estado, cidade e cartório com preenchimento automático.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Editorial Sans */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-serif text-2xl font-bold">PP Editorial Sans</CardTitle>
+                <CardDescription>
+                  Sans editorial de display. Hero, H1, H2 e títulos de catálogo.
+                  Token: <span className="font-mono text-neutral-700">font-serif</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-0">
+                <div className="space-y-1.5 text-neutral-900 font-serif">
+                  <p className="text-lg font-extralight">UltraLight 200 — linhas de apoio em display</p>
+                  <p className="text-lg font-medium">Medium 500 — seções e H2 operacional</p>
+                  <p className="text-lg font-extrabold">UltraBold 800 — hero e Heading 1</p>
+                  <p className="text-lg italic font-extralight text-neutral-600">UltraLight Italic — ênfase em títulos</p>
+                  <p className="text-lg italic font-extrabold text-neutral-600">UltraBold Italic — display em itálico</p>
+                </div>
+                <p className="font-serif text-sm text-neutral-600 leading-relaxed border-t border-neutral-200 pt-4">
+                  Few black taxis drive up major roads on quiet hazy nights.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Type scale */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="text-xs uppercase tracking-wider text-neutral-500 font-sans font-semibold">
+                Escala oficial
+              </CardTitle>
+              <CardDescription>
+                Editorial Sans nos níveis Display, H1 e H2. Mori a partir de H3, corpo e UI.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0 overflow-x-auto">
+              <div className="space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Display</span>
+                  <span className="font-serif text-4xl font-bold text-neutral-900">Cartori</span>
+                  <span className="text-[11px] text-neutral-400 font-mono">Editorial Sans / 40px / 800</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Heading 1</span>
+                  <span className="font-serif text-3xl font-bold text-neutral-900">Solicitações ativas</span>
+                  <span className="text-[11px] text-neutral-400 font-mono">Editorial Sans / 32px / 800</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Heading 2</span>
+                  <span className="font-serif text-2xl font-medium text-neutral-900">Pedidos recentes</span>
+                  <span className="text-[11px] text-neutral-400 font-mono">Editorial Sans / 24px / 500</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Heading 3</span>
+                  <span className="font-sans text-xl font-semibold tracking-tight text-neutral-900">Certidão de Nascimento</span>
+                  <span className="text-[11px] text-neutral-400 font-mono">Mori / 20px / 600</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Body</span>
+                  <span className="font-sans text-sm text-neutral-700 leading-relaxed">
+                    Texto padrão de aplicação. Labels, helper text e parágrafos usam Mori Regular.
+                  </span>
+                  <span className="text-[11px] text-neutral-400 font-mono shrink-0">Mori / 14px / 400</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6">
+                  <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Label</span>
+                  <span className="font-sans text-sm font-semibold text-neutral-900">Número de matrícula</span>
+                  <span className="text-[11px] text-neutral-400 font-mono">Mori / 14px / 600</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Section>
+
+        {/* =========================================================================
             SECTION 2: ACTIONS & BUTTONS
            ========================================================================= */}
         <Section
@@ -359,6 +487,23 @@ export default function DesignSystemShowcasePage() {
                 </div>
               </div>
 
+              {/* Get Started Button */}
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
+                  Get Started Button
+                </h4>
+                <p className="text-xs text-neutral-500 mb-4 max-w-xl">
+                  CTA com seta que expande no hover e some o rótulo. Padrão dos cards de certidão
+                  (label <span className="font-medium text-neutral-700">Solicitar</span>). Use para ação
+                  principal de início de fluxo.
+                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <GetStartedButton size="sm">Solicitar</GetStartedButton>
+                  <GetStartedButton size="md">Solicitar</GetStartedButton>
+                  <GetStartedButton size="lg">Get Started</GetStartedButton>
+                </div>
+              </div>
+
               {/* Icon Buttons */}
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
@@ -369,6 +514,45 @@ export default function DesignSystemShowcasePage() {
                   <IconButton icon={<Download className="w-4 h-4" />} aria-label="Baixar Documento" size="md" />
                   <IconButton icon={<SlidersHorizontal className="w-4 h-4" />} aria-label="Filtros" size="lg" />
                   <IconButton icon={<Trash2 className="w-4 h-4" />} aria-label="Excluir" variant="destructive" size="md" />
+                </div>
+              </div>
+
+              {/* User Menu / Quick Tooltip Actions */}
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
+                  User Menu (Quick Tooltip Actions)
+                </h4>
+                <p className="text-xs text-neutral-500 mb-4 max-w-xl">
+                  Padrão oficial do menu de usuário: ícone circular → hover, foco ou toque revela atalhos de
+                  Suporte, Perfil e Equipe. Usado no Header B2C, no header do SaaS e no rodapé da Sidebar.
+                </p>
+                <div className="flex flex-wrap items-center gap-8">
+                  <div className="flex flex-col items-center gap-2 min-h-[72px] justify-center">
+                    <UserMenu side="right" size="md" />
+                    <span className="text-[11px] text-neutral-400">Padrão (side right)</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 min-h-[72px] justify-center">
+                    <UserMenu side="bottom" size="sm" />
+                    <span className="text-[11px] text-neutral-400">Header (side bottom)</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 min-h-[72px] justify-center">
+                    <QuickTooltipActions
+                      triggerLabel="Recursos do usuário"
+                      side="right"
+                      actions={defaultUserMenuActions}
+                      trigger={
+                        <IconButton
+                          type="button"
+                          icon={<User className="w-4 h-4" />}
+                          aria-label="Recursos do usuário"
+                          variant="outline"
+                          size="md"
+                          className="rounded-full"
+                        />
+                      }
+                    />
+                    <span className="text-[11px] text-neutral-400">Primitive reutilizável</span>
+                  </div>
                 </div>
               </div>
             </div>

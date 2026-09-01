@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { UserMenu } from "@/components/layout/user-menu";
 import {
   Layers,
   FileText,
@@ -15,11 +16,9 @@ import {
   Building2,
   Users,
   Wallet,
-  Settings,
   Bell,
   Plus,
   ChevronDown,
-  ShieldCheck,
   FolderOpen,
 } from "lucide-react";
 
@@ -150,6 +149,8 @@ export default function DashboardLayout({
               <Bell className="w-4 h-4" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-semantic-warning" />
             </button>
+
+            <UserMenu side="bottom" size="sm" />
 
             <div className="h-5 w-[1px] bg-neutral-200" />
 

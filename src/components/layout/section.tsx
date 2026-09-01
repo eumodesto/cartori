@@ -21,7 +21,7 @@ export const Section: React.FC<SectionProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-2">
           <div>
             {title && (
-              <h2 className="text-lg font-semibold text-neutral-900 tracking-tight">
+              <h2 className="text-lg font-semibold text-neutral-900 font-serif">
                 {title}
               </h2>
             )}

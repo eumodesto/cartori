@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AmandaChatDockProvider } from "@/components/cartori/ai-chat-widget";
+import { CartProvider } from "@/components/cart/cart-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,9 +24,36 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col bg-surface-page text-neutral-900 selection:bg-brand-100 selection:text-brand-950">
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/mori/PPMori-Regular.otf"
+          as="font"
+          type="font/otf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/mori/PPMori-Semibold.otf"
+          as="font"
+          type="font/otf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/editorial-sans/PPEditorialSans-Ultrabold.otf"
+          as="font"
+          type="font/otf"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className="min-h-screen flex flex-col bg-surface-page text-neutral-900 font-sans selection:bg-brand-100 selection:text-brand-950">
         <ThemeProvider defaultTheme="light" storageKey="cartori-theme">
-          {children}
+          <CartProvider>
+            <AmandaChatDockProvider>
+              {children}
+            </AmandaChatDockProvider>
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>

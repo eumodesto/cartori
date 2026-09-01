@@ -9,6 +9,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-mori)"],
+        serif: ["var(--font-display)"],
+        display: ["var(--font-display)"],
+      },
+      letterSpacing: {
+        display: "var(--tracking-display)",
+      },
       colors: {
         // Primitive Brand Scale (Base: #011E37 - Cartori Navy)
         brand: {

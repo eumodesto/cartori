@@ -41,7 +41,12 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
               className
             )}
           >
-            <Check className="w-3 h-3 stroke-[2.5] opacity-0 peer-checked:opacity-100 transition-opacity" />
+            <Check
+              className={cn(
+                "w-3 h-3 stroke-[2.5] transition-opacity",
+                checked ? "opacity-100" : "opacity-0"
+              )}
+            />
           </div>
         </div>
 

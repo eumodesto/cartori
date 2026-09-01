@@ -9,6 +9,15 @@ build/
 .env
 .env*.local
 
+# Pedidos locais (store file enquanto o Postgres não está ligado)
+/data/
+
+# TypeScript
+tsconfig.tsbuildinfo
+
+# Vercel
+.vercel
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

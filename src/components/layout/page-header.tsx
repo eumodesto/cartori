@@ -31,7 +31,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 font-serif">
               {title}
             </h1>
             {badge && <div>{badge}</div>}

@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
+import { UserMenu } from "@/components/layout/user-menu";
 import { ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
 
 export interface NavItem {
@@ -205,12 +206,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           <div
             className={cn(
               "flex items-center text-xs text-neutral-500",
-              isCollapsed ? "flex-col gap-2 justify-center" : "justify-between px-1"
+              isCollapsed ? "flex-col gap-2 justify-center" : "justify-between px-1 gap-2"
             )}
           >
+            <UserMenu side={isCollapsed ? "right" : "top"} size="sm" />
+
             {!isCollapsed ? (
               <>
-                <span className="text-[11px] font-medium">Cartori v1.0</span>
+                <span className="text-[11px] font-medium truncate">Cartori v1.0</span>
                 <Link
                   href="/ajuda"
                   className="p-1.5 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-200/50 hover:text-neutral-800 dark:hover:text-neutral-100 transition-colors"
@@ -220,17 +223,15 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 </Link>
               </>
             ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleToggle}
-                  aria-label="Expandir menu lateral"
-                  title="Expandir menu lateral"
-                  className="p-2 rounded-md text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-200/50 transition-colors cursor-pointer"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={handleToggle}
+                aria-label="Expandir menu lateral"
+                title="Expandir menu lateral"
+                className="p-2 rounded-md text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-200/50 transition-colors cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             )}
           </div>
         )}

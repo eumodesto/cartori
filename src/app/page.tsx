@@ -1,106 +1,110 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { MVP_CERTIFICATES } from "@/lib/catalog";
-import { SearchableSelect } from "@/components/SearchableSelect";
-import { CertificateCategory, CertificateTypeConfig, IBGEState, IBGECity, CartorioInfo } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
+import { CertificateTypeConfig } from "@/lib/types";
 import {
-  FileText,
-  Search,
   Building2,
   CheckCircle,
   Clock,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  Layers,
-  MapPin,
-  HelpCircle,
   Lock,
   Download,
   Users,
 } from "lucide-react";
+import { AmandaHeroSlot, useAmandaChatDock } from "@/components/cartori/ai-chat-widget";
+import { FilterTags } from "@/components/ui/filter-tags";
+import { WhisperText } from "@/components/ui/whisper-text";
+import { LivingOrigamiBg } from "@/components/ui/living-origami-bg";
+import { GetStartedButton } from "@/components/ui/get-started-button";
+import { SlideUpText } from "@/components/ui/slide-up-text";
+import { Testimonials } from "@/components/ui/testimonials-columns";
+import { StorefrontShell } from "@/components/storefront/storefront-shell";
+import { CertificateConfigDialog } from "@/components/storefront/certificate-config-dialog";
+import { useCart } from "@/components/cart/cart-provider";
+
+function normalizeSearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim();
+}
 
 export default function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  
-  // Interactive Demo Modal / Quick Selector State
+  const { registerProductHandler } = useAmandaChatDock();
+  const { addItem } = useCart();
+  const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
+  const [catalogQuery, setCatalogQuery] = useState("");
   const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(null);
-  const [states, setStates] = useState<IBGEState[]>([]);
-  const [selectedUf, setSelectedUf] = useState<string>("");
-  const [cities, setCities] = useState<IBGECity[]>([]);
-  const [selectedCity, setSelectedCity] = useState<string>("");
-  const [cartorios, setCartorios] = useState<CartorioInfo[]>([]);
-  const [selectedCartorio, setSelectedCartorio] = useState<string>("");
-  const [loadingCities, setLoadingCities] = useState<boolean>(false);
-  const [loadingCartorios, setLoadingCartorios] = useState<boolean>(false);
+  const [addedNotice, setAddedNotice] = useState("");
 
-  // Carrega estados do IBGE na montagem
-  useEffect(() => {
-    fetch("/api/locations/states")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setStates(data.states);
-      })
-      .catch((err) => console.error(err));
+  const handleSelectProduct = useCallback((slug: string) => {
+    const cert = getCertificateBySlug(slug);
+    if (!cert) return;
+    setSelectedCert(cert);
+    requestAnimationFrame(() => {
+      document.getElementById("certidoes")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   }, []);
 
-  // Quando o estado muda, busca as cidades do IBGE
   useEffect(() => {
-    if (!selectedUf) {
-      setCities([]);
-      setSelectedCity("");
-      return;
-    }
+    registerProductHandler(handleSelectProduct);
+    return () => registerProductHandler(null);
+  }, [handleSelectProduct, registerProductHandler]);
 
-    setLoadingCities(true);
-    fetch(`/api/locations/cities?uf=${selectedUf}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setCities(data.cities);
-        setLoadingCities(false);
-      })
-      .catch(() => setLoadingCities(false));
-  }, [selectedUf]);
+  const searchedCertificates = useMemo(() => {
+    const needle = normalizeSearch(catalogQuery);
+    if (!needle) return MVP_CERTIFICATES;
+    return MVP_CERTIFICATES.filter((cert) => {
+      const haystack = normalizeSearch(
+        [cert.name, cert.shortDescription, cert.categoryName, cert.slug].join(" ")
+      );
+      return haystack.includes(needle);
+    });
+  }, [catalogQuery]);
 
-  // Quando a cidade muda, busca os cartórios daquela comarca
-  useEffect(() => {
-    if (!selectedUf || !selectedCity || !selectedCert) {
-      setCartorios([]);
-      return;
-    }
+  const categoryFilters = [
+    { id: "all", label: "Todas as Certidões" },
+    { id: "registro-civil", label: "Registro Civil" },
+    { id: "notas", label: "Tabelionato de Notas" },
+    { id: "imoveis", label: "Registro de Imóveis" },
+    { id: "protesto", label: "Protesto de Títulos" },
+  ].map((filter) => ({
+    ...filter,
+    count:
+      filter.id === "all"
+        ? searchedCertificates.length
+        : searchedCertificates.filter((cert) => cert.category === filter.id).length,
+  }));
 
-    setLoadingCartorios(true);
-    fetch(`/api/cartorios?uf=${selectedUf}&city=${encodeURIComponent(selectedCity)}&category=${selectedCert.category}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setCartorios(data.cartorios);
-        setLoadingCartorios(false);
-      })
-      .catch(() => setLoadingCartorios(false));
-  }, [selectedUf, selectedCity, selectedCert]);
-
-  const filteredCertificates = MVP_CERTIFICATES.filter((cert) => {
-    const matchesCategory = selectedCategory === "all" || cert.category === selectedCategory;
-    const matchesSearch =
-      cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cert.shortDescription.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const filteredCertificates = searchedCertificates.filter((cert) => {
+    if (activeCategories.size === 0) return true;
+    return activeCategories.has(cert.category);
   });
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <StorefrontShell>
+      {addedNotice && (
+        <div className="bg-semantic-success-bg border-b border-semantic-success-border text-sm text-neutral-800 px-4 py-2.5 text-center">
+          {addedNotice}{" "}
+          <a href="/carrinho" className="font-semibold underline underline-offset-2">
+            Ver pedido
+          </a>
+        </div>
+      )}
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-primary-950 via-primary-900 to-primary-950 text-white py-16 lg:py-24 overflow-hidden">
-        {/* Glow Background Elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-tr from-amber-500/10 to-sky-500/10 blur-3xl pointer-events-none" />
+      <section className="relative isolate overflow-hidden bg-primary-950 text-white py-16 lg:py-24">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(240,240,240,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(240,240,240,0.08)_1px,transparent_1px)] bg-[size:6rem_4rem]"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_100%_200px,#d5c5ff,transparent)] opacity-25" />
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -108,46 +112,32 @@ export default function HomePage() {
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-semibold text-amber-300">
                 <Building2 className="w-3.5 h-3.5" />
-                <span>Plataforma SaaS para Advogados, Imobiliárias e Empresas</span>
+                <span>Plataforma para Advocacias e imobiliárias</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight font-serif">
-                Emita certidões de todo o Brasil em um{" "}
-                <span className="text-amber-400 underline decoration-amber-400/40 decoration-4">
-                  único pedido
-                </span>
-                .
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-serif">
+                <WhisperText
+                  className="justify-center lg:justify-start"
+                  delay={100}
+                  duration={0.5}
+                  x={-20}
+                  y={0}
+                  parts={[
+                    { text: "Várias certidões. Diferentes cartórios." },
+                    { text: "Um único pedido.", className: "text-amber-400", newline: true },
+                  ]}
+                />
               </h1>
 
               <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
-                Centralize suas solicitações de Registro Civil, Imóveis, Notas e Protesto. Selecione o estado, cidade e cartório com preenchimento automático e pague tudo consolidado via Mercado Pago.
+                Centralize suas solicitações de Registro Civil, Imóveis, Notas e Protesto. Selecione o estado, cidade e cartório com preenchimento automático.
               </p>
-
-              {/* Quick Search */}
-              <div className="pt-2 max-w-xl mx-auto lg:mx-0">
-                <div className="relative flex items-center bg-white rounded-2xl p-2 shadow-2xl border border-slate-200 text-slate-900">
-                  <Search className="w-5 h-5 text-slate-400 ml-3" />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Qual certidão você precisa? Ex: Nascimento, Testamento, Imóvel..."
-                    className="w-full bg-transparent px-3 py-2 text-sm focus:outline-none placeholder:text-slate-400 font-medium"
-                  />
-                  <a
-                    href="#certidoes"
-                    className="bg-primary-800 hover:bg-primary-900 text-white text-xs font-bold px-5 py-3 rounded-xl transition-all shadow shrink-0"
-                  >
-                    Buscar
-                  </a>
-                </div>
-              </div>
 
               {/* Feature Pills */}
               <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-300 font-medium">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-amber-400" />
-                  <span>Carrinho Multi-Itens</span>
+                  <span>Pedido Multi itens</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-amber-400" />
@@ -155,66 +145,14 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-amber-400" />
-                  <span>PIX Instantâneo Mercado Pago</span>
+                  <span>Prazo Agilizado</span>
                 </div>
               </div>
             </div>
 
-            {/* Hero Visual Card / SaaS Multi-item preview */}
+            {/* Amanda — Agente Cartori */}
             <div className="lg:col-span-5">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-2xl text-left space-y-4">
-                <div className="flex items-center justify-between border-b border-white/15 pb-3">
-                  <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider">
-                    <Layers className="w-4 h-4" />
-                    <span>Pedido Consolidado (Exemplo)</span>
-                  </div>
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded border border-emerald-500/30">
-                    B2B & B2C
-                  </span>
-                </div>
-
-                {/* Simulated Cart Items */}
-                <div className="space-y-2.5 text-xs">
-                  <div className="bg-white/10 p-3 rounded-xl border border-white/10 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-white">Certidão de Nascimento</p>
-                      <p className="text-[11px] text-slate-300">São Paulo / SP • 1º Subdistrito</p>
-                    </div>
-                    <span className="font-bold text-amber-300">R$ 129,90</span>
-                  </div>
-
-                  <div className="bg-white/10 p-3 rounded-xl border border-white/10 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-white">Negativa de Testamento</p>
-                      <p className="text-[11px] text-slate-300">Nacional • Central CENSEC</p>
-                    </div>
-                    <span className="font-bold text-amber-300">R$ 119,90</span>
-                  </div>
-
-                  <div className="bg-white/10 p-3 rounded-xl border border-white/10 flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-white">Matrícula de Imóvel</p>
-                      <p className="text-[11px] text-slate-300">Rio de Janeiro / RJ • 5º RGI</p>
-                    </div>
-                    <span className="font-bold text-amber-300">R$ 189,90</span>
-                  </div>
-                </div>
-
-                {/* Total and CTA */}
-                <div className="pt-2 border-t border-white/15 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase">Total do Pedido (3 Certidões)</span>
-                    <span className="text-xl font-extrabold text-white">R$ 439,70</span>
-                  </div>
-                  <a
-                    href="#certidoes"
-                    className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-primary-950 font-bold text-xs px-4 py-2.5 rounded-xl shadow transition-all"
-                  >
-                    <span>Montar Pedido</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
+              <AmandaHeroSlot className="w-full h-[420px] sm:h-[460px] rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden" />
             </div>
           </div>
         </div>
@@ -227,246 +165,98 @@ export default function HomePage() {
             <span className="text-xs uppercase font-bold tracking-widest text-primary-700 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
               Catálogo de Serviços
             </span>
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight font-serif">
+            <h2 className="text-3xl font-extrabold text-slate-900 font-serif">
               Selecione a Certidão Desejada
             </h2>
             <p className="text-sm text-slate-600">
               Escolha o tipo de certidão para configurar a localização (Estado, Cidade e Cartório) e dados do documento.
             </p>
 
-            {/* Category Filter Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-              {[
-                { id: "all", label: "Todas as Certidões" },
-                { id: "registro-civil", label: "Registro Civil" },
-                { id: "notas", label: "Tabelionato de Notas" },
-                { id: "imoveis", label: "Registro de Imóveis" },
-                { id: "protesto", label: "Protesto de Títulos" },
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`text-xs font-bold px-4 py-2 rounded-xl transition-all ${
-                    selectedCategory === cat.id
-                      ? "bg-primary-800 text-white shadow"
-                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+            <FilterTags
+              className="pt-4"
+              items={categoryFilters}
+              active={activeCategories}
+              onChange={setActiveCategories}
+              query={catalogQuery}
+              onQueryChange={setCatalogQuery}
+              searchPlaceholder="Buscar por nome, tipo ou cartório..."
+            />
           </div>
 
           {/* Certificate Cards Grid */}
+          {filteredCertificates.length === 0 ? (
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-0 px-6 py-12 text-center">
+              <p className="text-sm font-medium text-neutral-900">Nenhuma certidão encontrada</p>
+              <p className="mt-1 text-xs text-neutral-500">
+                Tente outro termo ou limpe a busca para ver o catálogo completo.
+              </p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCertificates.map((cert) => (
               <div
                 key={cert.id}
-                className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:border-primary-300"
+                className="relative overflow-hidden rounded-2xl border border-white/15 p-6 shadow-sm hover:shadow-lg hover:border-amber-400/40 transition-all flex flex-col justify-between group"
               >
-                <div className="space-y-4">
+                <LivingOrigamiBg seed={cert.id} birdCount={7} />
+
+                <div className="relative z-10 space-y-4">
                   <div className="flex items-start justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md">
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-white/15 text-white px-2.5 py-1 rounded-md border border-white/20">
                       {cert.categoryName}
                     </span>
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
+                    <span className="text-xs text-slate-300 flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-amber-300" />
                       {cert.estimatedDays}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-primary-800 transition-colors">
-                      {cert.name}
+                    <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors font-serif">
+                      <SlideUpText
+                        split="characters"
+                        stagger={0.03}
+                        inView
+                        once
+                        className="text-lg font-bold font-serif"
+                      >
+                        {cert.name}
+                      </SlideUpText>
                     </h3>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
                       {cert.shortDescription}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-slate-400 block uppercase font-medium">A partir de</span>
-                    <span className="text-lg font-black text-primary-900">
-                      {formatCurrency(cert.basePrice)}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setSelectedCert(cert);
-                      setSelectedUf("");
-                      setSelectedCity("");
-                      setCartorios([]);
-                    }}
-                    className="inline-flex items-center gap-1.5 bg-primary-50 hover:bg-primary-800 text-primary-800 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all border border-primary-200"
+                <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-end">
+                  <GetStartedButton
+                    size="sm"
+                    className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
+                    iconClassName="bg-brand-950/15 text-brand-950"
+                    onClick={() => setSelectedCert(cert)}
                   >
-                    <span>Solicitar</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                    Solicitar
+                  </GetStartedButton>
                 </div>
               </div>
             ))}
           </div>
+          )}
         </div>
       </section>
 
-      {/* Interactive Location & Cart Demo Modal */}
       {selectedCert && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
-            <div className="bg-primary-900 text-white p-6 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
-                  Configuração Notarial • {selectedCert.categoryName}
-                </span>
-                <h3 className="text-xl font-bold font-serif">{selectedCert.name}</h3>
-              </div>
-              <button
-                onClick={() => setSelectedCert(null)}
-                className="text-slate-300 hover:text-white text-lg font-bold p-2"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Modal Body: Location APIS */}
-            <div className="p-6 space-y-6">
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary-700" />
-                  <span>1. Local de Emissão (Integração IBGE & Cartórios)</span>
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Select UF */}
-                  <SearchableSelect
-                    label="Estado (UF)"
-                    placeholder="Selecione ou digite o Estado..."
-                    options={states.map((st) => ({
-                      value: st.sigla,
-                      label: `${st.nome} (${st.sigla})`,
-                      badge: st.sigla,
-                    }))}
-                    value={selectedUf}
-                    onChange={(val) => {
-                      setSelectedUf(val);
-                      setSelectedCity("");
-                      setSelectedCartorio("");
-                    }}
-                    required
-                  />
-
-                  {/* Select City */}
-                  <SearchableSelect
-                    label="Cidade / Município"
-                    placeholder={!selectedUf ? "Primeiro selecione o Estado" : "Selecione ou digite a Cidade..."}
-                    options={cities.map((c) => ({
-                      value: c.nome,
-                      label: c.nome,
-                    }))}
-                    value={selectedCity}
-                    disabled={!selectedUf}
-                    loading={loadingCities}
-                    loadingText="Carregando municípios do IBGE..."
-                    emptyText="Nenhum município encontrado"
-                    onChange={(val) => {
-                      setSelectedCity(val);
-                      setSelectedCartorio("");
-                    }}
-                    required
-                  />
-                </div>
-
-                {/* Cartorio Selector if requiresCartorio */}
-                {selectedCert.requiresCartorio && selectedCity && (
-                  <div className="pt-2">
-                    <SearchableSelect
-                      label="Cartório / Serventia Oficial"
-                      rightBadge={
-                        cartorios.length > 0 ? (
-                          <span className="text-[10px] font-bold text-primary-700 bg-primary-50 px-2 py-0.5 rounded border border-primary-200">
-                            {cartorios.length} serventias oficiais encontradas
-                          </span>
-                        ) : undefined
-                      }
-                      placeholder="Digite o nome do cartório, bairro ou subdistrito..."
-                      options={[
-                        ...cartorios.map((c) => ({
-                          value: c.id,
-                          label: c.name,
-                          subtext: c.attribution,
-                          badge: c.cns ? `CNS: ${c.cns}` : undefined,
-                        })),
-                        {
-                          value: "unknown",
-                          label: "🔍 Não sei o cartório (Solicitar Busca Notarial Especializada)",
-                          subtext: "Nossa equipe de despachantes localizará a serventia exata",
-                          badge: "+ R$ 35,00",
-                          highlight: true,
-                        },
-                      ]}
-                      value={selectedCartorio}
-                      loading={loadingCartorios}
-                      loadingText="Consultando serventias registradas no CNJ..."
-                      emptyText="Nenhum cartório encontrado"
-                      onChange={(val) => setSelectedCartorio(val)}
-                      required
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Document Fields Preview */}
-              <div className="space-y-4 pt-4 border-t border-slate-100">
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-primary-700" />
-                  <span>2. Dados do Documento</span>
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {selectedCert.fields.slice(0, 4).map((f) => (
-                    <div key={f.id}>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        {f.label} {f.required && "*"}
-                      </label>
-                      <input
-                        type={f.type === "date" ? "date" : "text"}
-                        placeholder={f.placeholder}
-                        className="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:outline-none focus:border-primary-600"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase block font-semibold">Valor da Certidão</span>
-                  <span className="text-xl font-black text-primary-900">
-                    {formatCurrency(selectedCert.basePrice)}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={() => {
-                      alert("Certidão adicionada ao pedido com sucesso! Você pode incluir mais certidões ou finalizar.");
-                      setSelectedCert(null);
-                    }}
-                    className="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-400 text-primary-950 font-bold text-xs px-6 py-3 rounded-xl shadow transition-all"
-                  >
-                    + Adicionar ao Pedido
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CertificateConfigDialog
+          certificate={selectedCert}
+          onClose={() => setSelectedCert(null)}
+          onAdd={(item) => {
+            addItem(item);
+            setSelectedCert(null);
+            setAddedNotice(`${item.certificateName} adicionada ao pedido.`);
+            window.setTimeout(() => setAddedNotice(""), 5000);
+          }}
+        />
       )}
 
       {/* B2B Section for Lawyers & Real Estate */}
@@ -477,7 +267,7 @@ export default function HomePage() {
               <span className="text-xs uppercase font-bold tracking-widest text-amber-400 bg-white/10 px-3 py-1 rounded-full border border-white/15">
                 Solução B2B Corporativa
               </span>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight font-serif">
+              <h2 className="text-3xl sm:text-4xl font-black font-serif">
                 Desenvolvido para Escritórios de Advocacia e Imobiliárias
               </h2>
               <p className="text-sm text-slate-300 leading-relaxed font-light">
@@ -527,27 +317,15 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* CTA Box */}
-            <div className="lg:col-span-5 bg-gradient-to-br from-primary-800 to-primary-900 p-8 rounded-3xl border border-white/15 shadow-2xl text-center space-y-6">
-              <div className="w-14 h-14 bg-amber-400 text-primary-950 rounded-2xl flex items-center justify-center mx-auto font-black shadow-lg">
-                <Zap className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold font-serif">Comece a emitir certidões hoje</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Sem mensalidades fixas. Pague apenas pelas certidões solicitadas com suporte prioritário.
+            <div className="lg:col-span-5 min-h-[420px]">
+              <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-widest text-amber-400/90">
+                Quem opera com a Cartori
               </p>
-              <a
-                href="#certidoes"
-                className="block w-full bg-amber-400 hover:bg-amber-300 text-primary-950 font-bold text-sm py-3.5 rounded-xl shadow transition-all"
-              >
-                Fazer Meu Primeiro Pedido
-              </a>
+              <Testimonials />
             </div>
           </div>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </StorefrontShell>
   );
 }

@@ -1,0 +1,94 @@
+/* PP Mori — interface. Trial: ExtraLight, Regular, SemiBold, Black. */
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-Extralight.otf") format("opentype");
+  font-weight: 200 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-Regular.otf") format("opentype");
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-Semibold.otf") format("opentype");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-Black.otf") format("opentype");
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-ExtralightItalic.otf") format("opentype");
+  font-weight: 200 300;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-Italic.otf") format("opentype");
+  font-weight: 400 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-SemiboldItalic.otf") format("opentype");
+  font-weight: 600 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Mori";
+  src: url("/fonts/mori/PPMori-BlackItalic.otf") format("opentype");
+  font-weight: 800 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* PP Editorial Sans — títulos. Trial: UltraLight, Medium, UltraBold. */
+@font-face {
+  font-family: "PP Editorial Sans";
+  src: url("/fonts/editorial-sans/PPEditorialSans-Ultralight.otf") format("opentype");
+  font-weight: 100 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Sans";
+  src: url("/fonts/editorial-sans/PPEditorialSans-Medium.otf") format("opentype");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Sans";
+  src: url("/fonts/editorial-sans/PPEditorialSans-Ultrabold.otf") format("opentype");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Sans";
+  src: url("/fonts/editorial-sans/PPEditorialSans-UltralightItalic.otf") format("opentype");
+  font-weight: 100 600;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial Sans";
+  src: url("/fonts/editorial-sans/PPEditorialSans-UltraboldItalic.otf") format("opentype");
+  font-weight: 700 900;
+  font-style: italic;
+  font-display: swap;
+}
