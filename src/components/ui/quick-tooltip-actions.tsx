@@ -186,7 +186,7 @@ export const QuickTooltipActions: React.FC<QuickTooltipActionsProps> = ({
         className="cursor-pointer"
       >
         {React.isValidElement(trigger)
-          ? React.cloneElement(trigger as React.ReactElement<{ "aria-label"?: string }>, {
+          ? React.cloneElement(trigger as React.ReactElement<Record<string, unknown>>, {
               "aria-haspopup": "menu",
               "aria-expanded": isOpen,
               "aria-label":

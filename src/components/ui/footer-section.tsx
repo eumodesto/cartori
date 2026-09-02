@@ -71,8 +71,8 @@ export function Footer() {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
-          <AnimatedContainer className="space-y-4">
+        <div className="flex w-full flex-col gap-8">
+          <AnimatedContainer className="w-full space-y-4">
             <Link href="/" className="inline-flex items-center">
               <img
                 src="/logo-horizontal.svg"
@@ -80,12 +80,14 @@ export function Footer() {
                 className="h-8 w-auto object-contain brightness-0 invert"
               />
             </Link>
-            <p className="text-neutral-400 mt-8 text-sm md:mt-0">
-              © {new Date().getFullYear()} CARTORI. Todos os direitos reservados.
+            <p className="w-full max-w-none text-neutral-400 text-sm leading-relaxed">
+              A Cartori é a vitrine online para solicitar certidões de nascimento, casamento, óbito, notas, imóveis e protesto — além de TRF, TRT e CCIR. O pedido é pago por PIX ou cartão no Mercado Pago. Cuidamos da diligência operacional junto ao cartório ou órgão: busca da serventia, emissão e envio digital ou em papel.
             </p>
           </AnimatedContainer>
 
-          <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 xl:col-span-2 xl:mt-0">
+          <div aria-hidden className="h-px bg-white/10" />
+
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {footerLinks.map((section, index) => (
               <AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
                 <div className="mb-10 md:mb-0">
@@ -107,6 +109,12 @@ export function Footer() {
               </AnimatedContainer>
             ))}
           </div>
+        </div>
+
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <p className="text-neutral-400 text-sm">
+            © 2026 CARTORI. Todos os direitos reservados.
+          </p>
         </div>
       </div>
     </footer>

@@ -36,7 +36,7 @@ export interface StoredPayment {
   id: string;
   provider: "MERCADOPAGO";
   providerPaymentId?: string;
-  paymentMethod: "PIX";
+  paymentMethod: "PIX" | "CREDIT_CARD";
   status: StoredPaymentStatus;
   amount: number;
   qrCode?: string;
@@ -52,6 +52,8 @@ export interface StoredOrder {
   channel: "CARTORI" | "PARTNER";
   kind: "OWN" | "RESELL";
   sellerOrgId: string | null;
+  userId?: string | null;
+  organizationId?: string | null;
   status: StoredOrderStatus;
   totalAmount: number;
   itemsTotal: number;
@@ -80,4 +82,5 @@ export interface StoredOrder {
 export interface CreateOrderPayload {
   customer: CustomerData;
   items: CartItem[];
+  paymentMethod?: "PIX" | "CREDIT_CARD";
 }

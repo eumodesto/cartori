@@ -2,13 +2,15 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
+import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
+import { useAuth } from "@/components/auth/auth-provider";
+import { isPartnerLockedHref } from "@/lib/auth-types";
+import { maskCpfCnpj } from "@/lib/utils";
 import {
   Layers,
   FileText,
@@ -18,7 +20,6 @@ import {
   Wallet,
   Bell,
   Plus,
-  ChevronDown,
   FolderOpen,
 } from "lucide-react";
 
@@ -28,7 +29,21 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { profile, isPartner, loading, configured } = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+  const [partnerOpen, setPartnerOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!loading && configured && !profile) {
+      router.replace(`/?entrar=1&next=${encodeURIComponent(pathname || "/dashboard")}`);
+    }
+  }, [configured, loading, pathname, profile, router]);
+
+  const lockItem = (href: string) =>
+    !isPartner && isPartnerLockedHref(href)
+      ? { locked: true, onLockedClick: () => setPartnerOpen(true) }
+      : {};
 
   const sidebarGroups = [
     {
@@ -46,7 +61,6 @@ export default function DashboardLayout({
           label: "Solicitações",
           href: "/dashboard/solicitacoes",
           icon: <FileText className="w-4 h-4" />,
-          badge: "14",
           isActive: pathname === "/dashboard/solicitacoes",
         },
         {
@@ -54,14 +68,16 @@ export default function DashboardLayout({
           label: "Dossiês & Processos",
           href: "/dashboard/dossies",
           icon: <FolderOpen className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/dossies",
+          isActive: pathname.startsWith("/dashboard/dossies"),
+          ...lockItem("/dashboard/dossies"),
         },
         {
           id: "search",
           label: "Busca de Cartórios (CNJ)",
           href: "/dashboard/cartorios",
           icon: <Search className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/cartorios",
+          isActive: pathname.startsWith("/dashboard/cartorios"),
+          ...lockItem("/dashboard/cartorios"),
         },
       ],
     },
@@ -73,29 +89,42 @@ export default function DashboardLayout({
           label: "Empresa & Filiais",
           href: "/dashboard/organizacao",
           icon: <Building2 className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/organizacao",
+          isActive: pathname.startsWith("/dashboard/organizacao"),
+          ...lockItem("/dashboard/organizacao"),
         },
         {
           id: "team",
           label: "Advogados & Equipe",
           href: "/dashboard/equipe",
           icon: <Users className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/equipe",
+          isActive: pathname.startsWith("/dashboard/equipe"),
+          ...lockItem("/dashboard/equipe"),
         },
         {
           id: "billing",
           label: "Extrato & Faturamento",
           href: "/dashboard/financeiro",
           icon: <Wallet className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/financeiro",
+          isActive: pathname.startsWith("/dashboard/financeiro"),
+          ...lockItem("/dashboard/financeiro"),
         },
       ],
     },
   ];
 
+  const orgName = profile?.organization?.name || profile?.name || "Minha conta";
+  const orgDoc = profile?.organization?.cnpj
+    ? maskCpfCnpj(profile.organization.cnpj)
+    : profile?.email || "";
+  const initials = orgName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "CT";
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-surface-page font-sans">
-      {/* Collapsible App Sidebar */}
       <AppSidebar
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
@@ -112,11 +141,8 @@ export default function DashboardLayout({
         }
       />
 
-      {/* Main Column */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Navbar */}
         <header className="h-16 bg-neutral-0 border-b border-neutral-200 px-6 flex items-center justify-between gap-4 shrink-0 z-10 shadow-xs">
-          {/* Quick Search */}
           <div className="flex items-center gap-3 flex-1 max-w-md">
             <div className="relative w-full">
               <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -128,55 +154,41 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          {/* Right Controls */}
           <div className="flex items-center gap-3">
-            {/* Quick action button */}
-            <Link href="/dashboard/nova-solicitacao">
+            <Link href="/#certidoes">
               <Button size="sm" variant="primary" leftIcon={<Plus className="w-3.5 h-3.5" />}>
                 Nova Solicitação
               </Button>
             </Link>
-
-            {/* Theme Toggle (Light / Dark) */}
             <ThemeToggle variant="ghost" size="md" />
-
-            {/* Notification Bell */}
             <button
               type="button"
               className="relative p-2 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-100/40 transition-colors"
               aria-label="Notificações operacionais"
             >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-semantic-warning" />
             </button>
-
             <UserMenu side="bottom" size="sm" />
-
             <div className="h-5 w-[1px] bg-neutral-200" />
-
-            {/* Organization Selector */}
-            <div className="flex items-center gap-2.5 pl-1 cursor-pointer">
+            <div className="flex items-center gap-2.5 pl-1">
               <div className="w-8 h-8 rounded-full bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-950 font-bold text-xs shrink-0">
-                SA
+                {loading ? "…" : initials}
               </div>
               <div className="hidden md:block text-left">
                 <span className="text-xs font-semibold text-neutral-900 block leading-tight">
-                  Silveira & Associados
+                  {loading ? "Carregando..." : orgName}
                 </span>
                 <span className="text-[10px] text-neutral-500 block font-mono">
-                  CNPJ 12.345.678/0001-90
+                  {isPartner ? orgDoc : "Acesso padrão"}
                 </span>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
             </div>
           </div>
         </header>
 
-        {/* Workspace Body */}
-        <main className="flex-1 overflow-y-auto bg-surface-page p-6 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto bg-surface-page p-6 lg:p-8">{children}</main>
       </div>
+      <PartnerPlanDialog isOpen={partnerOpen} onClose={() => setPartnerOpen(false)} />
     </div>
   );
 }

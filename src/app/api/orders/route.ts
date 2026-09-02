@@ -1,15 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveOrder } from "@/lib/order-store";
+import { getAuthProfile } from "@/lib/auth";
+import { saveOrder, listOrdersByUser } from "@/lib/order-store";
 import { buildStoredOrder, publicOrder } from "@/lib/orders";
-import { issuePixForOrder } from "@/lib/payments";
+import {
+  chargeCardForOrder,
+  issuePixForOrder,
+  prepareCardOrder,
+} from "@/lib/payments";
+import { prisma } from "@/lib/prisma";
+import { digitsOnly } from "@/lib/utils";
 import {
   isValidCpfCnpj,
   isValidEmail,
   isValidPhone,
 } from "@/lib/validators";
 
+export async function GET() {
+  const profile = await getAuthProfile();
+  if (!profile) {
+    return NextResponse.json(
+      { success: false, error: "Entre na conta para ver seus pedidos." },
+      { status: 401 }
+    );
+  }
+  const orders = await listOrdersByUser(profile.id, profile.organization?.id);
+  return NextResponse.json({
+    success: true,
+    orders: orders.map(publicOrder),
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const profile = await getAuthProfile();
+    if (!profile) {
+      return NextResponse.json(
+        { success: false, error: "Crie ou entre na conta para concluir o pedido." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const customer = body.customer;
     const items = body.items;
@@ -46,10 +76,55 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const order = await buildStoredOrder({ customer, items });
-    await saveOrder(order);
-    const withPayment = await issuePixForOrder(order);
+    const paymentMethod =
+      body.paymentMethod === "CREDIT_CARD" ? "CREDIT_CARD" : "PIX";
 
+    const cpfDigits = digitsOnly(customer.cpfCnpj || "");
+    try {
+      await prisma.user.update({
+        where: { id: profile.id },
+        data: {
+          name: String(customer.fullName || "").trim() || profile.name,
+          phone: digitsOnly(customer.phone || "") || profile.phone,
+          ...(cpfDigits.length === 11 ? { cpf: cpfDigits } : {}),
+        },
+      });
+    } catch {
+      // CPF duplicado ou dado já existente não deve impedir o pedido.
+    }
+
+    const order = await buildStoredOrder(
+      { customer, items },
+      { userId: profile.id, organizationId: profile.organization?.id }
+    );
+    await saveOrder(order);
+
+    if (paymentMethod === "CREDIT_CARD") {
+      const prepared = await prepareCardOrder(order);
+      if (!body.card) {
+        return NextResponse.json({
+          success: true,
+          order: publicOrder(prepared),
+        });
+      }
+      try {
+        const charged = await chargeCardForOrder(prepared, body.card);
+        return NextResponse.json({
+          success: true,
+          order: publicOrder(charged),
+        });
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : "Erro ao pagar com cartão.";
+        console.error("Erro cartão POST /api/orders:", error);
+        return NextResponse.json(
+          { success: false, error: message, order: publicOrder(prepared) },
+          { status: 402 }
+        );
+      }
+    }
+
+    const withPayment = await issuePixForOrder(order);
     return NextResponse.json({
       success: true,
       order: publicOrder(withPayment),

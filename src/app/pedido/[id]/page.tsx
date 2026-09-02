@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CheckCircle2, Copy } from "lucide-react";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
+import { MercadoPagoCardBrick } from "@/components/storefront/mercadopago-card-brick";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Stepper } from "@/components/ui/stepper";
+import { PixQr } from "@/components/storefront/pix-qr";
 import { formatCurrency } from "@/lib/utils";
 
 interface PublicOrder {
@@ -27,8 +29,20 @@ interface PublicOrder {
     amount: number;
     qrCode?: string;
     qrCodeBase64?: string;
-    demo?: boolean;
+    ticketUrl?: string;
+    method?: "PIX" | "CREDIT_CARD";
   } | null;
+}
+
+function livePixCode(qrCode?: string) {
+  if (!qrCode) return "";
+  if (/^CARTORI-.+-DEMO$/i.test(qrCode)) return "";
+  return qrCode;
+}
+
+function orderQuery() {
+  if (typeof window === "undefined") return "";
+  return window.location.search || "";
 }
 
 export default function PedidoPage() {
@@ -36,16 +50,18 @@ export default function PedidoPage() {
   const [order, setOrder] = useState<PublicOrder | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
-  const [simulating, setSimulating] = useState(false);
 
   const load = async () => {
-    const res = await fetch(`/api/orders/${params.id}`, { cache: "no-store" });
+    const res = await fetch(`/api/orders/${params.id}${orderQuery()}`, {
+      cache: "no-store",
+    });
     const data = await res.json();
     if (!data.success) {
       setError(data.error || "Pedido não encontrado.");
       return;
     }
     setOrder(data.order);
+    setError(data.paymentError || "");
   };
 
   useEffect(() => {
@@ -58,28 +74,30 @@ export default function PedidoPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
+  const pixCode = livePixCode(order?.payment?.qrCode);
+  const isCard = order?.payment?.method === "CREDIT_CARD";
+
   const copyPix = async () => {
-    if (!order?.payment?.qrCode) return;
-    await navigator.clipboard.writeText(order.payment.qrCode);
+    if (!pixCode) return;
+    await navigator.clipboard.writeText(pixCode);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
   };
 
-  const simulatePay = async () => {
-    setSimulating(true);
-    try {
-      const res = await fetch(`/api/orders/${params.id}/simulate-pay`, {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (!data.success) {
-        setError(data.error || "Não foi possível simular o pagamento.");
-        return;
-      }
-      setOrder(data.order);
-    } finally {
-      setSimulating(false);
+  const payCard = async (card: Record<string, unknown>) => {
+    const res = await fetch(`/api/orders/${params.id}/card`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(card),
+    });
+    const data = await res.json();
+    if (!data.success) {
+      const fail = data.error || "Não foi possível pagar com cartão.";
+      setError(fail);
+      throw new Error(fail);
     }
+    setOrder(data.order);
+    setError("");
   };
 
   const paid = order?.status === "PAID" || order?.payment?.status === "APPROVED";
@@ -134,56 +152,50 @@ export default function PedidoPage() {
             <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-6 space-y-5">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-700">
-                  Aguardando PIX
+                  {isCard ? "Aguardando cartão" : "Aguardando PIX"}
                 </p>
                 <h1 className="text-2xl font-serif font-bold text-neutral-900">
                   {order.protocol}
                 </h1>
                 <p className="text-sm text-neutral-600 mt-1">
-                  Pague {formatCurrency(order.totalAmount)} para iniciar a emissão das certidões.
+                  {isCard
+                    ? `Pague com cartão aqui mesmo. Valor: ${formatCurrency(order.totalAmount)}.`
+                    : `Escaneie o QR Code ou copie o código PIX. Valor: ${formatCurrency(order.totalAmount)}.`}
                 </p>
               </div>
 
-              {order.payment?.qrCodeBase64 ? (
-                <img
-                  src={`data:image/png;base64,${order.payment.qrCodeBase64}`}
-                  alt="QR Code PIX"
-                  className="w-48 h-48 mx-auto border border-neutral-200 rounded-xl"
-                />
+              {isCard ? (
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+                  <p className="text-xs text-neutral-500">
+                    Checkout transparente do Mercado Pago. A Cartori não vê nem guarda o número do cartão.
+                  </p>
+                  <MercadoPagoCardBrick
+                    amount={order.payment?.amount || order.totalAmount}
+                    onPay={payCard}
+                    onError={setError}
+                  />
+                </div>
               ) : (
-                <div className="w-48 h-48 mx-auto border border-dashed border-neutral-300 rounded-xl flex items-center justify-center text-center text-xs text-neutral-500 p-4">
-                  QR Code do PIX
-                  {order.payment?.demo ? " (demonstração local)" : ""}
-                </div>
-              )}
+                <>
+                  <PixQr qrCode={pixCode} qrCodeBase64={order.payment?.qrCodeBase64} />
 
-              {order.payment?.qrCode && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-neutral-700">PIX copia e cola</p>
-                  <div className="flex gap-2">
-                    <code className="flex-1 text-[11px] break-all bg-neutral-50 border border-neutral-200 rounded-md p-3">
-                      {order.payment.qrCode}
-                    </code>
-                    <Button type="button" variant="outline" onClick={copyPix} aria-label="Copiar PIX">
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {copied && (
-                    <p className="text-xs text-semantic-success">Código copiado.</p>
+                  {pixCode && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-neutral-700">PIX copia e cola</p>
+                      <div className="flex gap-2">
+                        <code className="flex-1 text-[11px] break-all bg-neutral-50 border border-neutral-200 rounded-md p-3">
+                          {pixCode}
+                        </code>
+                        <Button type="button" variant="outline" onClick={copyPix} aria-label="Copiar PIX">
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {copied && (
+                        <p className="text-xs text-semantic-success">Código copiado.</p>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-
-              {order.payment?.demo && (
-                <Alert variant="info" title="Ambiente local">
-                  O Mercado Pago ainda não está com token de produção. Use a simulação para
-                  concluir o fluxo até o dashboard.
-                  <div className="pt-3">
-                    <Button type="button" size="sm" isLoading={simulating} onClick={simulatePay}>
-                      Simular pagamento aprovado
-                    </Button>
-                  </div>
-                </Alert>
+                </>
               )}
 
               <ul className="text-sm text-neutral-700 space-y-1.5 border-t border-neutral-100 pt-4">

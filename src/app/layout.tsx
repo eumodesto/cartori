@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AmandaChatDockProvider } from "@/components/cartori/ai-chat-widget";
 import { CartProvider } from "@/components/cart/cart-provider";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -49,11 +50,13 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-surface-page text-neutral-900 font-sans selection:bg-brand-100 selection:text-brand-950">
         <ThemeProvider defaultTheme="light" storageKey="cartori-theme">
-          <CartProvider>
-            <AmandaChatDockProvider>
-              {children}
-            </AmandaChatDockProvider>
-          </CartProvider>
+          <AuthProvider>
+            <CartProvider>
+              <AmandaChatDockProvider>
+                {children}
+              </AmandaChatDockProvider>
+            </CartProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

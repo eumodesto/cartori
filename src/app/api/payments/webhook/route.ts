@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPaymentById } from "@/lib/mercadopago";
+import { getMerchantOrderById, getPaymentById } from "@/lib/mercadopago";
 import { findOrderByPaymentId, getOrderById } from "@/lib/order-store";
 import { markOrderPaid } from "@/lib/payments";
+import { StoredOrder } from "@/lib/order-types";
+
+async function approveIfPaid(order: StoredOrder, paymentId?: string) {
+  if (order.status === "PAID") return;
+  await markOrderPaid({
+    ...order,
+    payment: order.payment
+      ? {
+          ...order.payment,
+          providerPaymentId: paymentId || order.payment.providerPaymentId,
+          status: "APPROVED",
+        }
+      : order.payment,
+  });
+}
 
 export async function GET() {
   return NextResponse.json({ success: true });
@@ -19,14 +34,35 @@ export async function POST(req: NextRequest) {
       dataId = dataId || body?.data?.id || body?.id;
     }
 
-    if (type?.includes("payment") && dataId) {
+    const topic = String(type || "").toLowerCase();
+
+    if (topic.includes("merchant_order") && dataId) {
+      const merchantOrder = await getMerchantOrderById(String(dataId));
+      const approved = (merchantOrder.payments || []).find(
+        (item) => item.status === "approved" && item.id
+      );
+      const externalRef = String(merchantOrder.external_reference || "");
+      const byPayment = approved?.id
+        ? await findOrderByPaymentId(String(approved.id))
+        : null;
+      const byPreference = merchantOrder.preference_id
+        ? await findOrderByPaymentId(String(merchantOrder.preference_id))
+        : null;
+      const order =
+        byPayment ||
+        byPreference ||
+        (externalRef ? await getOrderById(externalRef) : null);
+      if (order && approved?.id) {
+        await approveIfPaid(order, String(approved.id));
+      }
+    } else if (topic.includes("payment") && dataId) {
       const paymentInfo = await getPaymentById(String(dataId));
       const externalRef = String(paymentInfo.external_reference || "");
       const byPayment = await findOrderByPaymentId(String(dataId));
       const order = byPayment || (externalRef ? await getOrderById(externalRef) : null);
 
       if (order && paymentInfo.status === "approved") {
-        await markOrderPaid(order);
+        await approveIfPaid(order, String(dataId));
       }
     }
 

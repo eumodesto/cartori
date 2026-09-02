@@ -14,9 +14,11 @@ export interface RadioGroupProps {
   onChange: (value: string) => void;
   options: RadioOption[];
   label?: string;
+  helperText?: string;
   error?: string;
   className?: string;
   disabled?: boolean;
+  allowDeselect?: boolean;
 }
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -25,9 +27,11 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   onChange,
   options,
   label,
+  helperText,
   error,
   className,
   disabled = false,
+  allowDeselect = false,
 }) => {
   return (
     <div className={cn("w-full space-y-2", className)}>
@@ -47,6 +51,12 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             <label
               key={option.value}
               htmlFor={optionId}
+              onClick={(event) => {
+                if (allowDeselect && isSelected && !isDisabled) {
+                  event.preventDefault();
+                  onChange("");
+                }
+              }}
               className={cn(
                 "flex items-start gap-3 p-3 rounded-md border transition-colors duration-fast cursor-pointer select-none",
                 isSelected
@@ -94,7 +104,11 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
         })}
       </div>
 
-      {error && <p className="text-xs text-semantic-error">{error}</p>}
+      {error ? (
+        <p className="text-xs text-semantic-error">{error}</p>
+      ) : (
+        helperText && <p className="text-xs text-neutral-500">{helperText}</p>
+      )}
     </div>
   );
 };

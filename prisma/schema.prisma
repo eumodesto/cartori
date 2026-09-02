@@ -16,6 +16,11 @@ enum UserRole {
   OPERATOR
 }
 
+enum OrganizationPlan {
+  STANDARD
+  PARTNER
+}
+
 enum OrderChannel {
   CARTORI
   PARTNER
@@ -61,36 +66,41 @@ enum PaymentStatus {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  name          String?
-  cpf           String?        @unique
-  phone         String?
-  role          UserRole       @default(CLIENT)
+  id             String         @id @default(uuid())
+  authId         String?        @unique
+  email          String         @unique
+  name           String?
+  cpf            String?        @unique
+  phone          String?
+  role           UserRole       @default(CLIENT)
   organizationId String?
-  organization  Organization?  @relation(fields: [organizationId], references: [id])
-  orders        Order[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  orders         Order[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model Organization {
-  id            String         @id @default(uuid())
-  name          String         // Razão social / Nome do escritório
-  tradeName     String?        // Nome fantasia
-  cnpj          String         @unique
-  oabNumber     String?        // Registro OAB (se advocacia)
-  creciNumber   String?        // Registro CRECI (se imobiliária)
-  phone         String
-  email         String
-  address       String?
-  city          String?
-  state         String?
-  cep           String?
-  members       User[]
-  orders        Order[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id              String            @id @default(uuid())
+  name            String
+  tradeName       String?
+  cnpj            String            @unique
+  plan            OrganizationPlan  @default(STANDARD)
+  cnpjVerifiedAt  DateTime?
+  cnpjStatus      String?
+  legalNature     String?
+  oabNumber       String?
+  creciNumber     String?
+  phone           String
+  email           String
+  address         String?
+  city            String?
+  state           String?
+  cep             String?
+  members         User[]
+  orders          Order[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }
 
 model Order {

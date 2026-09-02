@@ -4,18 +4,38 @@ export type CertificateCategory =
   | 'imoveis'
   | 'protesto'
   | 'distribuidores-judiciais'
-  | 'pessoa-juridica';
+  | 'pessoa-juridica'
+  | 'rural';
 
 export type CertificateFormat = 'DIGITAL_ECERTIDAO' | 'PHYSICAL_PAPER' | 'BOTH';
+
+export type CertificatePriceMode = "national" | "uf-format" | "uf-flat";
+
+export interface FormFieldVisibility {
+  field: string;
+  in?: string[];
+  notIn?: string[];
+}
+
+export interface FormFieldOption {
+  label: string;
+  value: string;
+  price?: number;
+  priceByUf?: Record<string, number>;
+}
 
 export interface FormFieldDefinition {
   id: string;
   label: string;
-  type: 'text' | 'number' | 'date' | 'select' | 'radio' | 'textarea';
+  type: 'text' | 'number' | 'date' | 'select' | 'radio' | 'textarea' | 'checkbox';
   placeholder?: string;
   helperText?: string;
   required: boolean;
-  options?: { label: string; value: string }[];
+  options?: FormFieldOption[];
+  visibleWhen?: FormFieldVisibility | FormFieldVisibility[];
+  dataSource?: "ibge-uf" | "ibge-city";
+  price?: number;
+  priceByUf?: Record<string, number>;
 }
 
 export interface CertificateTypeConfig {
@@ -34,6 +54,7 @@ export interface CertificateTypeConfig {
   apostillePrice: number;
   hasShippingOption: boolean;
   shippingPrice: number;
+  priceMode?: CertificatePriceMode;
   fields: FormFieldDefinition[];
 }
 
@@ -64,6 +85,7 @@ export interface CartItem {
   basePrice: number;
   searchFee: number;
   apostillePrice: number;
+  extrasPrice?: number;
   shippingPrice: number;
   itemTotal: number;
   

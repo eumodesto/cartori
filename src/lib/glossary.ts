@@ -63,6 +63,13 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     tip: "Essencial na due diligence imobiliária para garantir que não houve fraude à execução ou vícios ocultos na cadeia dominial.",
   },
   {
+    term: "Apostila de Haia",
+    category: "Geral",
+    definition:
+      "Carimbo previsto na Convenção de Haia que autentica a origem de um documento público brasileiro para uso em outro país signatário. A certidão continua em português: a apostila não é tradução.",
+    tip: "Se o órgão no exterior exigir o texto em outro idioma, peça também a tradução juramentada (inglês, espanhol, italiano etc.) e, se necessário, a apostila da via traduzida.",
+  },
+  {
     term: "Averbação",
     category: "Registro Civil",
     definition:

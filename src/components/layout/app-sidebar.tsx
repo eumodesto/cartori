@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
 import { UserMenu } from "@/components/layout/user-menu";
-import { ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, HelpCircle, Lock } from "lucide-react";
 
 export interface NavItem {
   id: string;
@@ -14,6 +14,8 @@ export interface NavItem {
   icon: React.ReactNode;
   badge?: string | number;
   isActive?: boolean;
+  locked?: boolean;
+  onLockedClick?: () => void;
 }
 
 export interface NavGroup {
@@ -135,19 +137,19 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     ? item.isActive
                     : currentPath === item.href;
 
-                const linkElement = (
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
-                      isCollapsed
-                        ? "w-10 h-10 justify-center rounded-lg"
-                        : "w-full gap-3 px-2.5 py-2 rounded-md text-xs font-medium",
-                      isActive
-                        ? "bg-brand-50 text-brand-950 dark:bg-brand-50/20 dark:text-brand-300 font-semibold shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-100/40"
-                    )}
-                  >
+                const itemClass = cn(
+                  "flex items-center transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
+                  isCollapsed
+                    ? "w-10 h-10 justify-center rounded-lg"
+                    : "w-full gap-3 px-2.5 py-2 rounded-md text-xs font-medium",
+                  isActive
+                    ? "bg-brand-50 text-brand-950 dark:bg-brand-50/20 dark:text-brand-300 font-semibold shadow-xs"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-100/40",
+                  item.locked && "opacity-80"
+                );
+
+                const inner = (
+                  <>
                     <span
                       className={cn(
                         "shrink-0 flex items-center justify-center",
@@ -162,7 +164,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     {!isCollapsed && (
                       <>
                         <span className="truncate flex-1 text-left">{item.label}</span>
-                        {item.badge !== undefined && (
+                        {item.locked ? (
+                          <Lock className="w-3 h-3 text-neutral-400 shrink-0" />
+                        ) : item.badge !== undefined ? (
                           <span
                             className={cn(
                               "text-[10px] font-bold px-1.5 py-0.2 rounded-full shrink-0",
@@ -173,16 +177,33 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                           >
                             {item.badge}
                           </span>
-                        )}
+                        ) : null}
                       </>
                     )}
+                  </>
+                );
+
+                const linkElement = item.locked ? (
+                  <button
+                    type="button"
+                    onClick={item.onLockedClick}
+                    className={itemClass}
+                  >
+                    {inner}
+                  </button>
+                ) : (
+                  <Link href={item.href} className={itemClass}>
+                    {inner}
                   </Link>
                 );
 
                 if (isCollapsed) {
                   return (
                     <div key={item.id} className="w-full flex justify-center">
-                      <Tooltip content={item.label} side="right">
+                      <Tooltip
+                        content={item.locked ? `${item.label} (plano parceiro)` : item.label}
+                        side="right"
+                      >
                         {linkElement}
                       </Tooltip>
                     </div>

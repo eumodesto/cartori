@@ -86,6 +86,11 @@ export default function CarrinhoPage() {
                           Apostilamento
                         </span>
                       )}
+                      {(item.extrasPrice || 0) > 0 && (
+                        <span className="px-2 py-1 rounded-md bg-neutral-100 border border-neutral-200">
+                          Extras {formatCurrency(item.extrasPrice || 0)}
+                        </span>
+                      )}
                       {item.isUnknownCartorio && (
                         <span className="px-2 py-1 rounded-md bg-neutral-100 border border-neutral-200">
                           Busca de serventia

@@ -13,7 +13,7 @@ function catalogBlock(): string {
         ? `Taxa de busca notarial se o usuário não souber o cartório: ${formatCurrency(cert.searchFee)}.`
         : "Sem taxa de busca.",
       cert.hasApostilleOption
-        ? `Apostila de Haia (opcional): ${formatCurrency(cert.apostillePrice)}.`
+        ? `Apostila de Haia autentica a via original em português (${formatCurrency(cert.apostillePrice)}); não traduz. Tradução juramentada (inglês, espanhol, italiano etc.) é extra separado, só na via em papel.`
         : "Sem opção de apostila neste serviço.",
       cert.hasShippingOption
         ? `Envio em papel (opcional): ${formatCurrency(cert.shippingPrice)}.`
@@ -29,7 +29,11 @@ function catalogBlock(): string {
       `Categoria: ${cert.categoryName} (${cert.category})`,
       `Slug / rota de pedido: /#certidoes → ${cert.slug}`,
       `Descrição: ${cert.shortDescription}`,
-      `Preço-base Cartori: ${formatCurrency(cert.basePrice)}`,
+      cert.priceMode === "uf-format"
+        ? `Preço da lista muda com a UF e o formato (eletrônica/papel/ambos). Valor de vitrine (mediana nacional): ${formatCurrency(cert.basePrice)}.`
+        : cert.priceMode === "uf-flat"
+          ? `Preço da lista muda com a UF (mesmo valor nos formatos). Valor de vitrine: ${formatCurrency(cert.basePrice)}.`
+          : `Preço-base Cartori: ${formatCurrency(cert.basePrice)}`,
       `Prazo estimado de expedição: ${cert.estimatedDays}`,
       extras,
       `Dados pedidos no formulário: ${fields}`,

@@ -8,6 +8,7 @@ export interface PaginationProps {
   onPageChange: (page: number) => void;
   totalItems?: number;
   itemsPerPage?: number;
+  itemLabel?: string;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   totalItems,
   itemsPerPage = 10,
+  itemLabel = "registros",
   className,
 }) => {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
@@ -33,7 +35,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         <p className="text-neutral-500">
           Mostrando <span className="font-semibold text-neutral-900">{startItem}</span> a{" "}
           <span className="font-semibold text-neutral-900">{endItem}</span> de{" "}
-          <span className="font-semibold text-neutral-900">{totalItems}</span> registros
+          <span className="font-semibold text-neutral-900">{totalItems}</span> {itemLabel}
         </p>
       )}
 

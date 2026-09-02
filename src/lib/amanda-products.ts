@@ -1,4 +1,5 @@
 import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
+import { startingPriceFor } from "@/lib/pricing";
 import { formatCurrency } from "@/lib/utils";
 
 export type AmandaProductLink = {
@@ -21,12 +22,38 @@ function extraAliases(slug: string): string[] {
       return ["certidão de óbito", "certidao de obito", "óbito", "obito"];
     case "certidao-negativa-de-testamento":
       return ["censec", "negativa de testamento", "testamento"];
-    case "certidao-de-escritura":
-      return ["escritura pública", "escritura publica", "escritura"];
+    case "certidao-de-escritura-de-compra-e-venda":
+      return ["escritura pública", "escritura publica", "escritura", "compra e venda"];
+    case "consulta-de-inventario":
+      return ["consulta de inventário", "consulta de inventario"];
+    case "certidao-de-inventario":
+      return ["certidão de inventário", "certidao de inventario"];
+    case "pesquisa-de-imoveis":
+      return ["pesquisa de imóveis", "pesquisa de imoveis"];
+    case "pesquisa-de-protesto":
+      return ["pesquisa de protesto"];
     case "certidao-de-matricula-de-imovel":
       return ["matrícula de imóvel", "matricula de imovel", "matrícula", "matricula"];
     case "certidao-de-protesto":
       return ["certidão de protesto", "certidao de protesto", "protesto"];
+    case "trf-certidao-de-distribuicao-da-justica-federal":
+      return ["trf", "justiça federal", "justica federal", "distribuição federal"];
+    case "trt-certidao-de-acoes-trabalhistas-ceat":
+      return ["trt", "ceat", "ações trabalhistas", "acoes trabalhistas"];
+    case "ccir-certificado-cadastro-imovel-rural-incra":
+      return ["ccir", "incra", "imóvel rural", "imovel rural"];
+    case "certidao-de-divorcio":
+      return ["certidão de divórcio", "certidao de divorcio", "divórcio", "divorcio"];
+    case "certidao-de-interdicao":
+      return ["certidão de interdição", "certidao de interdicao", "interdição", "interdicao"];
+    case "certidao-de-procuracao":
+      return ["procuração", "procuracao", "certidão de procuração"];
+    case "busca-da-matricula-do-imovel":
+      return ["busca da matrícula", "busca da matricula", "localizar matrícula"];
+    case "certidao-negativa-de-onus-de-imovel":
+      return ["negativa de ônus", "negativa de onus", "ônus reais", "onus reais"];
+    case "certidao-negativa-de-propriedade-imovel":
+      return ["negativa de propriedade", "não possui imóvel", "nao possui imovel"];
     default:
       return [];
   }
@@ -104,7 +131,7 @@ export function extractAmandaProducts(
     .map((cert) => ({
       slug: cert.slug,
       name: cert.name,
-      priceLabel: formatCurrency(cert.basePrice),
+      priceLabel: formatCurrency(startingPriceFor(cert)),
       estimatedDays: cert.estimatedDays,
     }));
 

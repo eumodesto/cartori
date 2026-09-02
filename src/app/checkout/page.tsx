@@ -1,8 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AuthDialog } from "@/components/auth/auth-dialog";
+import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
+import { useAuth } from "@/components/auth/auth-provider";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { OrderSummary } from "@/components/storefront/order-summary";
 import { useCart } from "@/components/cart/cart-provider";
@@ -10,7 +13,9 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { RadioGroup } from "@/components/ui/radio-group";
 import { Stepper } from "@/components/ui/stepper";
+import { MercadoPagoCardBrick } from "@/components/storefront/mercadopago-card-brick";
 import { CustomerData } from "@/lib/types";
 import { maskCep, maskCpfCnpj, maskPhone } from "@/lib/utils";
 import {
@@ -40,11 +45,32 @@ const emptyCustomer: CustomerData = {
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { profile, loading: authLoading, configured } = useAuth();
   const { items, itemsSubtotal, shippingSubtotal, total, clearCart, hydrated } = useCart();
   const [customer, setCustomer] = useState<CustomerData>(emptyCustomer);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingCep, setLoadingCep] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"PIX" | "CREDIT_CARD">("PIX");
+  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
+  const [partnerOpen, setPartnerOpen] = useState(false);
+  const filledFromProfile = useRef(false);
+
+  const needsAccount = !authLoading && !profile;
+
+  useEffect(() => {
+    if (!profile || filledFromProfile.current) return;
+    filledFromProfile.current = true;
+    setCustomer((prev) => ({
+      ...prev,
+      fullName: profile.name || prev.fullName,
+      email: profile.email || prev.email,
+      phone: profile.phone ? maskPhone(profile.phone) : prev.phone,
+      cpfCnpj: profile.cpf ? maskCpfCnpj(profile.cpf) : prev.cpfCnpj,
+      isCompany: Boolean(profile.organization) || prev.isCompany,
+      companyName: profile.organization?.name || prev.companyName,
+    }));
+  }, [profile]);
 
   const needsShipping = useMemo(
     () => items.some((item) => item.hasShipping),
@@ -102,6 +128,7 @@ export default function CheckoutPage() {
   };
 
   const validate = () => {
+    if (!profile) return "Crie ou entre na conta para concluir o pedido.";
     if (!customer.fullName.trim()) return "Informe o nome completo.";
     if (!isValidEmail(customer.email)) return "Informe um e-mail válido.";
     if (!isValidPhone(customer.phone)) return "Informe um telefone válido com DDD.";
@@ -125,28 +152,43 @@ export default function CheckoutPage() {
     return "";
   };
 
+  const goToDashboard = (orderId: string) => {
+    clearCart();
+    router.push(`/dashboard?pedido=${orderId}`);
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const message = validate();
     if (message) {
       setError(message);
+      if (!profile) setAuthMode("signup");
       return;
     }
 
     setLoading(true);
     try {
+      if (paymentMethod === "CREDIT_CARD") {
+        setError("Preencha o cartão e confirme o pagamento no formulário do Mercado Pago.");
+        return;
+      }
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customer, items }),
+        body: JSON.stringify({ customer, items, paymentMethod }),
       });
       const data = await res.json();
+      if (res.status === 401) {
+        setAuthMode("signup");
+        setError(data.error || "Crie ou entre na conta para concluir o pedido.");
+        return;
+      }
       if (!data.success) {
         setError(data.error || "Não foi possível criar o pedido.");
         return;
       }
-      clearCart();
-      router.push(`/pedido/${data.order.id}`);
+      goToDashboard(data.order.id);
     } catch {
       setError("Falha de conexão ao criar o pedido.");
     } finally {
@@ -154,7 +196,47 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!hydrated) {
+  const handleCardPay = async (card: Record<string, unknown>) => {
+    const message = validate();
+    if (message) {
+      setError(message);
+      throw new Error(message);
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer, items, paymentMethod: "CREDIT_CARD", card }),
+      });
+      const data = await res.json();
+      if (res.status === 401) {
+        setAuthMode("signup");
+        const fail = data.error || "Crie ou entre na conta para concluir o pedido.";
+        setError(fail);
+        throw new Error(fail);
+      }
+      if (data.order?.id && data.success) {
+        goToDashboard(data.order.id);
+        return;
+      }
+      if (!data.success) {
+        const fail = data.error || "Não foi possível pagar com cartão.";
+        setError(fail);
+        throw new Error(fail);
+      }
+    } catch (error) {
+      if (error instanceof Error) throw error;
+      setError("Falha de conexão ao pagar com cartão.");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!hydrated || authLoading) {
     return (
       <StorefrontShell>
         <section className="py-16 px-4 text-center">
@@ -180,14 +262,27 @@ export default function CheckoutPage() {
 
   return (
     <StorefrontShell>
+      <AuthDialog
+        isOpen={needsAccount}
+        onClose={() => undefined}
+        nextPath={null}
+        required
+        initialMode={authMode}
+        title="Conta obrigatória para o checkout"
+        description="Entre ou crie a conta agora. Depois do pagamento, você acompanha o pedido no Dashboard."
+        onAuthenticated={({ wantsPartner }) => {
+          if (wantsPartner) setPartnerOpen(true);
+        }}
+      />
+      <PartnerPlanDialog isOpen={partnerOpen} onClose={() => setPartnerOpen(false)} />
       <section className="bg-surface-page py-10 lg:py-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="space-y-4">
             <Stepper
               steps={[
                 { id: 1, title: "Pedido", description: "Certidões", status: "completed" },
-                { id: 2, title: "Checkout", description: "Seus dados", status: "current" },
-                { id: 3, title: "Pagamento", description: "PIX", status: "upcoming" },
+                { id: 2, title: "Checkout", description: "Conta e dados", status: "current" },
+                { id: 3, title: "Pagamento", description: "PIX ou cartão", status: "upcoming" },
               ]}
             />
             <div>
@@ -198,13 +293,20 @@ export default function CheckoutPage() {
                 Dados para emissão e cobrança
               </h1>
               <p className="text-sm text-neutral-600 mt-1">
-                Sem login nesta etapa. O pedido fica vinculado ao e-mail e CPF/CNPJ informados.
+                A conta é obrigatória nesta etapa. Depois do pagamento, novos e atuais usuários
+                entram no Dashboard para acompanhar o pedido.
               </p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-7 space-y-6">
+          {!configured && (
+            <Alert variant="warning" title="Login ainda sem chaves">
+              Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY para ativar a conta no checkout.
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <form id="checkout-form" onSubmit={handleSubmit} className="lg:col-span-7 space-y-6">
               <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5 space-y-4">
                 <h2 className="text-sm font-semibold text-neutral-900">Solicitante</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -248,7 +350,7 @@ export default function CheckoutPage() {
                     checked={customer.isCompany}
                     onChange={(event) => update("isCompany", event.target.checked)}
                     label="Pedido em nome de escritório ou imobiliária"
-                    description="Usaremos esses dados no painel B2B depois do pagamento."
+                    description="Para o plano empresa parceira, use o cadastro de CNPJ verificado no Dashboard."
                   />
                 </div>
                 {customer.isCompany && (
@@ -322,22 +424,66 @@ export default function CheckoutPage() {
               )}
 
               {error && <Alert variant="error" title="Não foi possível continuar">{error}</Alert>}
-            </div>
+            </form>
 
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-5 space-y-4">
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5">
+                <RadioGroup
+                  name="paymentMethod"
+                  label="Forma de pagamento"
+                  value={paymentMethod}
+                  onChange={(value) => setPaymentMethod(value as "PIX" | "CREDIT_CARD")}
+                  options={[
+                    {
+                      value: "PIX",
+                      label: "PIX",
+                      description: "QR Code e código copia e cola no Mercado Pago.",
+                    },
+                    {
+                      value: "CREDIT_CARD",
+                      label: "Cartão de crédito ou débito",
+                      description: "Pague na Cartori, em até 12x. Dados do cartão ficam no Mercado Pago.",
+                    },
+                  ]}
+                />
+              </div>
               <OrderSummary
                 items={items}
                 itemsSubtotal={itemsSubtotal}
                 shippingSubtotal={shippingSubtotal}
                 total={total}
                 cta={
-                  <Button type="submit" className="w-full" size="lg" isLoading={loading}>
-                    Gerar cobrança PIX
-                  </Button>
+                  paymentMethod === "PIX" ? (
+                    <Button
+                      type="submit"
+                      form="checkout-form"
+                      className="w-full"
+                      size="lg"
+                      isLoading={loading}
+                      disabled={!profile}
+                    >
+                      Pagar com PIX
+                    </Button>
+                  ) : null
                 }
               />
+              {paymentMethod === "CREDIT_CARD" && profile && (
+                <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5 space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold text-neutral-900">Pagar com cartão</p>
+                    <p className="text-xs text-neutral-500 mt-1">
+                      Checkout transparente do Mercado Pago. A Cartori não vê nem guarda o número do cartão.
+                    </p>
+                  </div>
+                  <MercadoPagoCardBrick
+                    amount={total}
+                    onPay={handleCardPay}
+                    onError={setError}
+                  />
+                </div>
+              )}
             </div>
-          </form>
+          </div>
         </div>
       </section>
     </StorefrontShell>

@@ -72,7 +72,8 @@ function toStoredPayment(payment: Payment | null): StoredPayment | null {
     id: payment.id,
     provider: "MERCADOPAGO",
     providerPaymentId: payment.providerPaymentId || undefined,
-    paymentMethod: "PIX",
+    paymentMethod:
+      payment.paymentMethod === "CREDIT_CARD" ? "CREDIT_CARD" : "PIX",
     status: toStoredPaymentStatus(payment.status),
     amount: money(payment.amount),
     qrCode: payment.qrCode || undefined,
@@ -121,6 +122,8 @@ function toStoredOrder(order: OrderRecord): StoredOrder {
     channel: order.channel === "PARTNER" ? "PARTNER" : "CARTORI",
     kind: order.kind === "RESELL" ? "RESELL" : "OWN",
     sellerOrgId: order.sellerOrgId,
+    userId: order.userId,
+    organizationId: order.organizationId,
     status: toStoredStatus(order.status),
     totalAmount: money(order.totalAmount),
     itemsTotal: money(order.itemsTotal),
@@ -160,6 +163,20 @@ export async function listOrders(): Promise<StoredOrder[]> {
   return orders.map(toStoredOrder);
 }
 
+export async function listOrdersByUser(
+  userId: string,
+  organizationId?: string | null
+): Promise<StoredOrder[]> {
+  const orders = await prisma.order.findMany({
+    where: organizationId
+      ? { OR: [{ userId }, { organizationId }] }
+      : { userId },
+    include: orderInclude,
+    orderBy: { createdAt: "desc" },
+  });
+  return orders.map(toStoredOrder);
+}
+
 export async function getOrderById(id: string): Promise<StoredOrder | null> {
   const order = await prisma.order.findUnique({
     where: { id },
@@ -190,6 +207,8 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
         channel,
         kind,
         sellerOrgId: order.sellerOrgId,
+        userId: order.userId || undefined,
+        organizationId: order.organizationId || undefined,
         status,
         totalAmount: order.totalAmount,
         itemsTotal: order.itemsTotal,
@@ -212,6 +231,8 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
       },
       update: {
         status,
+        userId: order.userId || undefined,
+        organizationId: order.organizationId || undefined,
         totalAmount: order.totalAmount,
         itemsTotal: order.itemsTotal,
         shippingTotal: order.shippingTotal,
@@ -272,7 +293,10 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
       const paymentData = {
         provider: "MERCADOPAGO",
         providerPaymentId: order.payment.providerPaymentId,
-        paymentMethod: PaymentMethod.PIX,
+        paymentMethod:
+          order.payment.paymentMethod === "CREDIT_CARD"
+            ? PaymentMethod.CREDIT_CARD
+            : PaymentMethod.PIX,
         status: order.payment.status as PaymentStatus,
         amount: order.payment.amount,
         qrCode: order.payment.qrCode,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { startingPriceFor } from "@/lib/pricing";
 import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
 import { CertificateTypeConfig } from "@/lib/types";
 import {
@@ -20,12 +21,16 @@ import { SlideUpText } from "@/components/ui/slide-up-text";
 import { Testimonials } from "@/components/ui/testimonials-columns";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { CertificateConfigDialog } from "@/components/storefront/certificate-config-dialog";
+import { Pagination } from "@/components/ui/pagination";
 import { useCart } from "@/components/cart/cart-provider";
+import { formatCurrency } from "@/lib/utils";
+
+const CATALOG_PAGE_SIZE = 12;
 
 function normalizeSearch(value: string) {
   return value
     .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
 }
@@ -35,6 +40,7 @@ export default function HomePage() {
   const { addItem } = useCart();
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
   const [catalogQuery, setCatalogQuery] = useState("");
+  const [catalogPage, setCatalogPage] = useState(1);
   const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(null);
   const [addedNotice, setAddedNotice] = useState("");
 
@@ -72,6 +78,8 @@ export default function HomePage() {
     { id: "notas", label: "Tabelionato de Notas" },
     { id: "imoveis", label: "Registro de Imóveis" },
     { id: "protesto", label: "Protesto de Títulos" },
+    { id: "distribuidores-judiciais", label: "Distribuidores Judiciais" },
+    { id: "rural", label: "Cadastro rural (INCRA)" },
   ].map((filter) => ({
     ...filter,
     count:
@@ -84,6 +92,25 @@ export default function HomePage() {
     if (activeCategories.size === 0) return true;
     return activeCategories.has(cert.category);
   });
+
+  const catalogPageCount = Math.max(1, Math.ceil(filteredCertificates.length / CATALOG_PAGE_SIZE));
+  const currentCatalogPage = Math.min(catalogPage, catalogPageCount);
+  const pagedCertificates = filteredCertificates.slice(
+    (currentCatalogPage - 1) * CATALOG_PAGE_SIZE,
+    currentCatalogPage * CATALOG_PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setCatalogPage(1);
+  }, [catalogQuery, activeCategories]);
+
+  const goToCatalogPage = (page: number) => {
+    setCatalogPage(page);
+    document.getElementById("certidoes")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
   return (
     <StorefrontShell>
@@ -192,8 +219,9 @@ export default function HomePage() {
               </p>
             </div>
           ) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCertificates.map((cert) => (
+            {pagedCertificates.map((cert) => (
               <div
                 key={cert.id}
                 className="relative overflow-hidden rounded-2xl border border-white/15 p-6 shadow-sm hover:shadow-lg hover:border-amber-400/40 transition-all flex flex-col justify-between group"
@@ -229,7 +257,10 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-end">
+                <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-between gap-3">
+                  <span className="text-sm font-bold text-amber-300">
+                    A partir de {formatCurrency(startingPriceFor(cert))}
+                  </span>
                   <GetStartedButton
                     size="sm"
                     className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
@@ -242,6 +273,18 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          {catalogPageCount > 1 && (
+            <Pagination
+              className="mt-8"
+              currentPage={currentCatalogPage}
+              totalPages={catalogPageCount}
+              totalItems={filteredCertificates.length}
+              itemsPerPage={CATALOG_PAGE_SIZE}
+              itemLabel="certidões"
+              onPageChange={goToCatalogPage}
+            />
+          )}
+          </>
           )}
         </div>
       </section>
@@ -250,10 +293,14 @@ export default function HomePage() {
         <CertificateConfigDialog
           certificate={selectedCert}
           onClose={() => setSelectedCert(null)}
-          onAdd={(item) => {
-            addItem(item);
+          onAdd={(items) => {
+            items.forEach(addItem);
             setSelectedCert(null);
-            setAddedNotice(`${item.certificateName} adicionada ao pedido.`);
+            setAddedNotice(
+              items.length === 1
+                ? `${items[0].certificateName} adicionada ao pedido.`
+                : `${items.length} certidões adicionadas ao pedido.`
+            );
             window.setTimeout(() => setAddedNotice(""), 5000);
           }}
         />

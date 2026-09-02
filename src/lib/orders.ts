@@ -1,5 +1,7 @@
 import { getCertificateBySlug } from "@/lib/catalog";
-import { priceCertificate, roundMoney } from "@/lib/pricing";
+import { isFieldVisible } from "@/lib/field-visibility";
+import { certificateNameWithInteiroTeor } from "@/lib/inteiro-teor";
+import { expandInteiroTeorCartItems, priceCertificate, roundMoney } from "@/lib/pricing";
 import {
   CreateOrderPayload,
   StoredOrder,
@@ -27,10 +29,18 @@ export function buildOrderItemFromCart(item: CartItem): StoredOrderItem {
 
   const format = FORMATS.includes(item.format) ? item.format : "DIGITAL_ECERTIDAO";
   const isUnknownCartorio = Boolean(item.isUnknownCartorio);
+  const documentData = Object.fromEntries(
+    Object.entries(item.documentData || {}).map(([key, value]) => [
+      key,
+      String(value ?? ""),
+    ])
+  );
   const pricing = priceCertificate(cert, {
     format,
     isUnknownCartorio,
     hasApostille: Boolean(item.hasApostille),
+    uf: item.state,
+    documentData,
   });
 
   if (cert.requiresCartorio) {
@@ -44,7 +54,22 @@ export function buildOrderItemFromCart(item: CartItem): StoredOrderItem {
 
   for (const field of cert.fields) {
     if (!field.required) continue;
-    const value = String(item.documentData?.[field.id] ?? "").trim();
+    if (
+      !isFieldVisible(field, {
+        documentData,
+        format,
+        uf: item.state,
+      })
+    ) {
+      continue;
+    }
+    const value = String(documentData[field.id] ?? "").trim();
+    if (field.type === "checkbox") {
+      if (value !== "true") {
+        throw new Error(`Marque "${field.label}" em ${cert.name}.`);
+      }
+      continue;
+    }
     if (!value) {
       throw new Error(`Preencha "${field.label}" em ${cert.name}.`);
     }
@@ -54,7 +79,7 @@ export function buildOrderItemFromCart(item: CartItem): StoredOrderItem {
     id: item.id || createId(),
     category: cert.category,
     certificateType: cert.slug,
-    certificateName: cert.name,
+    certificateName: certificateNameWithInteiroTeor(cert.name, documentData.inteiro_teor),
     state: cert.requiresCartorio ? item.state : "BR",
     city: cert.requiresCartorio ? item.city : "Brasil",
     cartorioId: item.cartorioId,
@@ -62,19 +87,14 @@ export function buildOrderItemFromCart(item: CartItem): StoredOrderItem {
       ? isUnknownCartorio
         ? "Busca especializada de serventia"
         : item.cartorioName
-      : "CENSEC — Colégio Notarial do Brasil",
+      : cert.categoryName,
     isUnknownCartorio,
-    documentData: Object.fromEntries(
-      Object.entries(item.documentData || {}).map(([key, value]) => [
-        key,
-        String(value ?? ""),
-      ])
-    ),
+    documentData,
     format,
     hasApostille: pricing.apostillePrice > 0,
     hasShipping: pricing.shippingPrice > 0,
     listPrice: roundMoney(pricing.basePrice),
-    itemPrice: roundMoney(pricing.basePrice),
+    itemPrice: roundMoney(pricing.basePrice + pricing.extrasPrice),
     searchFee: roundMoney(pricing.searchFee),
     apostilleFee: roundMoney(pricing.apostillePrice),
     shippingPrice: roundMoney(pricing.shippingPrice),
@@ -85,13 +105,20 @@ export function buildOrderItemFromCart(item: CartItem): StoredOrderItem {
 }
 
 export async function buildStoredOrder(
-  payload: CreateOrderPayload
+  payload: CreateOrderPayload,
+  owner?: { userId?: string | null; organizationId?: string | null }
 ): Promise<StoredOrder> {
   if (!payload.items?.length) {
     throw new Error("O pedido precisa de ao menos uma certidão.");
   }
 
-  const items = payload.items.map(buildOrderItemFromCart);
+  const items = payload.items.flatMap((item) => {
+    const cert = getCertificateBySlug(item.certificateTypeSlug);
+    if (!cert) {
+      throw new Error(`Certidão não encontrada: ${item.certificateTypeSlug}`);
+    }
+    return expandInteiroTeorCartItems(cert, item).map(buildOrderItemFromCart);
+  });
   const itemsTotal = roundMoney(
     items.reduce((sum, item) => sum + item.totalPrice - item.shippingPrice, 0)
   );
@@ -125,6 +152,8 @@ export async function buildStoredOrder(
     channel: "CARTORI",
     kind: "OWN",
     sellerOrgId: null,
+    userId: owner?.userId || null,
+    organizationId: owner?.organizationId || null,
     status: "PENDING_PAYMENT",
     totalAmount,
     itemsTotal,
