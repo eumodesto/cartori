@@ -183,7 +183,10 @@ export function CertificateConfigDialog({
             options={pricedOptions.map((option) => ({
               value: option.value,
               label: option.label,
-              description: "description" in option ? option.description : undefined,
+              description:
+                "description" in option && typeof option.description === "string"
+                  ? option.description
+                  : undefined,
             }))}
           />
           {field.id === "inteiro_teor" && isInteiroTeorBoth(documentData[field.id]) ? (
@@ -718,8 +721,11 @@ export function CertificateConfigDialog({
                     onChange={(event) => {
                       const value = event.target.value;
                       setDocumentData((prev) => {
-                        const next = { ...prev, "traducao-juramentada": value };
-                        if (!value) delete next["apostilamento_traduzida"];
+                        const next: Record<string, string> = {
+                          ...prev,
+                          "traducao-juramentada": value,
+                        };
+                        if (!value) delete next.apostilamento_traduzida;
                         return next;
                       });
                       setError("");
