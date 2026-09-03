@@ -1,7 +1,7 @@
 import { UserRole } from "@prisma/client";
 
 /**
- * Current authorization matrix (Etapa 4).
+ * Current authorization matrix (Etapa 6B).
  *
  * ALLOW  — implemented now
  * DENY   — implemented deny
@@ -9,9 +9,10 @@ import { UserRole } from "@prisma/client";
  * TBD    — product decision missing; fail-closed
  *
  * Do not treat B2B_ADMIN as a weaker ADMIN. They are different domains.
+ * Do not treat OrganizationMemberRole.ADMIN as UserRole.ADMIN.
  *
- * Tenant membership today is User.organizationId (single org). OrganizationMember
- * exists via dual-write (Etapa 6A) but is not the authorization source until 6B.
+ * Tenant membership is OrganizationMember ACTIVE. User.organizationId / B2B_*
+ * are dual-write compatibility only and do not authorize.
  */
 export type AuthorizationDecision = "ALLOW" | "DENY" | "FUTURE" | "TBD";
 
@@ -84,10 +85,10 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     resource: "Organization (acesso ao tenant)",
     CLIENT: "DENY",
     B2B_ADMIN: "ALLOW",
-    B2B_MEMBER: "TBD",
+    B2B_MEMBER: "ALLOW",
     OPERATOR: "DENY",
     ADMIN: "FUTURE",
-    notes: "requireOrganizationAccess: match de organizationId. ADMIN bypass só se allowGlobalAdmin explícito.",
+    notes: "requireOrganizationAccess: ACTIVE membership na org. User.organizationId não autoriza. ADMIN bypass só se allowGlobalAdmin explícito.",
   },
   {
     resource: "onboarding empresarial (POST /api/org; alias POST /api/org/partner)",
@@ -96,7 +97,7 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     B2B_MEMBER: "DENY",
     OPERATOR: "DENY",
     ADMIN: "DENY",
-    notes: "Cria/vincula Organization STANDARD e promove a B2B_ADMIN. Não concede PARTNER. /api/org/partner é alias legado.",
+    notes: "CLIENT sem membership ACTIVE, ou OWNER/ADMIN ACTIVE da mesma org. Dual-write ainda grava B2B_ADMIN. Não concede PARTNER. /api/org/partner é alias legado.",
   },
   {
     resource: "administração global Cartori",

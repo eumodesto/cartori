@@ -255,6 +255,15 @@ async function main() {
       where: { id: String(profileA.id) },
       data: { organizationId: orgA.id, role: "B2B_ADMIN" },
     });
+    await prisma.organizationMember.create({
+      data: {
+        userId: String(profileA.id),
+        organizationId: orgA.id,
+        orgRole: "OWNER",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+    });
 
     const meBiz = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieA } });
     const biz = (meBiz.body.profile || {}) as Record<string, unknown>;
@@ -349,6 +358,15 @@ async function main() {
       where: { id: String(profileB.id) },
       data: { role: "B2B_MEMBER", organizationId: orgA.id },
     });
+    await prisma.organizationMember.create({
+      data: {
+        userId: String(profileB.id),
+        organizationId: orgA.id,
+        orgRole: "MEMBER",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+    });
     const member = await jsonFetch(`${BASE}/api/org`, {
       method: "POST",
       headers: { "content-type": "application/json", cookie: cookieB },
@@ -363,6 +381,9 @@ async function main() {
       pass: member.status === 403,
     });
 
+    await prisma.organizationMember.deleteMany({
+      where: { userId: String(profileB.id) },
+    });
     await prisma.user.update({
       where: { id: String(profileB.id) },
       data: { role: "OPERATOR", organizationId: null },

@@ -389,6 +389,119 @@ async function main() {
       pass: steal.status === 409 && profB.role === "CLIENT" && memberB === 0,
     });
 
+    await prisma.user.update({
+      where: { id: String(profileB.id) },
+      data: { role: "B2B_ADMIN", organizationId: org.id },
+    });
+    const meFk = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieB } });
+    const profFk = (meFk.body.profile || {}) as Record<string, unknown>;
+    record({
+      scenario: "User.organizationId sem membership ACTIVE não autoriza perfil B2B",
+      role: String(profFk.role || "none"),
+      tenant: String(profFk.organization || "null"),
+      http: meFk.status,
+      leaked: Boolean(profFk.organization),
+      pass: meFk.status === 200 && profFk.organization == null && profFk.role === "B2B_ADMIN",
+    });
+
+    await prisma.organizationMember.create({
+      data: {
+        userId: String(profileB.id),
+        organizationId: org.id,
+        orgRole: "MEMBER",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+    });
+    await prisma.user.update({
+      where: { id: String(profileB.id) },
+      data: { role: "CLIENT", organizationId: null },
+    });
+    const meMember = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieB } });
+    const profMember = (meMember.body.profile || {}) as Record<string, unknown>;
+    const memberOrg = (profMember.organization || {}) as Record<string, unknown>;
+    record({
+      scenario: "MEMBER ACTIVE + legado inconsistente: membership vence",
+      role: String(profMember.role || "none"),
+      tenant: String(memberOrg.id || "none"),
+      http: meMember.status,
+      leaked: false,
+      pass:
+        meMember.status === 200 &&
+        profMember.role === "CLIENT" &&
+        memberOrg.id === org.id,
+    });
+
+    const memberReadsA = await jsonFetch(`${BASE}/api/orders/${personal.id}`, {
+      headers: { cookie: cookieB },
+    });
+    record({
+      scenario: "MEMBER ACTIVE não lê pedido alheio (userId)",
+      role: "CLIENT",
+      tenant: "org-a",
+      http: memberReadsA.status,
+      leaked: Boolean(memberReadsA.body.order),
+      pass: memberReadsA.status === 404 && !memberReadsA.body.order,
+    });
+
+    await prisma.organizationMember.update({
+      where: {
+        userId_organizationId: {
+          userId: String(profileB.id),
+          organizationId: org.id,
+        },
+      },
+      data: { orgRole: "ADMIN" },
+    });
+    const meOrgAdmin = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieB } });
+    const profOrgAdmin = (meOrgAdmin.body.profile || {}) as Record<string, unknown>;
+    const orgAdminOrg = (profOrgAdmin.organization || {}) as Record<string, unknown>;
+    record({
+      scenario: "ADMIN ACTIVE vê a própria Organization",
+      role: String(profOrgAdmin.role || "none"),
+      tenant: String(orgAdminOrg.id || "none"),
+      http: meOrgAdmin.status,
+      leaked: false,
+      pass: meOrgAdmin.status === 200 && orgAdminOrg.id === org.id,
+    });
+
+    await prisma.organizationMember.update({
+      where: {
+        userId_organizationId: {
+          userId: String(profileA.id),
+          organizationId: org.id,
+        },
+      },
+      data: { status: "REMOVED", removedAt: new Date() },
+    });
+    const meRemoved = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieA } });
+    const profRemoved = (meRemoved.body.profile || {}) as Record<string, unknown>;
+    record({
+      scenario: "REMOVED perde isBusiness na próxima request",
+      role: String(profRemoved.role || "none"),
+      tenant: String(profRemoved.organization || "null"),
+      http: meRemoved.status,
+      leaked: Boolean(profRemoved.organization),
+      pass:
+        meRemoved.status === 200 &&
+        profRemoved.organization == null &&
+        profRemoved.role === "B2B_ADMIN",
+    });
+
+    const ownAfterRemoved = await jsonFetch(`${BASE}/api/orders/${personal.id}`, {
+      headers: { cookie: cookieA },
+    });
+    record({
+      scenario: "REMOVED ainda lê próprio pedido por userId",
+      role: "B2B_ADMIN",
+      tenant: "org-a",
+      http: ownAfterRemoved.status,
+      leaked: false,
+      pass:
+        ownAfterRemoved.status === 200 &&
+        Boolean((ownAfterRemoved.body.order as { id?: string } | undefined)?.id),
+    });
+
     const webhookGet = await jsonFetch(`${BASE}/api/payments/webhook`);
     record({
       scenario: "GET webhook não marca PAID / protegido",

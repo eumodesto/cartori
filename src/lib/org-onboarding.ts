@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthProfile } from "@/lib/auth";
-import { requireAuth, requireRole } from "@/lib/authorization";
+import { requireAuth, requireBusinessOnboarding } from "@/lib/authorization";
 import { lookupCnpj } from "@/lib/cnpj";
 import {
   MembershipInconsistentError,
@@ -16,12 +16,12 @@ import { digitsOnly } from "@/lib/utils";
 import { isValidCnpj } from "@/lib/validators";
 
 /**
- * Business onboarding (Etapa 5 + dual-write 6A).
+ * Business onboarding (Etapa 5 + dual-write).
  *
- * CLIENT/B2B_ADMIN may register a CNPJ and become B2B_ADMIN of that Organization.
- * Dual-write: OrganizationMember OWNER ACTIVE + legado User.organizationId / B2B_ADMIN.
+ * CLIENT without ACTIVE membership, or OWNER/ADMIN ACTIVE of the same org,
+ * may register/update a CNPJ. Dual-write still writes legacy User.organizationId
+ * and B2B_ADMIN; authorization reads OrganizationMember ACTIVE (Etapa 6B).
  *
- * Authorization still uses User.role + User.organizationId (Etapa 6B).
  * This flow never grants PARTNER. TBD — PARTNER ACTIVATION POLICY
  */
 export { planAfterBusinessOnboarding } from "@/lib/org-plan";
@@ -38,7 +38,7 @@ export async function postBusinessOnboarding(req: NextRequest) {
     return auth.response;
   }
 
-  const allowed = requireRole(auth.context, ["CLIENT", "B2B_ADMIN"], "org.onboarding");
+  const allowed = requireBusinessOnboarding(auth.context);
   if (!allowed.ok) return allowed.response;
 
   const profile = await getAuthProfile();

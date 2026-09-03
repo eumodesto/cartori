@@ -6,6 +6,32 @@ import { AuthProfile } from "@/lib/auth-types";
 import { digitsOnly } from "@/lib/utils";
 import { normalizeCpf } from "@/lib/validators";
 
+type ProfileOrganization = {
+  id: string;
+  name: string;
+  tradeName: string | null;
+  cnpj: string;
+  plan: OrganizationPlan;
+  cnpjVerifiedAt: Date | null;
+  cnpjStatus: string | null;
+  city: string | null;
+  state: string | null;
+};
+
+function toAuthOrganization(organization: ProfileOrganization) {
+  return {
+    id: organization.id,
+    name: organization.name,
+    tradeName: organization.tradeName,
+    cnpj: organization.cnpj,
+    plan: organization.plan,
+    cnpjVerifiedAt: organization.cnpjVerifiedAt?.toISOString() || null,
+    cnpjStatus: organization.cnpjStatus,
+    city: organization.city,
+    state: organization.state,
+  };
+}
+
 function toProfile(user: {
   id: string;
   authId: string | null;
@@ -14,18 +40,9 @@ function toProfile(user: {
   phone: string | null;
   cpf: string | null;
   role: UserRole;
-  organization: {
-    id: string;
-    name: string;
-    tradeName: string | null;
-    cnpj: string;
-    plan: OrganizationPlan;
-    cnpjVerifiedAt: Date | null;
-    cnpjStatus: string | null;
-    city: string | null;
-    state: string | null;
-  } | null;
+  organizationMemberships: Array<{ organization: ProfileOrganization }>;
 }): AuthProfile {
+  const organization = user.organizationMemberships[0]?.organization ?? null;
   return {
     id: user.id,
     authId: user.authId,
@@ -34,24 +51,16 @@ function toProfile(user: {
     phone: user.phone,
     cpf: user.cpf,
     role: user.role,
-    organization: user.organization
-      ? {
-          id: user.organization.id,
-          name: user.organization.name,
-          tradeName: user.organization.tradeName,
-          cnpj: user.organization.cnpj,
-          plan: user.organization.plan,
-          cnpjVerifiedAt: user.organization.cnpjVerifiedAt?.toISOString() || null,
-          cnpjStatus: user.organization.cnpjStatus,
-          city: user.organization.city,
-          state: user.organization.state,
-        }
-      : null,
+    organization: organization ? toAuthOrganization(organization) : null,
   };
 }
 
 const userInclude = {
-  organization: true,
+  organizationMemberships: {
+    where: { status: "ACTIVE" as const },
+    include: { organization: true },
+    orderBy: { createdAt: "asc" as const },
+  },
 } as const;
 
 export class IdentityConflictError extends Error {

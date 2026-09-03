@@ -117,8 +117,8 @@ model Organization {
   updatedAt       DateTime          @updatedAt
 }
 
-/// Vínculo User ↔ Organization. Fonte futura de autoridade empresarial (Etapa 6B).
-/// Nesta onda (6A) o legado User.organizationId / B2B_* permanece.
+/// Vínculo User ↔ Organization. Fonte de verdade da autorização empresarial (Etapa 6B).
+/// User.organizationId / B2B_* permanecem só como compatibilidade (dual-write).
 model OrganizationMember {
   id             String                   @id @default(uuid())
   organizationId String

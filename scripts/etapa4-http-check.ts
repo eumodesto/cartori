@@ -296,6 +296,31 @@ async function main() {
     where: { id: String(profileC.id) },
     data: { organizationId: orgB.id },
   });
+  await prisma.organizationMember.createMany({
+    data: [
+      {
+        userId: String(profileA.id),
+        organizationId: orgA.id,
+        orgRole: "OWNER",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+      {
+        userId: String(profileB.id),
+        organizationId: orgA.id,
+        orgRole: "MEMBER",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+      {
+        userId: String(profileC.id),
+        organizationId: orgB.id,
+        orgRole: "OWNER",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+    ],
+  });
 
   const orderNumber = 910000 + Number(suffix.slice(-5));
   const orderB = await prisma.order.create({
@@ -420,6 +445,15 @@ async function main() {
   await prisma.user.update({
     where: { id: String(profileA.id) },
     data: { role: "B2B_MEMBER" },
+  });
+  await prisma.organizationMember.update({
+    where: {
+      userId_organizationId: {
+        userId: String(profileA.id),
+        organizationId: orgA.id,
+      },
+    },
+    data: { orgRole: "MEMBER" },
   });
   const memberPartner = await jsonFetch(`${BASE}/api/org/partner`, {
     method: "POST",

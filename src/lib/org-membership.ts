@@ -6,10 +6,10 @@ import {
 import { prisma } from "@/lib/prisma";
 
 /**
- * Membership helpers (Etapa 6A).
+ * Membership helpers.
  *
- * Read helpers are diagnostic/foundation only.
- * Authorization still uses User.role + User.organizationId until Etapa 6B.
+ * OrganizationMember ACTIVE is the authorization source (Etapa 6B).
+ * User.organizationId / B2B_* remain dual-write compatibility only.
  */
 export class MembershipRemovedError extends Error {
   constructor() {
@@ -131,18 +131,10 @@ export async function persistCreatorOnboarding(input: {
     if (!isPrismaUniqueViolation(error)) throw error;
     const found = await prisma.organization.findUnique({ where: { cnpj: input.cnpj } });
     if (!found) throw error;
-    const [user, membership] = await Promise.all([
-      prisma.user.findUnique({
-        where: { id: input.userId },
-        select: { organizationId: true },
-      }),
-      prisma.organizationMember.findUnique({
-        where: { userId_organizationId: { userId: input.userId, organizationId: found.id } },
-      }),
-    ]);
-    const owns =
-      user?.organizationId === found.id ||
-      (membership?.status === "ACTIVE" && membership.orgRole === "OWNER");
+    const membership = await prisma.organizationMember.findUnique({
+      where: { userId_organizationId: { userId: input.userId, organizationId: found.id } },
+    });
+    const owns = membership?.status === "ACTIVE" && membership.orgRole === "OWNER";
     if (!owns) throw new OrganizationCnpjTakenError();
     return prisma.$transaction((tx) =>
       applyCreatorOnboardingTx(tx, {

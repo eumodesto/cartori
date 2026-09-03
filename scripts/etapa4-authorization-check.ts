@@ -1,5 +1,6 @@
 import { UserRole } from "@prisma/client";
 import {
+  buildAuthContext,
   canAccessOrganization,
   canAccessOwnedOrder,
   hasAllowedRole,
@@ -9,25 +10,52 @@ import {
 } from "../src/lib/authorization-policy";
 import { AUTHORIZATION_MATRIX } from "../src/lib/authorization-matrix";
 
-function context(partial: Partial<AuthContext> & Pick<AuthContext, "role">): AuthContext {
-  return {
+function context(
+  partial: Partial<AuthContext> & { role?: UserRole; platformRole?: UserRole }
+): AuthContext {
+  const platformRole = partial.platformRole ?? partial.role ?? "CLIENT";
+  return buildAuthContext({
     userId: partial.userId ?? "user-a",
     authId: partial.authId ?? "auth-a",
-    role: partial.role,
-    organizationId: partial.organizationId ?? null,
-  };
+    platformRole,
+    activeMemberships:
+      partial.orgRole && partial.organizationId
+        ? [{ organizationId: partial.organizationId, orgRole: partial.orgRole }]
+        : [],
+  });
 }
 
 function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(message);
 }
 
-const clientA = context({ role: "CLIENT", userId: "ua", organizationId: null });
-const clientB = context({ role: "CLIENT", userId: "ub", organizationId: null });
-const b2bAdminA = context({ role: "B2B_ADMIN", userId: "ua", organizationId: "org-a" });
-const b2bMemberA = context({ role: "B2B_MEMBER", userId: "um", organizationId: "org-a" });
-const operator = context({ role: "OPERATOR", userId: "op", organizationId: null });
-const admin = context({ role: "ADMIN", userId: "ad", organizationId: null });
+const clientA = context({ role: "CLIENT", userId: "ua" });
+const clientB = context({ role: "CLIENT", userId: "ub" });
+const ownerA = context({
+  role: "B2B_ADMIN",
+  userId: "ua",
+  organizationId: "org-a",
+  orgRole: "OWNER",
+});
+const adminA = context({
+  role: "CLIENT",
+  userId: "uadmin",
+  organizationId: "org-a",
+  orgRole: "ADMIN",
+});
+const memberA = context({
+  role: "B2B_MEMBER",
+  userId: "um",
+  organizationId: "org-a",
+  orgRole: "MEMBER",
+});
+const legacyFkOnly = context({
+  role: "B2B_ADMIN",
+  userId: "ulegacy",
+  organizationId: "org-a",
+});
+const operator = context({ role: "OPERATOR", userId: "op" });
+const admin = context({ role: "ADMIN", userId: "ad" });
 
 assert(isTenantRole("CLIENT") && isTenantRole("B2B_ADMIN") && isTenantRole("B2B_MEMBER"), "tenant roles");
 assert(isInternalRole("ADMIN") && isInternalRole("OPERATOR"), "internal roles");
@@ -35,21 +63,23 @@ assert(!isInternalRole("B2B_ADMIN") && !isTenantRole("ADMIN"), "domains must not
 assert(!isInternalRole("B2B_MEMBER") && !isTenantRole("OPERATOR"), "domains must not overlap");
 
 assert(hasAllowedRole(admin, ["ADMIN"]), "admin allowlist");
-assert(!hasAllowedRole(b2bAdminA, ["ADMIN"]), "B2B_ADMIN is not ADMIN");
+assert(!hasAllowedRole(ownerA, ["ADMIN"]), "B2B_ADMIN is not ADMIN");
 assert(!hasAllowedRole(operator, ["ADMIN"]), "OPERATOR is not ADMIN");
 assert(!hasAllowedRole(clientA, ["B2B_ADMIN", "ADMIN"]), "CLIENT denied for admin-like allowlists");
 
 assert(canAccessOwnedOrder(clientA, "ua"), "client owns own order");
 assert(!canAccessOwnedOrder(clientB, "ua"), "client cannot own someone else's order");
-assert(!canAccessOwnedOrder(b2bAdminA, "other"), "org admin does not own by tenant");
+assert(!canAccessOwnedOrder(ownerA, "other"), "org admin does not own by tenant");
 assert(!canAccessOwnedOrder(admin, "ua"), "ADMIN has no implicit order bypass");
 assert(!canAccessOwnedOrder(operator, "ua"), "OPERATOR has no implicit order bypass");
 
-assert(!canAccessOrganization(clientA, "org-a"), "CLIENT without org denied");
-assert(canAccessOrganization(b2bAdminA, "org-a"), "B2B_ADMIN own org");
-assert(!canAccessOrganization(b2bAdminA, "org-b"), "B2B_ADMIN other org denied");
-assert(canAccessOrganization(b2bMemberA, "org-a"), "membership match is tenant equality only");
-assert(!canAccessOrganization(b2bMemberA, "org-b"), "B2B_MEMBER other org denied");
+assert(!canAccessOrganization(clientA, "org-a"), "CLIENT without membership denied");
+assert(canAccessOrganization(ownerA, "org-a"), "OWNER ACTIVE own org");
+assert(!canAccessOrganization(ownerA, "org-b"), "OWNER other org denied");
+assert(canAccessOrganization(adminA, "org-a"), "ADMIN ACTIVE own org");
+assert(canAccessOrganization(memberA, "org-a"), "MEMBER ACTIVE recognized");
+assert(!canAccessOrganization(memberA, "org-b"), "MEMBER other org denied");
+assert(!canAccessOrganization(legacyFkOnly, "org-a"), "legacy organizationId without membership denied");
 assert(!canAccessOrganization(operator, "org-a"), "OPERATOR no org bypass");
 assert(!canAccessOrganization(admin, "org-a"), "ADMIN bypass default off");
 assert(
