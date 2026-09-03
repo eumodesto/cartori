@@ -32,7 +32,8 @@ export {
  * Role and organizationId always come from the database, never from the browser.
  *
  * Limitation (intentional): tenant membership is User.organizationId only.
- * OrganizationMember (invites, multi-org, orgRole) is NOT implemented in this etapa.
+ * OrganizationMember exists (Etapa 6A dual-write) but is NOT the authorization
+ * source in this module. Etapa 6B will switch reads to ACTIVE membership.
  *
  * Fail-closed: unknown capability → deny. OPERATOR does not inherit ADMIN bypass.
  */

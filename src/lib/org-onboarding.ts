@@ -2,21 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthProfile } from "@/lib/auth";
 import { requireAuth, requireRole } from "@/lib/authorization";
 import { lookupCnpj } from "@/lib/cnpj";
+import {
+  MembershipInconsistentError,
+  MembershipRemovedError,
+  OrganizationCnpjTakenError,
+  getActiveOrganizationMemberships,
+  persistCreatorOnboarding,
+  wouldViolateSingleOrg,
+} from "@/lib/org-membership";
 import { planAfterBusinessOnboarding } from "@/lib/org-plan";
 import { prisma } from "@/lib/prisma";
 import { digitsOnly } from "@/lib/utils";
 import { isValidCnpj } from "@/lib/validators";
 
 /**
- * Business onboarding (Etapa 5).
+ * Business onboarding (Etapa 5 + dual-write 6A).
  *
  * CLIENT/B2B_ADMIN may register a CNPJ and become B2B_ADMIN of that Organization.
- * That is tenant administration, not Cartori ADMIN and not the Partner program.
+ * Dual-write: OrganizationMember OWNER ACTIVE + legado User.organizationId / B2B_ADMIN.
  *
- * This flow never grants PARTNER from the browser or from CNPJ signup.
- * An existing PARTNER org is not downgraded.
- *
- * TBD — PARTNER ACTIVATION POLICY
+ * Authorization still uses User.role + User.organizationId (Etapa 6B).
+ * This flow never grants PARTNER. TBD — PARTNER ACTIVATION POLICY
  */
 export { planAfterBusinessOnboarding } from "@/lib/org-plan";
 
@@ -61,6 +67,20 @@ export async function postBusinessOnboarding(req: NextRequest) {
     );
   }
 
+  const activeMemberships = await getActiveOrganizationMemberships(auth.context.userId);
+  if (
+    wouldViolateSingleOrg(
+      auth.context.organizationId,
+      activeMemberships.map((row) => row.organizationId),
+      existing?.id ?? null
+    )
+  ) {
+    return NextResponse.json(
+      { success: false, error: "Esta conta já está vinculada a outra empresa." },
+      { status: 409 }
+    );
+  }
+
   const company = await lookupCnpj(cnpj);
   if (!company) {
     return NextResponse.json(
@@ -96,25 +116,34 @@ export async function postBusinessOnboarding(req: NextRequest) {
     creciNumber,
   };
 
-  const organization = existing
-    ? await prisma.organization.update({
-        where: { id: existing.id },
-        data: companyData,
-      })
-    : await prisma.organization.create({
-        data: {
-          cnpj,
-          ...companyData,
-        },
-      });
-
-  await prisma.user.update({
-    where: { id: auth.context.userId },
-    data: {
-      organizationId: organization.id,
-      role: "B2B_ADMIN",
-    },
-  });
+  try {
+    await persistCreatorOnboarding({
+      userId: auth.context.userId,
+      cnpj,
+      existingOrganizationId: existing?.id ?? null,
+      companyData,
+    });
+  } catch (error) {
+    if (error instanceof MembershipRemovedError) {
+      return NextResponse.json(
+        { success: false, error: "Esta empresa não pode ser reativada neste fluxo." },
+        { status: 409 }
+      );
+    }
+    if (error instanceof MembershipInconsistentError) {
+      return NextResponse.json(
+        { success: false, error: "Não foi possível vincular a empresa a esta conta." },
+        { status: 409 }
+      );
+    }
+    if (error instanceof OrganizationCnpjTakenError) {
+      return NextResponse.json(
+        { success: false, error: "Este CNPJ já está cadastrado em outra conta Cartori." },
+        { status: 409 }
+      );
+    }
+    throw error;
+  }
 
   const updated = await getAuthProfile();
   return NextResponse.json({ success: true, profile: updated, company });

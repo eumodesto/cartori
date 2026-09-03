@@ -11,7 +11,7 @@ import { UserRole } from "@prisma/client";
  * Do not treat B2B_ADMIN as a weaker ADMIN. They are different domains.
  *
  * Tenant membership today is User.organizationId (single org). OrganizationMember
- * (invites, multi-org, per-org role) is FUTURE and not in this etapa.
+ * exists via dual-write (Etapa 6A) but is not the authorization source until 6B.
  */
 export type AuthorizationDecision = "ALLOW" | "DENY" | "FUTURE" | "TBD";
 

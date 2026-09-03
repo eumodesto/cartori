@@ -21,6 +21,18 @@ enum OrganizationPlan {
   PARTNER  // programa comercial Partner/revendedor (ativação TBD)
 }
 
+/// Papel dentro da Organization. Não confundir com UserRole.ADMIN (Cartori).
+enum OrganizationMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum OrganizationMemberStatus {
+  ACTIVE
+  REMOVED
+}
+
 enum OrderChannel {
   CARTORI
   PARTNER
@@ -75,6 +87,7 @@ model User {
   role           UserRole       @default(CLIENT)
   organizationId String?
   organization   Organization?  @relation(fields: [organizationId], references: [id])
+  organizationMemberships OrganizationMember[]
   orders         Order[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -98,9 +111,30 @@ model Organization {
   state           String?
   cep             String?
   members         User[]
+  memberships     OrganizationMember[]
   orders          Order[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+}
+
+/// Vínculo User ↔ Organization. Fonte futura de autoridade empresarial (Etapa 6B).
+/// Nesta onda (6A) o legado User.organizationId / B2B_* permanece.
+model OrganizationMember {
+  id             String                   @id @default(uuid())
+  organizationId String
+  organization   Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orgRole        OrganizationMemberRole
+  status         OrganizationMemberStatus
+  joinedAt       DateTime
+  removedAt      DateTime?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, status])
+  @@index([userId, status])
 }
 
 model Order {
