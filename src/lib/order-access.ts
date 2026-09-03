@@ -1,32 +1,55 @@
 import { NextResponse } from "next/server";
-import { getAuthProfile } from "@/lib/auth";
+import {
+  type AuthContext,
+  logAuthzDeny,
+  privateNotFoundResponse,
+  requireAuth,
+  unauthorizedResponse,
+} from "@/lib/authorization";
 import { getOwnedOrder } from "@/lib/order-store";
 import { StoredOrder } from "@/lib/order-types";
-import { AuthProfile } from "@/lib/auth-types";
 
 export function orderUnauthorizedResponse() {
-  return NextResponse.json(
-    { success: false, error: "Entre na conta para ver este pedido." },
-    { status: 401 }
-  );
+  return unauthorizedResponse("Entre na conta para ver este pedido.");
 }
 
 export function orderNotFoundResponse() {
-  return NextResponse.json(
-    { success: false, error: "Pedido não encontrado." },
-    { status: 404 }
-  );
+  return privateNotFoundResponse("Pedido não encontrado.");
 }
 
+export async function requireOrderAccess(orderId: string): Promise<
+  | { ok: true; context: AuthContext; order: StoredOrder }
+  | { ok: false; response: NextResponse }
+> {
+  const auth = await requireAuth();
+  if (!auth.ok) {
+    if (auth.response.status === 401) {
+      return { ok: false, response: orderUnauthorizedResponse() };
+    }
+    return auth;
+  }
+
+  const order = await getOwnedOrder(orderId, auth.context.userId);
+  if (!order) {
+    logAuthzDeny({
+      userId: auth.context.userId,
+      role: auth.context.role,
+      resourceType: "order",
+      resourceId: orderId,
+      reason: "order_not_owned",
+    });
+    return { ok: false, response: orderNotFoundResponse() };
+  }
+
+  return { ok: true, context: auth.context, order };
+}
+
+/** Compatibility wrapper: personal B2C ownership only (no organization OR). */
 export async function loadOwnedOrder(orderId: string): Promise<
-  | { profile: AuthProfile; order: StoredOrder }
+  | { context: AuthContext; order: StoredOrder }
   | { response: NextResponse }
 > {
-  const profile = await getAuthProfile();
-  if (!profile) return { response: orderUnauthorizedResponse() };
-
-  const order = await getOwnedOrder(orderId, profile.id);
-  if (!order) return { response: orderNotFoundResponse() };
-
-  return { profile, order };
+  const result = await requireOrderAccess(orderId);
+  if (!result.ok) return { response: result.response };
+  return { context: result.context, order: result.order };
 }

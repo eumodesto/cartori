@@ -156,22 +156,9 @@ const orderInclude = {
   payments: true,
 } satisfies Prisma.OrderInclude;
 
-export async function listOrders(): Promise<StoredOrder[]> {
+export async function listOrdersByUser(userId: string): Promise<StoredOrder[]> {
   const orders = await prisma.order.findMany({
-    include: orderInclude,
-    orderBy: { createdAt: "desc" },
-  });
-  return orders.map(toStoredOrder);
-}
-
-export async function listOrdersByUser(
-  userId: string,
-  organizationId?: string | null
-): Promise<StoredOrder[]> {
-  const orders = await prisma.order.findMany({
-    where: organizationId
-      ? { OR: [{ userId }, { organizationId }] }
-      : { userId },
+    where: { userId },
     include: orderInclude,
     orderBy: { createdAt: "desc" },
   });

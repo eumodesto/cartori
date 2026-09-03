@@ -1,16 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthProfile } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/authorization";
 import { lookupCnpj } from "@/lib/cnpj";
 import { prisma } from "@/lib/prisma";
 import { digitsOnly } from "@/lib/utils";
 import { isValidCnpj } from "@/lib/validators";
 
+/**
+ * Partner onboarding (existing UI: PartnerPlanDialog).
+ *
+ * DECISÃO NECESSÁRIA: this route still lets a CLIENT create/attach an Organization
+ * and become B2B_ADMIN. That is the current product flow, not a new commercial rule.
+ * It does not grant Cartori ADMIN/OPERATOR, other tenants, or org-wide order listing.
+ *
+ * Body fields role, userId, organizationId, sellerOrgId are ignored.
+ * INTERNAL roles and B2B_MEMBER cannot use this route (fail-closed).
+ */
 export async function POST(req: NextRequest) {
+  const auth = await requireAuth();
+  if (!auth.ok) {
+    if (auth.response.status === 401) {
+      return NextResponse.json(
+        { success: false, error: "Entre na sua conta para cadastrar a empresa." },
+        { status: 401 }
+      );
+    }
+    return auth.response;
+  }
+
+  const allowed = requireRole(auth.context, ["CLIENT", "B2B_ADMIN"], "org.partner");
+  if (!allowed.ok) return allowed.response;
+
   const profile = await getAuthProfile();
-  if (!profile) {
+  if (!profile || profile.id !== auth.context.userId) {
     return NextResponse.json(
-      { success: false, error: "Entre na sua conta para cadastrar a empresa." },
-      { status: 401 }
+      { success: false, error: "Conta não encontrada." },
+      { status: 403 }
     );
   }
 
@@ -41,7 +66,7 @@ export async function POST(req: NextRequest) {
   }
 
   const existing = await prisma.organization.findUnique({ where: { cnpj } });
-  if (existing && existing.id !== profile.organization?.id) {
+  if (existing && existing.id !== auth.context.organizationId) {
     return NextResponse.json(
       { success: false, error: "Este CNPJ já está cadastrado em outra conta Cartori." },
       { status: 409 }
@@ -89,7 +114,7 @@ export async function POST(req: NextRequest) {
       });
 
   await prisma.user.update({
-    where: { id: profile.id },
+    where: { id: auth.context.userId },
     data: {
       organizationId: organization.id,
       role: "B2B_ADMIN",
@@ -97,7 +122,7 @@ export async function POST(req: NextRequest) {
   });
 
   await prisma.order.updateMany({
-    where: { userId: profile.id },
+    where: { userId: auth.context.userId },
     data: { organizationId: organization.id, isCompany: true, companyName: company.name },
   });
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthProfile } from "@/lib/auth";
+import { orderOwnerFromContext, requireAuth } from "@/lib/authorization";
 import { saveOrder, listOrdersByUser } from "@/lib/order-store";
 import { buildStoredOrder, toClientOrder } from "@/lib/orders";
 import {
@@ -17,14 +17,18 @@ import {
 } from "@/lib/validators";
 
 export async function GET() {
-  const profile = await getAuthProfile();
-  if (!profile) {
-    return NextResponse.json(
-      { success: false, error: "Entre na conta para ver seus pedidos." },
-      { status: 401 }
-    );
+  const auth = await requireAuth();
+  if (!auth.ok) {
+    if (auth.response.status === 401) {
+      return NextResponse.json(
+        { success: false, error: "Entre na conta para ver seus pedidos." },
+        { status: 401 }
+      );
+    }
+    return auth.response;
   }
-  const orders = await listOrdersByUser(profile.id, profile.organization?.id);
+
+  const orders = await listOrdersByUser(auth.context.userId);
   return NextResponse.json({
     success: true,
     orders: orders.map(toClientOrder),
@@ -33,12 +37,15 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const profile = await getAuthProfile();
-    if (!profile) {
-      return NextResponse.json(
-        { success: false, error: "Crie ou entre na conta para concluir o pedido." },
-        { status: 401 }
-      );
+    const auth = await requireAuth();
+    if (!auth.ok) {
+      if (auth.response.status === 401) {
+        return NextResponse.json(
+          { success: false, error: "Crie ou entre na conta para concluir o pedido." },
+          { status: 401 }
+        );
+      }
+      return auth.response;
     }
 
     const body = await req.json();
@@ -81,13 +88,17 @@ export async function POST(req: NextRequest) {
       body.paymentMethod === "CREDIT_CARD" ? "CREDIT_CARD" : "PIX";
 
     const cpfDigits = normalizeCpf(customer.cpfCnpj || "");
+    const current = await prisma.user.findUnique({
+      where: { id: auth.context.userId },
+      select: { name: true, phone: true, cpf: true },
+    });
     try {
       await prisma.user.update({
-        where: { id: profile.id },
+        where: { id: auth.context.userId },
         data: {
-          name: String(customer.fullName || "").trim() || profile.name,
-          phone: digitsOnly(customer.phone || "") || profile.phone,
-          ...(cpfDigits && !profile.cpf ? { cpf: cpfDigits } : {}),
+          name: String(customer.fullName || "").trim() || current?.name,
+          phone: digitsOnly(customer.phone || "") || current?.phone,
+          ...(cpfDigits && !current?.cpf ? { cpf: cpfDigits } : {}),
         },
       });
     } catch {
@@ -96,7 +107,7 @@ export async function POST(req: NextRequest) {
 
     const order = await buildStoredOrder(
       { customer, items },
-      { userId: profile.id, organizationId: profile.organization?.id }
+      orderOwnerFromContext(auth.context)
     );
     await saveOrder(order);
 
