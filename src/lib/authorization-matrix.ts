@@ -90,13 +90,13 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     notes: "requireOrganizationAccess: match de organizationId. ADMIN bypass só se allowGlobalAdmin explícito.",
   },
   {
-    resource: "onboarding parceiro (POST /api/org/partner)",
+    resource: "onboarding empresarial (POST /api/org; alias POST /api/org/partner)",
     CLIENT: "ALLOW",
     B2B_ADMIN: "ALLOW",
     B2B_MEMBER: "DENY",
     OPERATOR: "DENY",
     ADMIN: "DENY",
-    notes: "Fluxo UI existente. Promove CLIENT → B2B_ADMIN. DECISÃO NECESSÁRIA se permanece o onboarding oficial.",
+    notes: "Cria/vincula Organization STANDARD e promove a B2B_ADMIN. Não concede PARTNER. /api/org/partner é alias legado.",
   },
   {
     resource: "administração global Cartori",

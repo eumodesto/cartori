@@ -80,7 +80,7 @@ export function PartnerPlanDialog({
     setSaving(true);
     setError("");
     try {
-      const res = await fetch("/api/org/partner", {
+      const res = await fetch("/api/org", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -91,7 +91,7 @@ export function PartnerPlanDialog({
       });
       const data = await res.json();
       if (!data.success) {
-        setError(data.error || "Não foi possível ativar o plano.");
+        setError(data.error || "Não foi possível cadastrar a empresa.");
         return;
       }
       await refresh();
@@ -112,9 +112,9 @@ export function PartnerPlanDialog({
             <Building2 className="w-4 h-4" />
           </div>
           <div>
-            <DialogTitle>Plano Empresa Parceira</DialogTitle>
+            <DialogTitle>Cadastrar empresa</DialogTitle>
             <DialogDescription>
-              Cadastre o CNPJ verificado na Receita Federal para liberar equipe, dossiês, financeiro e operação.
+              Informe um CNPJ ativo na Receita Federal para liberar os recursos empresariais da conta.
             </DialogDescription>
           </div>
         </div>
@@ -169,7 +169,7 @@ export function PartnerPlanDialog({
         </div>
 
         <div className="rounded-md border border-brand-200 bg-brand-50/60 p-3 text-[11px] text-brand-950 leading-relaxed">
-          Este é o primeiro plano: CNPJ ativo verificado. Com ele a empresa passa a usar o Dashboard com equipe, dossiês, faturamento e busca de cartórios.
+          Cadastrar a empresa libera os recursos B2B (organização, equipe, dossiês e financeiro). Isso não habilita o programa comercial de parceiro/revendedor.
         </div>
 
         {error && <Alert variant="error" title="Não foi possível continuar">{error}</Alert>}
@@ -185,7 +185,7 @@ export function PartnerPlanDialog({
           disabled={!company?.active}
           leftIcon={<Lock className="w-3.5 h-3.5" />}
         >
-          Ativar plano parceiro
+          Cadastrar empresa
         </Button>
       </DialogFooter>
     </Dialog>

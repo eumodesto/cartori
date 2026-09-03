@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { AuthProfile, isPartnerAccount } from "@/lib/auth-types";
+import { AuthProfile, isBusinessAccount, isPartnerAccount } from "@/lib/auth-types";
 
 type AuthContextValue = {
   profile: AuthProfile | null;
   loading: boolean;
   configured: boolean;
+  isBusiness: boolean;
   isPartner: boolean;
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile,
       loading,
       configured,
+      isBusiness: isBusinessAccount(profile),
       isPartner: isPartnerAccount(profile),
       refresh,
       logout,

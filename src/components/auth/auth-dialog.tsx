@@ -63,7 +63,7 @@ export function AuthDialog({
     onClose();
     const destination = goPartner
       ? nextPath
-        ? "/dashboard?parceiro=1"
+        ? "/dashboard?empresa=1"
         : null
       : nextPath;
     if (destination) {
@@ -115,7 +115,7 @@ export function AuthDialog({
             {description ||
               (required
                 ? "Para concluir o pedido, entre ou crie uma conta. Depois do pagamento você acompanha tudo no Dashboard."
-                : "O Dashboard abre no modo padrão. Empresa parceira com CNPJ verificado libera equipe, dossiês e faturamento.")}
+                : "O Dashboard abre no modo pessoal. Cadastrar a empresa com CNPJ libera recursos B2B.")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit}>

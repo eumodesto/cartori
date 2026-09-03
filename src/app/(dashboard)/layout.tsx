@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
-import { isPartnerLockedHref } from "@/lib/auth-types";
+import { isBusinessLockedHref } from "@/lib/auth-types";
 import { maskCpfCnpj } from "@/lib/utils";
 import {
   Layers,
@@ -30,7 +30,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { profile, isPartner, loading, configured } = useAuth();
+  const { profile, isBusiness, loading, configured } = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const [partnerOpen, setPartnerOpen] = React.useState(false);
 
@@ -40,8 +40,16 @@ export default function DashboardLayout({
     }
   }, [configured, loading, pathname, profile, router]);
 
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("empresa") === "1") {
+      setPartnerOpen(true);
+    }
+  }, []);
+
   const lockItem = (href: string) =>
-    !isPartner && isPartnerLockedHref(href)
+    !isBusiness && isBusinessLockedHref(href)
       ? { locked: true, onLockedClick: () => setPartnerOpen(true) }
       : {};
 
@@ -179,7 +187,7 @@ export default function DashboardLayout({
                   {loading ? "Carregando..." : orgName}
                 </span>
                 <span className="text-[10px] text-neutral-500 block font-mono">
-                  {isPartner ? orgDoc : "Acesso padrão"}
+                  {isBusiness ? orgDoc : "Acesso padrão"}
                 </span>
               </div>
             </div>

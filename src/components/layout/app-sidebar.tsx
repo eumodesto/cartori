@@ -201,7 +201,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   return (
                     <div key={item.id} className="w-full flex justify-center">
                       <Tooltip
-                        content={item.locked ? `${item.label} (plano parceiro)` : item.label}
+                        content={item.locked ? `${item.label} (recurso empresarial)` : item.label}
                         side="right"
                       >
                         {linkElement}

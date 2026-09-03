@@ -48,7 +48,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   className,
   nextPath = "/dashboard",
 }) => {
-  const { profile, logout, isPartner } = useAuth();
+  const { profile, logout, isBusiness } = useAuth();
   const [authOpen, setAuthOpen] = React.useState(false);
   const [authMode, setAuthMode] = React.useState<"login" | "signup">("login");
   const [partnerOpen, setPartnerOpen] = React.useState(false);
@@ -78,11 +78,11 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       icon: <MessageCircle className="w-4 h-4" />,
       href: "/#faq",
     },
-    ...(!isPartner
+    ...(!isBusiness
       ? [
           {
             id: "partner",
-            label: "Virar empresa parceira",
+            label: "Cadastrar empresa",
             icon: <Building2 className="w-4 h-4" />,
             onClick: () => setPartnerOpen(true),
           } satisfies QuickTooltipAction,

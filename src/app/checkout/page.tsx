@@ -350,7 +350,7 @@ export default function CheckoutPage() {
                     checked={customer.isCompany}
                     onChange={(event) => update("isCompany", event.target.checked)}
                     label="Pedido em nome de escritório ou imobiliária"
-                    description="Para o plano empresa parceira, use o cadastro de CNPJ verificado no Dashboard."
+                    description="Para recursos empresariais, cadastre o CNPJ da empresa no Dashboard."
                   />
                 </div>
                 {customer.isCompany && (

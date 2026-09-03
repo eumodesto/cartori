@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 
 function DashboardHome() {
-  const { profile, isPartner } = useAuth();
+  const { profile, isBusiness } = useAuth();
   const searchParams = useSearchParams();
   const [partnerOpen, setPartnerOpen] = React.useState(false);
   const highlightId = searchParams.get("pedido");
@@ -22,9 +22,9 @@ function DashboardHome() {
       <PageHeader
         title={`Painel, ${firstName}`}
         description={
-          isPartner
-            ? "Pedidos da conta e da empresa parceira, com CNPJ verificado."
-            : "Acesso padrão: pedidos, downloads e novas solicitações. Equipe, dossiês, financeiro e cartórios liberam no plano empresa parceira."
+          isBusiness
+            ? "Pedidos da conta e contexto da empresa cadastrada."
+            : "Acesso pessoal: pedidos e novas solicitações. Recursos empresariais liberam ao cadastrar o CNPJ da empresa."
         }
         actions={
           <Link href="/#certidoes">
@@ -35,12 +35,12 @@ function DashboardHome() {
         }
       />
 
-      {!isPartner && (
+      {!isBusiness && (
         <div className="rounded-2xl border border-brand-200 bg-brand-50/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
           <div>
-            <p className="text-sm font-semibold text-brand-950">Virar empresa parceira</p>
+            <p className="text-sm font-semibold text-brand-950">Cadastrar empresa</p>
             <p className="text-xs text-neutral-600 mt-0.5">
-              Cadastre um CNPJ ativo e os dados da Receita entram automaticamente. Liberamos equipe, dossiês, financeiro e operação.
+              Informe um CNPJ ativo. Isso libera recursos B2B e não habilita o programa de parceiro/revendedor.
             </p>
           </div>
           <Button

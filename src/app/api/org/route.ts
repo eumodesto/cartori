@@ -1,10 +1,6 @@
 import { NextRequest } from "next/server";
 import { postBusinessOnboarding } from "@/lib/org-onboarding";
 
-/**
- * Legacy path. Same handler as POST /api/org.
- * Does not enable the Partner commercial program.
- */
 export async function POST(req: NextRequest) {
   return postBusinessOnboarding(req);
 }

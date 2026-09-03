@@ -17,8 +17,8 @@ enum UserRole {
 }
 
 enum OrganizationPlan {
-  STANDARD
-  PARTNER
+  STANDARD // empresa B2B / tenant cliente — não implica Partner
+  PARTNER  // programa comercial Partner/revendedor (ativação TBD)
 }
 
 enum OrderChannel {
