@@ -62,3 +62,11 @@ export function createId(): string {
     return value.toString(16);
   });
 }
+
+export function safeAppPath(value: string | null | undefined, fallback = "/dashboard") {
+  if (!value) return fallback;
+  if (!value.startsWith("/")) return fallback;
+  if (value.startsWith("//") || value.startsWith("/\\")) return fallback;
+  if (value.includes("://") || value.includes("\\")) return fallback;
+  return value;
+}

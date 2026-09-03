@@ -10,6 +10,7 @@ import {
 import { useAuth } from "@/components/auth/auth-provider";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
+import { safeAppPath } from "@/lib/utils";
 
 export const defaultUserMenuActions: QuickTooltipAction[] = [
   {
@@ -57,12 +58,12 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const next = params.get("next");
-    if (next?.startsWith("/")) setResolvedNext(next);
+    if (next) setResolvedNext(safeAppPath(next, nextPath));
     if (params.get("entrar") === "1" && !profile) {
       setAuthMode("login");
       setAuthOpen(true);
     }
-  }, [profile]);
+  }, [profile, nextPath]);
 
   const loggedActions: QuickTooltipAction[] = [
     {

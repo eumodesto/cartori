@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { Building2, LogIn, UserRound } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -37,7 +36,6 @@ export function AuthDialog({
   description?: string;
   onAuthenticated?: (result: { wantsPartner: boolean }) => void;
 }) {
-  const router = useRouter();
   const { refresh, configured } = useAuth();
   const [mode, setMode] = React.useState<"login" | "signup">(initialMode);
   const [account, setAccount] = React.useState<"person" | "company">("person");
@@ -63,8 +61,14 @@ export function AuthDialog({
     await refresh();
     onAuthenticated?.({ wantsPartner: goPartner });
     onClose();
-    if (goPartner) return;
-    if (nextPath) router.push(nextPath);
+    const destination = goPartner
+      ? nextPath
+        ? "/dashboard?parceiro=1"
+        : null
+      : nextPath;
+    if (destination) {
+      window.location.assign(destination);
+    }
   };
 
   const submit = async (event: React.FormEvent) => {

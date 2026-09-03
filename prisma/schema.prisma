@@ -168,8 +168,9 @@ model OrderItem {
   // Localização Notarial
   state               String             // SP, RJ, etc.
   city                String             // São Paulo, etc.
-  cartorioId          String?            // ID ou CNS do cartório se selecionado
-  cartorioName        String?            // Nome do Cartório (ex: 1º Oficial de Registro Civil)
+  cartorioId          String?
+  cartorio            Cartorio?          @relation(fields: [cartorioId], references: [id], onDelete: SetNull)
+  cartorioName        String?            // Snapshot do nome no checkout (pedidos antigos / interior / busca)
   isUnknownCartorio   Boolean            @default(false) // Se o cliente solicitou busca
   
   // Dados do Documento (JSON estruturado com nome do titular, livro, folha, termo, data, filiação, etc.)
@@ -198,6 +199,8 @@ model OrderItem {
 
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
+
+  @@index([cartorioId])
 }
 
 model Payment {
@@ -237,9 +240,75 @@ model Cartorio {
   phone               String?
   email               String?
   officialInCharge    String?            // Nome do Titular / Oficial
-  
+  orderItems          OrderItem[]
+
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
   @@index([state, city])
+}
+
+model Product {
+  id                 String         @id
+  slug               String         @unique
+  name               String
+  shortDescription   String         @db.Text
+  category           String
+  categoryName       String
+  basePrice          Decimal        @db.Decimal(10, 2)
+  estimatedDays      String
+  requiresCartorio   Boolean        @default(true)
+  hasSearchFee       Boolean        @default(false)
+  searchFee          Decimal        @default(0) @db.Decimal(10, 2)
+  hasApostilleOption Boolean        @default(false)
+  apostillePrice     Decimal        @default(0) @db.Decimal(10, 2)
+  hasShippingOption  Boolean        @default(false)
+  shippingPrice      Decimal        @default(0) @db.Decimal(10, 2)
+  priceMode          String         @default("national")
+  sortOrder          Int            @default(0)
+  active             Boolean        @default(true)
+  fields             ProductField[]
+  prices             ProductPrice[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@index([category, sortOrder])
+}
+
+model ProductField {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fieldKey    String
+  label       String
+  type        String
+  placeholder String?
+  helperText  String?  @db.Text
+  required    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  options     Json?
+  visibleWhen Json?
+  dataSource  String?
+  price       Decimal? @db.Decimal(10, 2)
+  priceByUf   Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, fieldKey])
+  @@index([productId, sortOrder])
+}
+
+model ProductPrice {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  kind      String
+  state     String
+  format    String
+  amount    Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, kind, state, format])
+  @@index([productId])
 }

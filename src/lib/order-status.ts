@@ -3,14 +3,9 @@ import type { StatusType } from "@/components/ui/status-badge";
 export type PublicOrderItem = {
   id: string;
   certificateName: string;
-  category: string;
   state: string;
   city: string;
-  cartorioName?: string | null;
-  format: string;
   totalPrice: number;
-  estimatedDays?: string | null;
-  referenceTag?: string | null;
 };
 
 export type PublicOrderPayment = {
@@ -19,21 +14,14 @@ export type PublicOrderPayment = {
   qrCode?: string;
   qrCodeBase64?: string;
   ticketUrl?: string;
-  demo?: boolean;
   method?: "PIX" | "CREDIT_CARD";
 } | null;
 
 export type PublicOrder = {
   id: string;
   protocol: string;
-  orderNumber: number;
-  channel: string;
   status: string;
   totalAmount: number;
-  itemsTotal: number;
-  shippingTotal: number;
-  customerName: string;
-  customerEmail: string;
   items: PublicOrderItem[];
   payment: PublicOrderPayment;
   createdAt: string;

@@ -1,5 +1,17 @@
 import { MercadoPagoConfig, MerchantOrder, Payment } from "mercadopago";
+import { appendFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
 import { createId } from "@/lib/utils";
+
+function traceMercadoPago(op: string) {
+  try {
+    const dir = join(process.cwd(), "node_modules", ".cache");
+    mkdirSync(dir, { recursive: true });
+    appendFileSync(join(dir, "cartori-mp-trace.log"), `${Date.now()} ${op}\n`);
+  } catch {
+    // Tracing is best-effort evidence for authorization tests.
+  }
+}
 
 export function getMercadoPagoAccessToken(): string {
   return (process.env.MERCADOPAGO_ACCESS_TOKEN || "")
@@ -83,18 +95,8 @@ function mercadopagoErrorMessage(error: unknown, fallback: string): string {
 }
 
 export async function getPaymentById(id: string) {
+  traceMercadoPago(`getPaymentById`);
   return getPaymentClient().get({ id });
-}
-
-export async function findApprovedPaymentByExternalReference(orderId: string) {
-  const result = await getPaymentClient().search({
-    options: {
-      external_reference: orderId,
-      sort: "date_created",
-      criteria: "desc",
-    },
-  });
-  return (result.results || []).find((item) => item.status === "approved") || null;
 }
 
 export async function getMerchantOrderById(id: string) {
@@ -120,6 +122,7 @@ export interface CreateCheckoutPaymentInput {
 }
 
 export async function createPixPayment(input: CreateCheckoutPaymentInput) {
+  traceMercadoPago("createPixPayment");
   try {
     const notificationUrl = webhookNotificationUrl();
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
@@ -188,7 +191,9 @@ export function parseCardPaymentForm(body: unknown): Omit<
   keyof CreateCheckoutPaymentInput
 > {
   const data = (body || {}) as Record<string, unknown>;
+  // token/bandeira/parcelas vêm do Brick; transaction_amount do browser é ignorado.
   const token = String(data.token || "").trim();
+  // transaction_amount e demais valores do Brick não determinam a cobrança.
   const paymentMethodId = String(data.payment_method_id || data.paymentMethodId || "").trim();
   const installments = Number(data.installments);
   const issuerRaw = data.issuer_id ?? data.issuerId;
@@ -211,6 +216,7 @@ export function parseCardPaymentForm(body: unknown): Omit<
 }
 
 export async function createCardPayment(input: CreateCardPaymentInput) {
+  traceMercadoPago("createCardPayment");
   try {
     const notificationUrl = webhookNotificationUrl();
     const issuerId = input.issuerId ? Number(input.issuerId) : undefined;

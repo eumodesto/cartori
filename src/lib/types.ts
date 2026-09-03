@@ -56,6 +56,12 @@ export interface CertificateTypeConfig {
   shippingPrice: number;
   priceMode?: CertificatePriceMode;
   fields: FormFieldDefinition[];
+  ufFormatPrices?: Record<
+    string,
+    { ELECTRONIC: number | null; PAPER: number | null; BOTH: number | null }
+  >;
+  ufFlatPrices?: Record<string, number>;
+  ufApostillePrices?: Record<string, number>;
 }
 
 export interface CartItem {
@@ -141,4 +147,5 @@ export interface CartorioInfo {
   city: string;
   address?: string;
   phone?: string;
+  email?: string;
 }

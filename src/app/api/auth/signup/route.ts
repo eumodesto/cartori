@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { syncAuthUser } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createAdminSupabase } from "@/lib/supabase/admin";
+import { createRouteSupabase } from "@/lib/supabase/route";
 import { isValidCpf, isValidEmail, isValidPhone } from "@/lib/validators";
 
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured()) {
-    return NextResponse.json(
+    return Response.json(
       { success: false, error: "Configure as chaves do Supabase para criar a conta." },
       { status: 503 }
     );
@@ -20,73 +21,80 @@ export async function POST(req: NextRequest) {
   const cpf = String(body.cpf || "");
 
   if (!name) {
-    return NextResponse.json({ success: false, error: "Informe o nome completo." }, { status: 400 });
+    return Response.json({ success: false, error: "Informe o nome completo." }, { status: 400 });
   }
   if (!isValidEmail(email)) {
-    return NextResponse.json({ success: false, error: "Informe um e-mail válido." }, { status: 400 });
+    return Response.json({ success: false, error: "Informe um e-mail válido." }, { status: 400 });
   }
   if (password.length < 8) {
-    return NextResponse.json(
+    return Response.json(
       { success: false, error: "A senha precisa ter pelo menos 8 caracteres." },
       { status: 400 }
     );
   }
   if (phone && !isValidPhone(phone)) {
-    return NextResponse.json({ success: false, error: "Telefone inválido." }, { status: 400 });
+    return Response.json({ success: false, error: "Telefone inválido." }, { status: 400 });
   }
   if (cpf && !isValidCpf(cpf)) {
-    return NextResponse.json({ success: false, error: "CPF inválido." }, { status: 400 });
+    return Response.json({ success: false, error: "CPF inválido." }, { status: 400 });
   }
 
-  const supabase = createServerSupabase();
-  const { data, error } = await supabase.auth.signUp({
+  const admin = createAdminSupabase();
+  if (!admin) {
+    return Response.json(
+      { success: false, error: "Configure SUPABASE_SERVICE_ROLE_KEY para criar a conta." },
+      { status: 503 }
+    );
+  }
+
+  const { supabase, json } = createRouteSupabase();
+  const userPayload = {
     email,
     password,
-    options: { data: { name } },
-  });
+    email_confirm: true,
+    user_metadata: { name, app: "cartori" },
+  };
 
-  if (error) {
-    const message = /already/i.test(error.message)
+  const created = await admin.auth.admin.createUser(userPayload);
+
+  if (created.error || !created.data.user) {
+    const already = /already|registered|exists/i.test(created.error?.message || "");
+    if (!already) {
+      const recovered = await supabase.auth.signInWithPassword({ email, password });
+      if (recovered.data.user) {
+        const profile = await syncAuthUser({
+          authId: recovered.data.user.id,
+          email,
+          name,
+          phone,
+          cpf,
+        });
+        return json({ success: true, profile });
+      }
+    }
+    const message = already
       ? "Este e-mail já tem uma conta. Entre para continuar."
-      : error.message;
-    return NextResponse.json({ success: false, error: message }, { status: 400 });
+      : /fetch failed/i.test(created.error?.message || "")
+        ? "Não foi possível criar a conta agora. Tente de novo em alguns segundos."
+        : created.error?.message || "Não foi possível criar a conta.";
+    return json({ success: false, error: message }, { status: 400 });
   }
 
-  if (!data.user) {
-    return NextResponse.json(
-      { success: false, error: "Não foi possível criar a conta." },
+  const signedIn = await supabase.auth.signInWithPassword({ email, password });
+  if (signedIn.error || !signedIn.data.user) {
+    return json(
+      { success: false, error: "Conta criada, mas não foi possível entrar. Use a aba Entrar." },
       { status: 400 }
     );
   }
 
-  if (!data.session) {
-    const signedIn = await supabase.auth.signInWithPassword({ email, password });
-    if (signedIn.error || !signedIn.data.user) {
-      return NextResponse.json({
-        success: true,
-        needsConfirmation: true,
-        profile: null,
-        error: "Conta criada. Confirme o e-mail enviado pelo Supabase para entrar.",
-      });
-    }
-  }
-
-  const authUser = data.session ? data.user : (await supabase.auth.getUser()).data.user;
-  if (!authUser) {
-    return NextResponse.json({
-      success: true,
-      needsConfirmation: true,
-      profile: null,
-    });
-  }
-
   const profile = await syncAuthUser({
-    authId: authUser.id,
+    authId: signedIn.data.user.id,
     email,
     name,
     phone,
     cpf,
   });
 
-  return NextResponse.json({ success: true, profile });
+  return json({ success: true, profile });
 }

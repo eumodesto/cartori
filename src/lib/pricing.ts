@@ -2,6 +2,7 @@ import { CertificateFormat, CertificateTypeConfig, CartItem } from "@/lib/types"
 import {
   CRC_UF_FLAT_PRICES,
   CRC_UF_FORMAT_PRICES,
+  crcFormatKey,
   lookupUfApostillePrice,
   lookupUfFlatPrice,
   lookupUfFormatPrice,
@@ -40,11 +41,19 @@ export function listPriceFor(
   const sigla = (uf || "").toUpperCase();
 
   if (mode === "uf-format" && sigla) {
+    const row = cert.ufFormatPrices?.[sigla];
+    if (row) {
+      const key = crcFormatKey(format);
+      const found = row[key] ?? row.ELECTRONIC ?? row.PAPER ?? row.BOTH;
+      if (found != null) return roundMoney(found);
+    }
     const found = lookupUfFormatPrice(cert.slug, sigla, format);
     if (found != null) return roundMoney(found);
   }
 
   if (mode === "uf-flat" && sigla) {
+    const attached = cert.ufFlatPrices?.[sigla];
+    if (attached != null) return roundMoney(attached);
     const found = lookupUfFlatPrice(cert.slug, sigla);
     if (found != null) return roundMoney(found);
   }
@@ -54,14 +63,14 @@ export function listPriceFor(
 
 export function startingPriceFor(cert: CertificateTypeConfig): number {
   if (cert.priceMode === "uf-format") {
-    const table = CRC_UF_FORMAT_PRICES[cert.slug];
+    const table = cert.ufFormatPrices || CRC_UF_FORMAT_PRICES[cert.slug];
     const amounts = Object.values(table || {})
       .map((row) => row.ELECTRONIC)
       .filter((value): value is number => value != null && value > 0);
     if (amounts.length) return roundMoney(Math.min(...amounts));
   }
   if (cert.priceMode === "uf-flat") {
-    const table = CRC_UF_FLAT_PRICES[cert.slug];
+    const table = cert.ufFlatPrices || CRC_UF_FLAT_PRICES[cert.slug];
     const amounts = Object.values(table || {}).filter((value) => value > 0);
     if (amounts.length) return roundMoney(Math.min(...amounts));
   }
@@ -70,6 +79,10 @@ export function startingPriceFor(cert: CertificateTypeConfig): number {
 
 export function apostillePriceFor(cert: CertificateTypeConfig, uf?: string): number {
   if (!cert.hasApostilleOption) return 0;
+  const sigla = (uf || "").toUpperCase();
+  if (sigla && cert.ufApostillePrices?.[sigla] != null) {
+    return cert.ufApostillePrices[sigla];
+  }
   return lookupUfApostillePrice(cert.slug, uf) ?? cert.apostillePrice;
 }
 

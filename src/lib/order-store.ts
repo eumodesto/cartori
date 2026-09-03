@@ -8,6 +8,7 @@ import {
   PaymentStatus,
   Prisma,
 } from "@prisma/client";
+import { findExistingCartorioIds } from "@/lib/cartorios";
 import { prisma } from "@/lib/prisma";
 import {
   StoredOrder,
@@ -177,6 +178,17 @@ export async function listOrdersByUser(
   return orders.map(toStoredOrder);
 }
 
+export async function getOwnedOrder(
+  id: string,
+  userId: string
+): Promise<StoredOrder | null> {
+  const order = await prisma.order.findFirst({
+    where: { id, userId },
+    include: orderInclude,
+  });
+  return order ? toStoredOrder(order) : null;
+}
+
 export async function getOrderById(id: string): Promise<StoredOrder | null> {
   const order = await prisma.order.findUnique({
     where: { id },
@@ -256,6 +268,9 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
 
     await tx.orderItem.deleteMany({ where: { orderId: order.id } });
     if (order.items.length) {
+      const knownCartorioIds = await findExistingCartorioIds(
+        order.items.map((item) => item.cartorioId)
+      );
       await tx.orderItem.createMany({
         data: order.items.map((item) => ({
           id: item.id,
@@ -265,7 +280,10 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
           certificateName: item.certificateName,
           state: item.state,
           city: item.city,
-          cartorioId: item.cartorioId,
+          cartorioId:
+            item.cartorioId && knownCartorioIds.has(item.cartorioId)
+              ? item.cartorioId
+              : null,
           cartorioName: item.cartorioName,
           isUnknownCartorio: item.isUnknownCartorio,
           documentData: item.documentData,
@@ -336,6 +354,14 @@ export async function updateOrder(
   const current = await getOrderById(id);
   if (!current) return null;
   return saveOrder(patch(current));
+}
+
+export async function getOrderChargeAmount(orderId: string): Promise<Prisma.Decimal | null> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { totalAmount: true },
+  });
+  return order?.totalAmount ?? null;
 }
 
 export async function findOrderByPaymentId(

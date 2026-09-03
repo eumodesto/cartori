@@ -1,4 +1,4 @@
-import { getCertificateBySlug } from "@/lib/catalog";
+import { getProductBySlug } from "@/lib/product-store";
 import { isFieldVisible } from "@/lib/field-visibility";
 import { certificateNameWithInteiroTeor } from "@/lib/inteiro-teor";
 import { expandInteiroTeorCartItems, priceCertificate, roundMoney } from "@/lib/pricing";
@@ -7,7 +7,7 @@ import {
   StoredOrder,
   StoredOrderItem,
 } from "@/lib/order-types";
-import { CartItem, CertificateFormat } from "@/lib/types";
+import { CartItem, CertificateFormat, CertificateTypeConfig } from "@/lib/types";
 import { createId, digitsOnly } from "@/lib/utils";
 import { nextOrderNumber } from "@/lib/order-store";
 
@@ -21,12 +21,18 @@ export function protocolFromNumber(orderNumber: number): string {
   return `CTR-${String(orderNumber).padStart(6, "0")}`;
 }
 
-export function buildOrderItemFromCart(item: CartItem): StoredOrderItem {
-  const cert = getCertificateBySlug(item.certificateTypeSlug);
+export async function buildOrderItemFromCart(item: CartItem): Promise<StoredOrderItem> {
+  const cert = await getProductBySlug(item.certificateTypeSlug);
   if (!cert) {
     throw new Error(`Certidão não encontrada: ${item.certificateTypeSlug}`);
   }
+  return buildOrderItemFromCert(item, cert);
+}
 
+function buildOrderItemFromCert(
+  item: CartItem,
+  cert: CertificateTypeConfig
+): StoredOrderItem {
   const format = FORMATS.includes(item.format) ? item.format : "DIGITAL_ECERTIDAO";
   const isUnknownCartorio = Boolean(item.isUnknownCartorio);
   const documentData = Object.fromEntries(
@@ -112,13 +118,16 @@ export async function buildStoredOrder(
     throw new Error("O pedido precisa de ao menos uma certidão.");
   }
 
-  const items = payload.items.flatMap((item) => {
-    const cert = getCertificateBySlug(item.certificateTypeSlug);
+  const items: StoredOrderItem[] = [];
+  for (const item of payload.items) {
+    const cert = await getProductBySlug(item.certificateTypeSlug);
     if (!cert) {
       throw new Error(`Certidão não encontrada: ${item.certificateTypeSlug}`);
     }
-    return expandInteiroTeorCartItems(cert, item).map(buildOrderItemFromCart);
-  });
+    for (const expanded of expandInteiroTeorCartItems(cert, item)) {
+      items.push(buildOrderItemFromCert(expanded, cert));
+    }
+  }
   const itemsTotal = roundMoney(
     items.reduce((sum, item) => sum + item.totalPrice - item.shippingPrice, 0)
   );
@@ -182,29 +191,18 @@ export async function buildStoredOrder(
   };
 }
 
-export function publicOrder(order: StoredOrder) {
+export function toClientOrder(order: StoredOrder) {
   return {
     id: order.id,
     protocol: order.protocol,
-    orderNumber: order.orderNumber,
-    channel: order.channel,
     status: order.status,
     totalAmount: order.totalAmount,
-    itemsTotal: order.itemsTotal,
-    shippingTotal: order.shippingTotal,
-    customerName: order.customerName,
-    customerEmail: order.customerEmail,
     items: order.items.map((item) => ({
       id: item.id,
       certificateName: item.certificateName,
-      category: item.category,
       state: item.state,
       city: item.city,
-      cartorioName: item.cartorioName,
-      format: item.format,
       totalPrice: item.totalPrice,
-      estimatedDays: item.estimatedDays,
-      referenceTag: item.referenceTag,
     })),
     payment: order.payment
       ? {
@@ -213,7 +211,6 @@ export function publicOrder(order: StoredOrder) {
           qrCode: order.payment.qrCode,
           qrCodeBase64: order.payment.qrCodeBase64,
           ticketUrl: order.payment.ticketUrl,
-          demo: Boolean(order.payment.demo),
           method: order.payment.paymentMethod,
         }
       : null,

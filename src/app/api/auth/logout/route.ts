@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createRouteSupabase } from "@/lib/supabase/route";
 
 export async function POST() {
   if (!isSupabaseConfigured()) {
-    return NextResponse.json({ success: true });
+    return Response.json({ success: true });
   }
-  const supabase = createServerSupabase();
+  const { supabase, json } = createRouteSupabase();
   await supabase.auth.signOut();
-  return NextResponse.json({ success: true });
+  return json({ success: true });
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrderById } from "@/lib/order-store";
-import { publicOrder } from "@/lib/orders";
+import { loadOwnedOrder } from "@/lib/order-access";
+import { toClientOrder } from "@/lib/orders";
 import { ensureCardChargeForOrder, isCardPayment } from "@/lib/payments";
 
 export async function POST(
@@ -8,13 +8,10 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const order = await getOrderById(params.id);
-    if (!order) {
-      return NextResponse.json(
-        { success: false, error: "Pedido não encontrado." },
-        { status: 404 }
-      );
-    }
+    const result = await loadOwnedOrder(params.id);
+    if ("response" in result) return result.response;
+
+    const order = result.order;
 
     if (!isCardPayment(order)) {
       return NextResponse.json(
@@ -24,7 +21,14 @@ export async function POST(
     }
 
     if (order.status === "PAID") {
-      return NextResponse.json({ success: true, order: publicOrder(order) });
+      return NextResponse.json({ success: true, order: toClientOrder(order) });
+    }
+
+    if (order.status !== "PENDING_PAYMENT") {
+      return NextResponse.json(
+        { success: false, error: "Este pedido não aceita pagamento agora." },
+        { status: 400 }
+      );
     }
 
     const body = await req.json().catch(() => ({}));
@@ -32,7 +36,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      order: publicOrder(charged),
+      order: toClientOrder(charged),
     });
   } catch (error: unknown) {
     const message =

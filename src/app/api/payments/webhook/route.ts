@@ -1,76 +1,117 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMerchantOrderById, getPaymentById } from "@/lib/mercadopago";
-import { findOrderByPaymentId, getOrderById } from "@/lib/order-store";
-import { markOrderPaid } from "@/lib/payments";
-import { StoredOrder } from "@/lib/order-types";
+import { getMerchantOrderById } from "@/lib/mercadopago";
+import {
+  assertMercadoPagoWebhookSignature,
+  InvalidWebhookSignatureError,
+  WebhookSecretMissingError,
+} from "@/lib/mercadopago-webhook";
+import { reconcileMercadoPagoPayment } from "@/lib/payment-reconcile";
 
-async function approveIfPaid(order: StoredOrder, paymentId?: string) {
-  if (order.status === "PAID") return;
-  await markOrderPaid({
-    ...order,
-    payment: order.payment
-      ? {
-          ...order.payment,
-          providerPaymentId: paymentId || order.payment.providerPaymentId,
-          status: "APPROVED",
-        }
-      : order.payment,
-  });
+function unauthorized() {
+  return NextResponse.json(
+    { success: false, error: "Webhook não autorizado." },
+    { status: 401 }
+  );
+}
+
+function received() {
+  return NextResponse.json({ received: true });
+}
+
+function notificationDataId(
+  searchParams: URLSearchParams,
+  body: Record<string, unknown> | null
+): string | null {
+  const fromQuery = searchParams.get("data.id") || searchParams.get("id");
+  const fromBody = body?.data && typeof body.data === "object" && body.data
+    ? String((body.data as { id?: unknown }).id || "")
+    : "";
+  const value = (fromQuery || fromBody || "").trim();
+  return value || null;
+}
+
+function notificationType(
+  searchParams: URLSearchParams,
+  body: Record<string, unknown> | null
+): string {
+  return String(
+    searchParams.get("type") ||
+      searchParams.get("topic") ||
+      body?.type ||
+      body?.action ||
+      ""
+  ).toLowerCase();
+}
+
+function merchantOrderPaymentIds(raw: unknown): string[] {
+  if (!raw || typeof raw !== "object") return [];
+  const payments = (raw as { payments?: Array<{ id?: string | number }> }).payments;
+  if (!Array.isArray(payments)) return [];
+  return payments
+    .map((item) => String(item?.id || "").trim())
+    .filter(Boolean);
 }
 
 export async function GET() {
-  return NextResponse.json({ success: true });
+  return new NextResponse(null, {
+    status: 405,
+    headers: { Allow: "POST" },
+  });
 }
 
 export async function POST(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+  const dataId = notificationDataId(searchParams, body);
+
   try {
-    const { searchParams } = new URL(req.url);
-    let type = searchParams.get("type") || searchParams.get("topic");
-    let dataId = searchParams.get("data.id") || searchParams.get("id");
+    assertMercadoPagoWebhookSignature({
+      xSignature: req.headers.get("x-signature"),
+      xRequestId: req.headers.get("x-request-id"),
+      dataId,
+    });
+  } catch (error) {
+    if (
+      error instanceof WebhookSecretMissingError ||
+      error instanceof InvalidWebhookSignatureError
+    ) {
+      console.warn("[payments] invalid_signature", {
+        reason:
+          error instanceof InvalidWebhookSignatureError
+            ? error.reason
+            : "secret_missing",
+        requestId: req.headers.get("x-request-id") || undefined,
+      });
+      return unauthorized();
+    }
+    throw error;
+  }
 
-    if (!type || !dataId) {
-      const body = await req.json().catch(() => null);
-      type = type || body?.type || body?.action;
-      dataId = dataId || body?.data?.id || body?.id;
+  if (!dataId) {
+    return received();
+  }
+
+  try {
+    const topic = notificationType(searchParams, body);
+
+    if (topic.includes("merchant_order")) {
+      const merchantOrder = await getMerchantOrderById(dataId);
+      for (const paymentId of merchantOrderPaymentIds(merchantOrder)) {
+        await reconcileMercadoPagoPayment(paymentId);
+      }
+      return received();
     }
 
-    const topic = String(type || "").toLowerCase();
-
-    if (topic.includes("merchant_order") && dataId) {
-      const merchantOrder = await getMerchantOrderById(String(dataId));
-      const approved = (merchantOrder.payments || []).find(
-        (item) => item.status === "approved" && item.id
-      );
-      const externalRef = String(merchantOrder.external_reference || "");
-      const byPayment = approved?.id
-        ? await findOrderByPaymentId(String(approved.id))
-        : null;
-      const byPreference = merchantOrder.preference_id
-        ? await findOrderByPaymentId(String(merchantOrder.preference_id))
-        : null;
-      const order =
-        byPayment ||
-        byPreference ||
-        (externalRef ? await getOrderById(externalRef) : null);
-      if (order && approved?.id) {
-        await approveIfPaid(order, String(approved.id));
-      }
-    } else if (topic.includes("payment") && dataId) {
-      const paymentInfo = await getPaymentById(String(dataId));
-      const externalRef = String(paymentInfo.external_reference || "");
-      const byPayment = await findOrderByPaymentId(String(dataId));
-      const order = byPayment || (externalRef ? await getOrderById(externalRef) : null);
-
-      if (order && paymentInfo.status === "approved") {
-        await approveIfPaid(order, String(dataId));
-      }
+    if (topic.includes("payment") || !topic) {
+      await reconcileMercadoPagoPayment(dataId);
     }
 
-    return NextResponse.json({ success: true, received: true });
+    return received();
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Erro no webhook Mercado Pago.";
-    console.error("Erro no Webhook Mercado Pago:", error);
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    console.error("Erro no Webhook Mercado Pago:", error instanceof Error ? error.message : error);
+    return NextResponse.json(
+      { success: false, error: "Falha ao processar notificação." },
+      { status: 500 }
+    );
   }
 }

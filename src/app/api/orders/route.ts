@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthProfile } from "@/lib/auth";
 import { saveOrder, listOrdersByUser } from "@/lib/order-store";
-import { buildStoredOrder, publicOrder } from "@/lib/orders";
+import { buildStoredOrder, toClientOrder } from "@/lib/orders";
 import {
   chargeCardForOrder,
   issuePixForOrder,
@@ -26,7 +26,7 @@ export async function GET() {
   const orders = await listOrdersByUser(profile.id, profile.organization?.id);
   return NextResponse.json({
     success: true,
-    orders: orders.map(publicOrder),
+    orders: orders.map(toClientOrder),
   });
 }
 
@@ -104,21 +104,21 @@ export async function POST(req: NextRequest) {
       if (!body.card) {
         return NextResponse.json({
           success: true,
-          order: publicOrder(prepared),
+          order: toClientOrder(prepared),
         });
       }
       try {
         const charged = await chargeCardForOrder(prepared, body.card);
         return NextResponse.json({
           success: true,
-          order: publicOrder(charged),
+          order: toClientOrder(charged),
         });
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : "Erro ao pagar com cartão.";
         console.error("Erro cartão POST /api/orders:", error);
         return NextResponse.json(
-          { success: false, error: message, order: publicOrder(prepared) },
+          { success: false, error: message, order: toClientOrder(prepared) },
           { status: 402 }
         );
       }
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     const withPayment = await issuePixForOrder(order);
     return NextResponse.json({
       success: true,
-      order: publicOrder(withPayment),
+      order: toClientOrder(withPayment),
     });
   } catch (error: unknown) {
     const message =

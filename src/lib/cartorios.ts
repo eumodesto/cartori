@@ -1,3 +1,9 @@
+import {
+  attributionFromCodes,
+  codesFromAttribution,
+  matchesServentiaCategory,
+} from "./cartorio-attributions";
+import { prisma } from "./prisma";
 import { CartorioInfo } from "./types";
 
 // Base oficial completa e fidedigna de Serventias Cartoriais do Brasil (CNS / CNJ)
@@ -260,6 +266,90 @@ const SERVENTIAS_OFICIAIS_DATABASE: Record<string, CartorioInfo[]> = {
   ],
 };
 
+export function listOfficialServentias(uf?: string): CartorioInfo[] {
+  const prefix = uf ? `${uf.toUpperCase().trim()}_` : "";
+  return Object.entries(SERVENTIAS_OFICIAIS_DATABASE)
+    .filter(([key]) => !prefix || key.startsWith(prefix))
+    .flatMap(([, list]) => list);
+}
+
+function filterByCategory(list: CartorioInfo[], category: string): CartorioInfo[] {
+  const filtered = list.filter((item) =>
+    matchesServentiaCategory(item.attribution, codesFromAttribution(item.attribution), category)
+  );
+  return filtered.length > 0 ? filtered : list;
+}
+
+function toCartorioInfo(row: {
+  id: string;
+  cns: string | null;
+  name: string;
+  officialName: string | null;
+  attributions: string[];
+  state: string;
+  city: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+}): CartorioInfo {
+  return {
+    id: row.id,
+    cns: row.cns || "",
+    name: row.officialName || row.name,
+    attribution: attributionFromCodes(row.attributions),
+    state: row.state,
+    city: row.city,
+    address: row.address || undefined,
+    phone: row.phone || undefined,
+    email: row.email || undefined,
+  };
+}
+
+async function findCartoriosInDatabase(
+  uf: string,
+  city: string,
+  category: string
+): Promise<CartorioInfo[]> {
+  try {
+    const rows = await prisma.cartorio.findMany({
+      where: {
+        state: uf,
+        city: { equals: city, mode: "insensitive" },
+      },
+      orderBy: { id: "asc" },
+    });
+    if (!rows.length) return [];
+    return filterByCategory(rows.map(toCartorioInfo), category);
+  } catch (error) {
+    console.error("Falha ao consultar Cartorio no banco:", error);
+    return [];
+  }
+}
+
+/** IDs que existem na tabela Cartorio. Placeholders do interior e busca não entram. */
+export async function findExistingCartorioIds(
+  ids: Array<string | null | undefined>
+): Promise<Set<string>> {
+  const unique = [
+    ...new Set(
+      ids
+        .map((id) => id?.trim())
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  if (!unique.length) return new Set();
+  try {
+    const rows = await prisma.cartorio.findMany({
+      where: { id: { in: unique } },
+      select: { id: true },
+    });
+    return new Set(rows.map((row) => row.id));
+  } catch (error) {
+    console.error("Falha ao validar cartorioId:", error);
+    return new Set();
+  }
+}
+
 function normalizeKey(str: string): string {
   return str
     .normalize("NFD")
@@ -281,100 +371,81 @@ export async function getCartoriosByCityAndCategory(
   const upperUf = state.toUpperCase().trim();
   const normalizedCity = city.trim();
   const lookupKey = `${upperUf}_${normalizeKey(normalizedCity)}`;
+  const cityKey = normalizeKey(normalizedCity);
 
-  // 1. Busca na base oficial detalhada
+  const fromDatabase = await findCartoriosInDatabase(upperUf, normalizedCity, category);
+  if (fromDatabase.length > 0) return fromDatabase;
+
   const specificCityServentias = SERVENTIAS_OFICIAIS_DATABASE[lookupKey];
-
-  if (specificCityServentias && specificCityServentias.length > 0) {
-    if (category === "registro-civil") {
-      const filtered = specificCityServentias.filter((s) => s.attribution.includes("Registro Civil"));
-      if (filtered.length > 0) return filtered;
-    } else if (category === "imoveis") {
-      const filtered = specificCityServentias.filter((s) => s.attribution.includes("Registro de Imóveis"));
-      if (filtered.length > 0) return filtered;
-    } else if (category === "notas") {
-      const filtered = specificCityServentias.filter((s) => s.attribution.includes("Tabelionato de Notas"));
-      if (filtered.length > 0) return filtered;
-    } else if (category === "protesto") {
-      const filtered = specificCityServentias.filter((s) => s.attribution.includes("Protesto"));
-      if (filtered.length > 0) return filtered;
-    }
-    return specificCityServentias;
+  if (specificCityServentias?.length) {
+    return filterByCategory(specificCityServentias, category);
   }
 
-  // 2. Para cidades do interior / comarcas não customizadas:
-  const results: CartorioInfo[] = [];
+  const placeholder = (
+    id: string,
+    name: string,
+    attribution: string
+  ): CartorioInfo => ({
+    id,
+    cns: "",
+    name,
+    attribution,
+    state: upperUf,
+    city: normalizedCity,
+  });
 
   if (category === "registro-civil") {
-    results.push(
-      {
-        id: `rc-1-${upperUf}-${normalizeKey(normalizedCity)}`,
-        cns: `11.${Math.floor(1000 + Math.random() * 9000)}-${upperUf}`,
-        name: `Oficial de Registro Civil das Pessoas Naturais (Sede) - ${normalizedCity}`,
-        attribution: "Registro Civil de Pessoas Naturais",
-        state: upperUf,
-        city: normalizedCity,
-      },
-      {
-        id: `rc-2-${upperUf}-${normalizeKey(normalizedCity)}`,
-        cns: `11.${Math.floor(1000 + Math.random() * 9000)}-${upperUf}`,
-        name: `Cartório de Registro Civil e Tabelionato de Notas do 2º Distrito - ${normalizedCity}`,
-        attribution: "Registro Civil de Pessoas Naturais e Notas",
-        state: upperUf,
-        city: normalizedCity,
-      }
-    );
-  } else if (category === "imoveis") {
-    results.push(
-      {
-        id: `ri-1-${upperUf}-${normalizeKey(normalizedCity)}`,
-        cns: `12.${Math.floor(1000 + Math.random() * 9000)}-${upperUf}`,
-        name: `Oficial de Registro de Imóveis da Comarca de ${normalizedCity}`,
-        attribution: "Registro de Imóveis",
-        state: upperUf,
-        city: normalizedCity,
-      }
-    );
-  } else if (category === "notas") {
-    results.push(
-      {
-        id: `tab-1-${upperUf}-${normalizeKey(normalizedCity)}`,
-        cns: `13.${Math.floor(1000 + Math.random() * 9000)}-${upperUf}`,
-        name: `1º Tabelionato de Notas de ${normalizedCity}`,
-        attribution: "Tabelionato de Notas",
-        state: upperUf,
-        city: normalizedCity,
-      },
-      {
-        id: `tab-2-${upperUf}-${normalizeKey(normalizedCity)}`,
-        cns: `13.${Math.floor(1000 + Math.random() * 9000)}-${upperUf}`,
-        name: `2º Tabelionato de Notas de ${normalizedCity}`,
-        attribution: "Tabelionato de Notas",
-        state: upperUf,
-        city: normalizedCity,
-      }
-    );
-  } else if (category === "protesto") {
-    results.push(
-      {
-        id: `prot-1-${upperUf}-${normalizeKey(normalizedCity)}`,
-        cns: `14.${Math.floor(1000 + Math.random() * 9000)}-${upperUf}`,
-        name: `Tabelionato de Protesto de Títulos da Comarca de ${normalizedCity}`,
-        attribution: "Protesto de Títulos",
-        state: upperUf,
-        city: normalizedCity,
-      }
-    );
-  } else {
-    results.push({
-      id: `oficio-unico-${upperUf}-${normalizeKey(normalizedCity)}`,
-      cns: `10.${Math.floor(1000 + Math.random() * 9000)}-${upperUf}`,
-      name: `Cartório do Ofício Único Notarial e Registral de ${normalizedCity}`,
-      attribution: "Serviço Notarial e Registral Integrado",
-      state: upperUf,
-      city: normalizedCity,
-    });
+    return [
+      placeholder(
+        `rc-1-${upperUf}-${cityKey}`,
+        `Oficial de Registro Civil das Pessoas Naturais (Sede) - ${normalizedCity}`,
+        "Registro Civil de Pessoas Naturais"
+      ),
+      placeholder(
+        `rc-2-${upperUf}-${cityKey}`,
+        `Cartório de Registro Civil e Tabelionato de Notas do 2º Distrito - ${normalizedCity}`,
+        "Registro Civil de Pessoas Naturais e Notas"
+      ),
+    ];
+  }
+  if (category === "imoveis") {
+    return [
+      placeholder(
+        `ri-1-${upperUf}-${cityKey}`,
+        `Oficial de Registro de Imóveis da Comarca de ${normalizedCity}`,
+        "Registro de Imóveis"
+      ),
+    ];
+  }
+  if (category === "notas") {
+    return [
+      placeholder(
+        `tab-1-${upperUf}-${cityKey}`,
+        `1º Tabelionato de Notas de ${normalizedCity}`,
+        "Tabelionato de Notas"
+      ),
+      placeholder(
+        `tab-2-${upperUf}-${cityKey}`,
+        `2º Tabelionato de Notas de ${normalizedCity}`,
+        "Tabelionato de Notas"
+      ),
+    ];
+  }
+  if (category === "protesto") {
+    return [
+      placeholder(
+        `prot-1-${upperUf}-${cityKey}`,
+        `Tabelionato de Protesto de Títulos da Comarca de ${normalizedCity}`,
+        "Protesto de Títulos"
+      ),
+    ];
   }
 
-  return results;
+  return [
+    placeholder(
+      `oficio-unico-${upperUf}-${cityKey}`,
+      `Cartório do Ofício Único Notarial e Registral de ${normalizedCity}`,
+      "Serviço Notarial e Registral Integrado"
+    ),
+  ];
 }

@@ -4,8 +4,15 @@ import {
   isMercadoPagoConfigured,
   parseCardPaymentForm,
 } from "@/lib/mercadopago";
+import { chargeAmountNumber } from "@/lib/money-cents";
 import { StoredOrder, StoredPayment } from "@/lib/order-types";
-import { saveOrder } from "@/lib/order-store";
+import {
+  getOrderById,
+  getOrderChargeAmount,
+  getOwnedOrder,
+  saveOrder,
+} from "@/lib/order-store";
+import { reconcileMercadoPagoPayment } from "@/lib/payment-reconcile";
 import { createId, digitsOnly } from "@/lib/utils";
 import { identificationType } from "@/lib/validators";
 
@@ -46,11 +53,26 @@ export function hasLivePix(order: StoredOrder): boolean {
   return Boolean(payment.qrCodeBase64) || payment.qrCode.startsWith("000201");
 }
 
-function paymentStatusFromMp(status?: string): StoredPayment["status"] {
-  if (status === "approved") return "APPROVED";
-  if (status === "rejected") return "REJECTED";
-  if (status === "cancelled") return "CANCELLED";
-  return "PENDING";
+async function serverChargeAmount(order: StoredOrder) {
+  const total = await getOrderChargeAmount(order.id);
+  if (!total) {
+    throw new Error("Pedido não encontrado para cobrança.");
+  }
+  return {
+    decimal: total,
+    number: chargeAmountNumber(total),
+  };
+}
+
+async function persistChargeThenReconcile(next: StoredOrder): Promise<StoredOrder> {
+  const saved = await saveOrder(next);
+  const providerPaymentId = saved.payment?.providerPaymentId;
+  if (!providerPaymentId) return saved;
+  await reconcileMercadoPagoPayment(providerPaymentId);
+  const refreshed = saved.userId
+    ? await getOwnedOrder(saved.id, saved.userId)
+    : await getOrderById(saved.id);
+  return refreshed || saved;
 }
 
 export async function issuePixForOrder(order: StoredOrder): Promise<StoredOrder> {
@@ -62,10 +84,11 @@ export async function issuePixForOrder(order: StoredOrder): Promise<StoredOrder>
     );
   }
 
+  const amount = await serverChargeAmount(order);
   const pix = await createPixPayment({
     orderId: order.id,
     orderNumber: order.orderNumber,
-    amount: order.totalAmount,
+    amount: amount.number,
     description: `Cartori ${order.protocol}`,
     payer: checkoutPayer(order),
   });
@@ -75,34 +98,34 @@ export async function issuePixForOrder(order: StoredOrder): Promise<StoredOrder>
     provider: "MERCADOPAGO",
     providerPaymentId: pix.paymentId,
     paymentMethod: "PIX",
-    status: pix.status === "approved" ? "APPROVED" : "PENDING",
-    amount: order.totalAmount,
+    status: "PENDING",
+    amount: amount.number,
     qrCode: pix.qrCode,
     qrCodeBase64: pix.qrCodeBase64,
     ticketUrl: pix.ticketUrl,
     demo: false,
   };
 
-  const next: StoredOrder = {
+  return persistChargeThenReconcile({
     ...order,
     payment,
-    status: payment.status === "APPROVED" ? "PAID" : "PENDING_PAYMENT",
+    totalAmount: amount.number,
+    status: "PENDING_PAYMENT",
     updatedAt: new Date().toISOString(),
-  };
-
-  return saveOrder(next);
+  });
 }
 
 export async function prepareCardOrder(order: StoredOrder): Promise<StoredOrder> {
   if (order.status === "PAID") return order;
 
+  const amount = await serverChargeAmount(order);
   const payment: StoredPayment = {
     id: order.payment?.id || createId(),
     provider: "MERCADOPAGO",
     providerPaymentId: order.payment?.providerPaymentId,
     paymentMethod: "CREDIT_CARD",
     status: "PENDING",
-    amount: order.totalAmount,
+    amount: amount.number,
     demo: false,
   };
 
@@ -127,17 +150,17 @@ export async function chargeCardForOrder(
   }
 
   const card = parseCardPaymentForm(cardBody);
+  const amount = await serverChargeAmount(order);
   const charged = await createCardPayment({
     orderId: order.id,
     orderNumber: order.orderNumber,
-    amount: order.totalAmount,
+    amount: amount.number,
     description: `Cartori ${order.protocol}`,
     payer: checkoutPayer(order),
     ...card,
   });
 
-  const status = paymentStatusFromMp(charged.status);
-  if (status === "REJECTED" || status === "CANCELLED") {
+  if (charged.status === "rejected" || charged.status === "cancelled") {
     throw new Error(
       charged.statusDetail
         ? `Pagamento recusado (${charged.statusDetail}). Confira os dados do cartão e tente de novo.`
@@ -150,15 +173,16 @@ export async function chargeCardForOrder(
     provider: "MERCADOPAGO",
     providerPaymentId: charged.paymentId,
     paymentMethod: "CREDIT_CARD",
-    status,
-    amount: order.totalAmount,
+    status: "PENDING",
+    amount: amount.number,
     demo: false,
   };
 
-  return saveOrder({
+  return persistChargeThenReconcile({
     ...order,
     payment,
-    status: status === "APPROVED" ? "PAID" : "PENDING_PAYMENT",
+    totalAmount: amount.number,
+    status: "PENDING_PAYMENT",
     updatedAt: new Date().toISOString(),
   });
 }
@@ -192,15 +216,3 @@ export async function ensureCardChargeForOrder(
   return task;
 }
 
-export async function markOrderPaid(order: StoredOrder): Promise<StoredOrder> {
-  const now = new Date().toISOString();
-  const next: StoredOrder = {
-    ...order,
-    status: "PAID",
-    payment: order.payment
-      ? { ...order.payment, status: "APPROVED" }
-      : order.payment,
-    updatedAt: now,
-  };
-  return saveOrder(next);
-}

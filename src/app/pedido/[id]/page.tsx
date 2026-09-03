@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { CheckCircle2, Copy } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { MercadoPagoCardBrick } from "@/components/storefront/mercadopago-card-brick";
 import { Alert } from "@/components/ui/alert";
@@ -11,68 +12,66 @@ import { Button } from "@/components/ui/button";
 import { Stepper } from "@/components/ui/stepper";
 import { PixQr } from "@/components/storefront/pix-qr";
 import { formatCurrency } from "@/lib/utils";
+import { livePixCode, type PublicOrder } from "@/lib/order-status";
 
-interface PublicOrder {
-  id: string;
-  protocol: string;
-  status: string;
-  totalAmount: number;
-  items: Array<{
-    id: string;
-    certificateName: string;
-    city: string;
-    state: string;
-    totalPrice: number;
-  }>;
-  payment: {
-    status: string;
-    amount: number;
-    qrCode?: string;
-    qrCodeBase64?: string;
-    ticketUrl?: string;
-    method?: "PIX" | "CREDIT_CARD";
-  } | null;
-}
-
-function livePixCode(qrCode?: string) {
-  if (!qrCode) return "";
-  if (/^CARTORI-.+-DEMO$/i.test(qrCode)) return "";
-  return qrCode;
-}
-
-function orderQuery() {
-  if (typeof window === "undefined") return "";
-  return window.location.search || "";
+function loginHref(orderId: string) {
+  return `/?entrar=1&next=${encodeURIComponent(`/pedido/${orderId}`)}`;
 }
 
 export default function PedidoPage() {
   const params = useParams<{ id: string }>();
+  const { profile, loading: authLoading } = useAuth();
   const [order, setOrder] = useState<PublicOrder | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   const load = async () => {
-    const res = await fetch(`/api/orders/${params.id}${orderQuery()}`, {
-      cache: "no-store",
-    });
+    const res = await fetch(`/api/orders/${params.id}`, { cache: "no-store" });
+    if (res.status === 401) {
+      window.location.assign(loginHref(params.id));
+      return false;
+    }
     const data = await res.json();
-    if (!data.success) {
-      setError(data.error || "Pedido não encontrado.");
-      return;
+    if (res.status === 404 || !data.success) {
+      setOrder(null);
+      setNotFound(true);
+      setError("Pedido não encontrado.");
+      return false;
     }
     setOrder(data.order);
-    setError(data.paymentError || "");
+    setNotFound(false);
+    setError("");
+    return true;
   };
 
   useEffect(() => {
-    if (!params.id) return;
-    load().catch(() => setError("Falha ao carregar o pedido."));
-    const timer = window.setInterval(() => {
-      load().catch(() => undefined);
-    }, 4000);
-    return () => window.clearInterval(timer);
+    if (!params.id || authLoading) return;
+    if (!profile) {
+      window.location.assign(loginHref(params.id));
+      return;
+    }
+
+    let cancelled = false;
+    let timer: number | undefined;
+
+    load()
+      .then((ok) => {
+        if (!ok || cancelled) return;
+        timer = window.setInterval(() => {
+          load().catch(() => undefined);
+        }, 4000);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Falha ao carregar o pedido.");
+      });
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearInterval(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  }, [params.id, profile, authLoading]);
 
   const pixCode = livePixCode(order?.payment?.qrCode);
   const isCard = order?.payment?.method === "CREDIT_CARD";
@@ -90,9 +89,16 @@ export default function PedidoPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(card),
     });
+    if (res.status === 401) {
+      window.location.assign(loginHref(params.id));
+      throw new Error("Entre na conta para pagar.");
+    }
     const data = await res.json();
-    if (!data.success) {
-      const fail = data.error || "Não foi possível pagar com cartão.";
+    if (res.status === 404 || !data.success) {
+      const fail =
+        res.status === 404
+          ? "Pedido não encontrado."
+          : data.error || "Não foi possível pagar com cartão.";
       setError(fail);
       throw new Error(fail);
     }
@@ -118,10 +124,29 @@ export default function PedidoPage() {
             ]}
           />
 
-          {!order && !error && (
+          {authLoading && (
             <p className="text-sm text-neutral-500">Carregando pedido...</p>
           )}
-          {error && <Alert variant="error" title="Erro">{error}</Alert>}
+
+          {!authLoading && !profile && (
+            <p className="text-sm text-neutral-500">Redirecionando para entrar...</p>
+          )}
+
+          {profile && !order && !error && !notFound && (
+            <p className="text-sm text-neutral-500">Carregando pedido...</p>
+          )}
+
+          {error && (
+            <Alert variant="error" title={notFound ? "Pedido" : "Erro"}>
+              {error}
+            </Alert>
+          )}
+
+          {notFound && (
+            <Link href="/dashboard">
+              <Button variant="outline">Abrir painel</Button>
+            </Link>
+          )}
 
           {order && paid && (
             <div className="rounded-2xl border border-semantic-success-border bg-semantic-success-bg p-6 space-y-4">
