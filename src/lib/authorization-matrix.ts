@@ -1,26 +1,23 @@
 import { UserRole } from "@prisma/client";
 
 /**
- * Current authorization matrix (Etapa 6B).
+ * Authorization matrix (Etapa 6C).
+ *
+ * Platform roles: CLIENT, OPERATOR, ADMIN.
+ * Tenant access is OrganizationMember ACTIVE (orgRole OWNER | ADMIN | MEMBER).
  *
  * ALLOW  — implemented now
  * DENY   — implemented deny
  * FUTURE — intended later, not granted now
  * TBD    — product decision missing; fail-closed
  *
- * Do not treat B2B_ADMIN as a weaker ADMIN. They are different domains.
- * Do not treat OrganizationMemberRole.ADMIN as UserRole.ADMIN.
- *
- * Tenant membership is OrganizationMember ACTIVE. User.organizationId / B2B_*
- * are dual-write compatibility only and do not authorize.
+ * OrganizationMemberRole.ADMIN is not UserRole.ADMIN.
  */
 export type AuthorizationDecision = "ALLOW" | "DENY" | "FUTURE" | "TBD";
 
 export type AuthorizationMatrixRow = {
   resource: string;
   CLIENT: AuthorizationDecision;
-  B2B_ADMIN: AuthorizationDecision;
-  B2B_MEMBER: AuthorizationDecision;
   OPERATOR: AuthorizationDecision;
   ADMIN: AuthorizationDecision;
   notes: string;
@@ -30,26 +27,20 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
   {
     resource: "próprio perfil (GET /api/auth/me)",
     CLIENT: "ALLOW",
-    B2B_ADMIN: "ALLOW",
-    B2B_MEMBER: "ALLOW",
     OPERATOR: "ALLOW",
     ADMIN: "ALLOW",
-    notes: "Sessão + User Prisma por authId. Sem sessão: profile null, HTTP 200.",
+    notes: "Sessão + User Prisma por authId. isBusiness = Membership ACTIVE.",
   },
   {
     resource: "criar pedido B2C (POST /api/orders)",
     CLIENT: "ALLOW",
-    B2B_ADMIN: "ALLOW",
-    B2B_MEMBER: "ALLOW",
     OPERATOR: "ALLOW",
     ADMIN: "ALLOW",
-    notes: "Pedido nasce com userId do contexto. organizationId só do banco. Body role/userId/org/sellerOrgId ignorados.",
+    notes: "Pedido nasce com userId do contexto. Order.organizationId da Membership ACTIVE. Body role/userId/org/sellerOrgId ignorados.",
   },
   {
     resource: "listar próprios pedidos B2C (GET /api/orders)",
     CLIENT: "ALLOW",
-    B2B_ADMIN: "ALLOW",
-    B2B_MEMBER: "ALLOW",
     OPERATOR: "ALLOW",
     ADMIN: "ALLOW",
     notes: "Somente order.userId === context.userId. Sem OR por organizationId.",
@@ -57,17 +48,13 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
   {
     resource: "pedido B2C alheio (GET /api/orders/[id])",
     CLIENT: "DENY",
-    B2B_ADMIN: "DENY",
-    B2B_MEMBER: "DENY",
     OPERATOR: "DENY",
     ADMIN: "DENY",
-    notes: "404. ADMIN global FUTURE. OPERATOR assigned-vs-global TBD.",
+    notes: "404. Membership não concede leitura org-wide. ADMIN global FUTURE.",
   },
   {
     resource: "próprio pedido B2C (GET /api/orders/[id], card)",
     CLIENT: "ALLOW",
-    B2B_ADMIN: "ALLOW",
-    B2B_MEMBER: "ALLOW",
     OPERATOR: "ALLOW",
     ADMIN: "ALLOW",
     notes: "Ownership pessoal. Não substitui por userId OR organizationId.",
@@ -75,35 +62,27 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
   {
     resource: "listar pedidos da Organization",
     CLIENT: "DENY",
-    B2B_ADMIN: "TBD",
-    B2B_MEMBER: "TBD",
     OPERATOR: "TBD",
     ADMIN: "FUTURE",
-    notes: "Fail-closed. B2B_MEMBER não herda todos os pedidos do tenant.",
+    notes: "Fail-closed. MEMBER/OWNER não herda todos os pedidos do tenant.",
   },
   {
     resource: "Organization (acesso ao tenant)",
-    CLIENT: "DENY",
-    B2B_ADMIN: "ALLOW",
-    B2B_MEMBER: "ALLOW",
+    CLIENT: "ALLOW",
     OPERATOR: "DENY",
     ADMIN: "FUTURE",
-    notes: "requireOrganizationAccess: ACTIVE membership na org. User.organizationId não autoriza. ADMIN bypass só se allowGlobalAdmin explícito.",
+    notes: "CLIENT só com Membership ACTIVE na org. ADMIN bypass só se allowGlobalAdmin explícito.",
   },
   {
     resource: "onboarding empresarial (POST /api/org; alias POST /api/org/partner)",
     CLIENT: "ALLOW",
-    B2B_ADMIN: "ALLOW",
-    B2B_MEMBER: "DENY",
     OPERATOR: "DENY",
     ADMIN: "DENY",
-    notes: "CLIENT sem membership ACTIVE, ou OWNER/ADMIN ACTIVE da mesma org. Dual-write ainda grava B2B_ADMIN. Não concede PARTNER. /api/org/partner é alias legado.",
+    notes: "CLIENT sem membership, ou OWNER/ADMIN ACTIVE da mesma org. MEMBER DENY. Não promove platformRole. Não concede PARTNER.",
   },
   {
     resource: "administração global Cartori",
     CLIENT: "DENY",
-    B2B_ADMIN: "DENY",
-    B2B_MEMBER: "DENY",
     OPERATOR: "DENY",
     ADMIN: "FUTURE",
     notes: "Nenhuma API admin nesta etapa.",
@@ -111,8 +90,6 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
   {
     resource: "fila operacional / atribuir pedido a OPERATOR",
     CLIENT: "DENY",
-    B2B_ADMIN: "DENY",
-    B2B_MEMBER: "DENY",
     OPERATOR: "TBD",
     ADMIN: "FUTURE",
     notes: "Escopo OPERATOR (global vs assigned-only) não decidido.",
@@ -120,18 +97,10 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
   {
     resource: "equipe / invites / OrganizationMember",
     CLIENT: "FUTURE",
-    B2B_ADMIN: "FUTURE",
-    B2B_MEMBER: "FUTURE",
     OPERATOR: "DENY",
     ADMIN: "FUTURE",
     notes: "Não implementar nesta etapa.",
   },
 ];
 
-export const AUTHORIZATION_ROLES: UserRole[] = [
-  "CLIENT",
-  "B2B_ADMIN",
-  "B2B_MEMBER",
-  "OPERATOR",
-  "ADMIN",
-];
+export const AUTHORIZATION_ROLES: UserRole[] = ["CLIENT", "OPERATOR", "ADMIN"];

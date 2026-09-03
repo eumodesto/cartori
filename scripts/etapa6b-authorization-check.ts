@@ -32,13 +32,14 @@ assert(!canAccessOrganization(client, "org-a"), "CLIENT sem acesso B2B");
 assert(canOnboardBusiness(client), "CLIENT pode iniciar onboarding");
 
 const owner = ctx({
-  platformRole: "B2B_ADMIN",
+  platformRole: "CLIENT",
   memberships: [{ organizationId: "org-a", orgRole: "OWNER" }],
 });
 assert(hasActiveMembership(owner), "OWNER ACTIVE reconhecido");
 assert(canAccessOrganization(owner, "org-a"), "OWNER acessa própria org");
 assert(!canAccessOrganization(owner, "org-b"), "OWNER não acessa Org B");
 assert(canOnboardBusiness(owner), "OWNER pode atualizar a própria org");
+assert(owner.platformRole === "CLIENT", "OWNER permanece CLIENT");
 assert(hasOrgRole(owner, ["OWNER"]), "orgRole OWNER");
 
 const orgAdmin = ctx({
@@ -51,7 +52,7 @@ assert(orgAdmin.orgRole === "ADMIN", "orgRole ADMIN");
 assert(canOnboardBusiness(orgAdmin), "ADMIN org pode atualizar");
 
 const member = ctx({
-  platformRole: "B2B_MEMBER",
+  platformRole: "CLIENT",
   userId: "um",
   memberships: [{ organizationId: "org-a", orgRole: "MEMBER" }],
 });
@@ -59,23 +60,8 @@ assert(canAccessOrganization(member, "org-a"), "MEMBER ACTIVE reconhecido");
 assert(!canOnboardBusiness(member), "MEMBER sem onboarding");
 assert(!hasOrgRole(member, ["OWNER", "ADMIN"]), "MEMBER sem papel de gestão");
 
-const removed = ctx({
-  platformRole: "B2B_ADMIN",
-  memberships: [],
-});
+const removed = ctx({ platformRole: "CLIENT" });
 assert(!canAccessOrganization(removed, "org-a"), "REMOVED / sem ACTIVE perde acesso");
-assert(!canOnboardBusiness(removed), "B2B_ADMIN legado sem membership não autoriza onboarding");
-
-const fkOnly = ctx({ platformRole: "B2B_ADMIN" });
-assert(fkOnly.organizationId === null, "contexto ignora User.organizationId");
-assert(!canAccessOrganization(fkOnly, "org-a"), "FK sem membership NÃO autoriza");
-
-const membershipWins = ctx({
-  platformRole: "CLIENT",
-  memberships: [{ organizationId: "org-a", orgRole: "OWNER" }],
-});
-assert(canAccessOrganization(membershipWins, "org-a"), "membership vence platformRole CLIENT");
-assert(membershipWins.role === "CLIENT", "platformRole legado permanece");
 
 const cartoriAdmin = ctx({ platformRole: "ADMIN" });
 assert(!canAccessOrganization(cartoriAdmin, "org-a"), "ADMIN Cartori sem allowGlobalAdmin");
@@ -102,10 +88,34 @@ assert(
     name: null,
     phone: null,
     cpf: null,
-    role: "B2B_ADMIN",
+    role: "CLIENT",
     organization: null,
   }),
   "isBusiness falso sem organization no perfil (membership)"
+);
+
+assert(
+  isBusinessAccount({
+    id: "u1",
+    authId: "a1",
+    email: "a@example.invalid",
+    name: null,
+    phone: null,
+    cpf: null,
+    role: "CLIENT",
+    organization: {
+      id: "org-a",
+      name: "Empresa A",
+      tradeName: null,
+      cnpj: "00000000000000",
+      plan: "STANDARD",
+      cnpjVerifiedAt: new Date().toISOString(),
+      cnpjStatus: "ATIVA",
+      city: null,
+      state: null,
+    },
+  }),
+  "isBusiness verdadeiro com membership no perfil"
 );
 
 console.log("etapa6b-authorization-check: PASS");

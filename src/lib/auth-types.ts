@@ -30,7 +30,7 @@ export function isBusinessAccount(profile: AuthProfile | null | undefined) {
 
 /**
  * Condição comercial Partner.
- * Independente de B2B_ADMIN. Activation policy: TBD.
+ * Independente de papel de plataforma. Activation policy: TBD.
  */
 export function isPartnerAccount(profile: AuthProfile | null | undefined) {
   return Boolean(

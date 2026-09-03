@@ -3,16 +3,14 @@ import { OrganizationMemberRole, UserRole } from "@prisma/client";
 /**
  * Pure authorization policy (no HTTP, no Prisma).
  *
- * INTERNAL Cartori: ADMIN, OPERATOR
- * TENANT / client:  CLIENT, B2B_ADMIN, B2B_MEMBER (platformRole legado)
- *
- * platformRole = User.role (Cartori / legado B2B_*).
- * orgRole + organizationId = OrganizationMember ACTIVE (fonte de verdade tenant).
+ * platformRole (User.role): CLIENT | OPERATOR | ADMIN
+ * orgRole + organizationId: OrganizationMember ACTIVE
  *
  * Role names are compared exactly. Never use role.includes("ADMIN").
+ * OrganizationMemberRole.ADMIN is not UserRole.ADMIN.
  */
 export const INTERNAL_ROLES = ["ADMIN", "OPERATOR"] as const;
-export const TENANT_ROLES = ["CLIENT", "B2B_ADMIN", "B2B_MEMBER"] as const;
+export const TENANT_ROLES = ["CLIENT"] as const;
 export const ORG_MANAGEMENT_ROLES = ["OWNER", "ADMIN"] as const;
 
 export type InternalRole = (typeof INTERNAL_ROLES)[number];
@@ -29,7 +27,7 @@ export type AuthContext = {
   /** Platform role. Alias of platformRole for callers still using context.role. */
   role: UserRole;
   platformRole: UserRole;
-  /** Current tenant from the single ACTIVE membership. Never from User.organizationId. */
+  /** Current tenant from the single ACTIVE membership. */
   organizationId: string | null;
   orgRole: OrganizationMemberRole | null;
 };
@@ -44,7 +42,7 @@ export function isInternalRole(role: UserRole): role is InternalRole {
 }
 
 export function isTenantRole(role: UserRole): role is TenantRole {
-  return role === "CLIENT" || role === "B2B_ADMIN" || role === "B2B_MEMBER";
+  return role === "CLIENT";
 }
 
 export function pickSingleActiveMembership(

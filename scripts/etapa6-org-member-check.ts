@@ -50,11 +50,10 @@ function makeCnpj(seed: number) {
   return prefix + String(d1) + String(d2);
 }
 
-assert(!wouldViolateSingleOrg(null, [], null), "empty user can create org");
-assert(!wouldViolateSingleOrg("org-a", ["org-a"], "org-a"), "same org is ok");
-assert(wouldViolateSingleOrg("org-a", ["org-a"], null), "second new org denied");
-assert(wouldViolateSingleOrg("org-a", ["org-a"], "org-b"), "other org denied");
-assert(wouldViolateSingleOrg(null, ["org-a"], null), "active membership blocks new org");
+assert(!wouldViolateSingleOrg([], null), "empty user can create org");
+assert(!wouldViolateSingleOrg(["org-a"], "org-a"), "same org is ok");
+assert(wouldViolateSingleOrg(["org-a"], null), "second new org denied");
+assert(wouldViolateSingleOrg(["org-a"], "org-b"), "other org denied");
 
 const prisma = new PrismaClient();
 
@@ -121,8 +120,7 @@ async function main() {
     assert(member?.status === "ACTIVE", "ACTIVE");
     assert(member?.removedAt == null, "removedAt null");
     assert(Boolean(member?.joinedAt), "joinedAt set");
-    assert(userAfter?.role === "B2B_ADMIN", "legacy B2B_ADMIN");
-    assert(userAfter?.organizationId === org.id, "legacy organizationId");
+    assert(userAfter?.role === "CLIENT", "platformRole stays CLIENT");
 
     await persistCreatorOnboarding({
       userId: userA.id,
@@ -169,8 +167,7 @@ async function main() {
     );
     assert(Boolean(concurrentOrg), "concurrency created one org");
     assert(concurrentMembers === 1, "concurrency one membership");
-    assert(concurrentUser?.role === "B2B_ADMIN", "concurrency legacy role");
-    assert(concurrentUser?.organizationId === concurrentOrg?.id, "concurrency legacy org");
+    assert(concurrentUser?.role === "CLIENT", "concurrency platformRole stays CLIENT");
 
     const orgB = await prisma.organization.create({
       data: {
@@ -182,7 +179,7 @@ async function main() {
     });
     createdOrgIds.push(orgB.id);
     assert(
-      wouldViolateSingleOrg(userAfter?.organizationId, [org.id], orgB.id),
+      wouldViolateSingleOrg([org.id], orgB.id),
       "second org helper"
     );
 

@@ -251,10 +251,6 @@ async function main() {
       },
     });
     createdOrgIds.push(orgA.id);
-    await prisma.user.update({
-      where: { id: String(profileA.id) },
-      data: { organizationId: orgA.id, role: "B2B_ADMIN" },
-    });
     await prisma.organizationMember.create({
       data: {
         userId: String(profileA.id),
@@ -269,12 +265,12 @@ async function main() {
     const biz = (meBiz.body.profile || {}) as Record<string, unknown>;
     const bizOrg = (biz.organization || {}) as Record<string, unknown>;
     record({
-      scenario: "Caso B: B2B_ADMIN + Organization STANDARD não é Partner",
+      scenario: "CLIENT + OWNER ACTIVE + Organization STANDARD não é Partner",
       role: String(biz.role || "none"),
       tenant: String(bizOrg.plan || "none"),
       http: meBiz.status,
       leaked: bizOrg.plan === "PARTNER",
-      pass: meBiz.status === 200 && biz.role === "B2B_ADMIN" && bizOrg.plan === "STANDARD",
+      pass: meBiz.status === 200 && biz.role === "CLIENT" && bizOrg.plan === "STANDARD",
     });
 
     const stillPersonal = await prisma.order.findUnique({
@@ -282,8 +278,8 @@ async function main() {
       select: { organizationId: true },
     });
     record({
-      scenario: "pedido pessoal anterior não é migrado ao virar B2B_ADMIN",
-      role: "B2B_ADMIN",
+      scenario: "pedido pessoal anterior não é migrado ao virar empresa",
+      role: "CLIENT",
       tenant: "org-a",
       http: 200,
       leaked: stillPersonal?.organizationId === orgA.id,
@@ -295,8 +291,8 @@ async function main() {
       ? (listA.body.orders as Array<Record<string, unknown>>)
       : [];
     record({
-      scenario: "B2B_ADMIN lista somente próprios pedidos (userId)",
-      role: "B2B_ADMIN",
+      scenario: "OWNER lista somente próprios pedidos (userId)",
+      role: "CLIENT",
       tenant: "org-a",
       http: listA.status,
       leaked: false,
@@ -313,7 +309,7 @@ async function main() {
     const idemOrg = (idem.organization || {}) as Record<string, unknown>;
     const orgCount = await prisma.organization.count({ where: { cnpj: cnpjA } });
     record({
-      scenario: "B2B_ADMIN reenvia mesmo CNPJ com plan PARTNER no body",
+      scenario: "OWNER reenvia mesmo CNPJ com plan PARTNER no body",
       role: String(idem.role || "none"),
       tenant: String(idemOrg.plan || "none"),
       http: idempotent.status,
@@ -322,7 +318,7 @@ async function main() {
         (idempotent.status === 400 ||
           idempotent.status === 404 ||
           idempotent.status === 200) &&
-        idem.role === "B2B_ADMIN" &&
+        idem.role === "CLIENT" &&
         idemOrg.plan === "STANDARD" &&
         orgCount === 1,
     });
@@ -341,7 +337,7 @@ async function main() {
     const steal = await jsonFetch(`${BASE}/api/org`, {
       method: "POST",
       headers: { "content-type": "application/json", cookie: cookieB },
-      body: JSON.stringify({ cnpj: cnpjB, role: "B2B_ADMIN" }),
+      body: JSON.stringify({ cnpj: cnpjB, role: "ADMIN" }),
     });
     const meB = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieB } });
     const profB = (meB.body.profile || {}) as Record<string, unknown>;
@@ -354,10 +350,6 @@ async function main() {
       pass: steal.status === 409 && profB.role === "CLIENT" && profB.organization == null,
     });
 
-    await prisma.user.update({
-      where: { id: String(profileB.id) },
-      data: { role: "B2B_MEMBER", organizationId: orgA.id },
-    });
     await prisma.organizationMember.create({
       data: {
         userId: String(profileB.id),
@@ -373,8 +365,8 @@ async function main() {
       body: JSON.stringify({ cnpj: "00", plan: "PARTNER" }),
     });
     record({
-      scenario: "B2B_MEMBER POST /api/org",
-      role: "B2B_MEMBER",
+      scenario: "MEMBER POST /api/org",
+      role: "CLIENT",
       tenant: "org-a",
       http: member.status,
       leaked: false,
@@ -386,7 +378,7 @@ async function main() {
     });
     await prisma.user.update({
       where: { id: String(profileB.id) },
-      data: { role: "OPERATOR", organizationId: null },
+      data: { role: "OPERATOR" },
     });
     const operator = await jsonFetch(`${BASE}/api/org`, {
       method: "POST",

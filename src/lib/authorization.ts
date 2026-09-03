@@ -36,8 +36,8 @@ export {
  * Authorization (Etapa 6B).
  *
  * Identity: Supabase session + Prisma User (authId).
- * platformRole: User.role (never from the browser).
- * Tenant: OrganizationMember ACTIVE (never User.organizationId / B2B_*).
+ * platformRole: User.role CLIENT | OPERATOR | ADMIN (never from the browser).
+ * Tenant: OrganizationMember ACTIVE (never a User FK or B2B platform role).
  *
  * Fail-closed: unknown capability → deny. OPERATOR does not inherit ADMIN bypass.
  * REMOVED membership disappears from the query, so the next request loses access.

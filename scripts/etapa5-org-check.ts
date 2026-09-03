@@ -25,7 +25,6 @@ assert(!isPartnerAccount(client), "CLIENT without org is not partner");
 
 const b2bStandard = {
   ...client,
-  role: "B2B_ADMIN" as const,
   organization: {
     id: "org-a",
     name: "Empresa A",
@@ -38,8 +37,9 @@ const b2bStandard = {
     state: null,
   },
 };
-assert(isBusinessAccount(b2bStandard), "B2B org is business");
+assert(isBusinessAccount(b2bStandard), "membership org is business");
 assert(!isPartnerAccount(b2bStandard), "STANDARD is not partner");
+assert(b2bStandard.role === "CLIENT", "business user stays CLIENT");
 
 const b2bPartner = {
   ...b2bStandard,
@@ -52,7 +52,6 @@ const onboarding = AUTHORIZATION_MATRIX.find((row) =>
   row.resource.includes("POST /api/org")
 );
 assert(onboarding?.CLIENT === "ALLOW", "CLIENT may onboard business");
-assert(onboarding?.B2B_MEMBER === "DENY", "B2B_MEMBER fail-closed");
 assert(onboarding?.ADMIN === "DENY" && onboarding?.OPERATOR === "DENY", "internal denied");
 
 console.log("etapa5-org-check: PASS");

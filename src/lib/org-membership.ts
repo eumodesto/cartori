@@ -8,8 +8,7 @@ import { prisma } from "@/lib/prisma";
 /**
  * Membership helpers.
  *
- * OrganizationMember ACTIVE is the authorization source (Etapa 6B).
- * User.organizationId / B2B_* remain dual-write compatibility only.
+ * OrganizationMember ACTIVE is the authorization source.
  */
 export class MembershipRemovedError extends Error {
   constructor() {
@@ -57,12 +56,10 @@ export async function getOrganizationMembership(userId: string, organizationId: 
 }
 
 export function wouldViolateSingleOrg(
-  legacyOrganizationId: string | null | undefined,
   activeMembershipOrgIds: string[],
   targetOrganizationId: string | null
 ) {
   const held = new Set(activeMembershipOrgIds.filter(Boolean));
-  if (legacyOrganizationId) held.add(legacyOrganizationId);
   if (held.size === 0) return false;
   if (targetOrganizationId && held.size === 1 && held.has(targetOrganizationId)) {
     return false;
@@ -167,14 +164,6 @@ export async function applyCreatorOnboardingTx(
       });
 
   await ensureCreatorOwnerMembershipInTx(tx, input.userId, organization.id);
-
-  await tx.user.update({
-    where: { id: input.userId },
-    data: {
-      organizationId: organization.id,
-      role: "B2B_ADMIN",
-    },
-  });
 
   return organization;
 }

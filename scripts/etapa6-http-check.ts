@@ -257,14 +257,14 @@ async function main() {
     const profA = (meA.body.profile || {}) as Record<string, unknown>;
     const orgA = (profA.organization || {}) as Record<string, unknown>;
     record({
-      scenario: "dual-write OWNER ACTIVE + legado B2B_ADMIN STANDARD",
+      scenario: "onboarding OWNER ACTIVE; User permanece CLIENT; org STANDARD",
       role: String(profA.role || "none"),
       tenant: String(orgA.plan || "none"),
       http: meA.status,
       leaked: orgA.plan === "PARTNER" || member?.orgRole !== "OWNER",
       pass:
         meA.status === 200 &&
-        profA.role === "B2B_ADMIN" &&
+        profA.role === "CLIENT" &&
         orgA.plan === "STANDARD" &&
         member?.status === "ACTIVE" &&
         member.orgRole === "OWNER" &&
@@ -282,7 +282,7 @@ async function main() {
     });
     record({
       scenario: "alias /api/org/partner não concede Partner nem duplica Member",
-      role: "B2B_ADMIN",
+      role: "CLIENT",
       tenant: String(afterAlias?.plan || "none"),
       http: alias.status,
       leaked: afterAlias?.plan === "PARTNER" || memberCount !== 1,
@@ -314,7 +314,7 @@ async function main() {
     });
     record({
       scenario: "próprio pedido ALLOW (userId)",
-      role: "B2B_ADMIN",
+      role: "CLIENT",
       tenant: "org-a",
       http: ownOrder.status,
       leaked: false,
@@ -339,7 +339,7 @@ async function main() {
       : [];
     record({
       scenario: "listagem só por userId",
-      role: "B2B_ADMIN",
+      role: "CLIENT",
       tenant: "org-a",
       http: listA.status,
       leaked: false,
@@ -352,17 +352,18 @@ async function main() {
       body: JSON.stringify({ cnpj: cnpjB, orgRole: "OWNER" }),
     });
     const orgBCount = await prisma.organization.count({ where: { cnpj: cnpjB } });
-    const stillA = await prisma.user.findUnique({
-      where: { id: String(profileA.id) },
-      select: { organizationId: true },
+    const stillA = await prisma.organizationMember.findUnique({
+      where: {
+        userId_organizationId: { userId: String(profileA.id), organizationId: org.id },
+      },
     });
     record({
       scenario: "second org negada; Org A intacta",
-      role: "B2B_ADMIN",
-      tenant: stillA?.organizationId === org.id ? "org-a" : "moved",
+      role: "CLIENT",
+      tenant: stillA?.status === "ACTIVE" ? "org-a" : "moved",
       http: second.status,
       leaked: orgBCount > 0 && second.status === 200,
-      pass: second.status === 409 && stillA?.organizationId === org.id && orgBCount === 0,
+      pass: second.status === 409 && stillA?.status === "ACTIVE" && orgBCount === 0,
     });
 
     const steal = await jsonFetch(`${BASE}/api/org`, {
@@ -389,19 +390,15 @@ async function main() {
       pass: steal.status === 409 && profB.role === "CLIENT" && memberB === 0,
     });
 
-    await prisma.user.update({
-      where: { id: String(profileB.id) },
-      data: { role: "B2B_ADMIN", organizationId: org.id },
-    });
-    const meFk = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieB } });
-    const profFk = (meFk.body.profile || {}) as Record<string, unknown>;
+    const meBare = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieB } });
+    const profBare = (meBare.body.profile || {}) as Record<string, unknown>;
     record({
-      scenario: "User.organizationId sem membership ACTIVE não autoriza perfil B2B",
-      role: String(profFk.role || "none"),
-      tenant: String(profFk.organization || "null"),
-      http: meFk.status,
-      leaked: Boolean(profFk.organization),
-      pass: meFk.status === 200 && profFk.organization == null && profFk.role === "B2B_ADMIN",
+      scenario: "CLIENT sem membership ACTIVE não é B2B",
+      role: String(profBare.role || "none"),
+      tenant: String(profBare.organization || "null"),
+      http: meBare.status,
+      leaked: Boolean(profBare.organization),
+      pass: meBare.status === 200 && profBare.organization == null && profBare.role === "CLIENT",
     });
 
     await prisma.organizationMember.create({
@@ -413,15 +410,11 @@ async function main() {
         joinedAt: new Date(),
       },
     });
-    await prisma.user.update({
-      where: { id: String(profileB.id) },
-      data: { role: "CLIENT", organizationId: null },
-    });
     const meMember = await jsonFetch(`${BASE}/api/auth/me`, { headers: { cookie: cookieB } });
     const profMember = (meMember.body.profile || {}) as Record<string, unknown>;
     const memberOrg = (profMember.organization || {}) as Record<string, unknown>;
     record({
-      scenario: "MEMBER ACTIVE + legado inconsistente: membership vence",
+      scenario: "MEMBER ACTIVE: membership define empresa; role permanece CLIENT",
       role: String(profMember.role || "none"),
       tenant: String(memberOrg.id || "none"),
       http: meMember.status,
@@ -485,7 +478,7 @@ async function main() {
       pass:
         meRemoved.status === 200 &&
         profRemoved.organization == null &&
-        profRemoved.role === "B2B_ADMIN",
+        profRemoved.role === "CLIENT",
     });
 
     const ownAfterRemoved = await jsonFetch(`${BASE}/api/orders/${personal.id}`, {
@@ -493,7 +486,7 @@ async function main() {
     });
     record({
       scenario: "REMOVED ainda lê próprio pedido por userId",
-      role: "B2B_ADMIN",
+      role: "CLIENT",
       tenant: "org-a",
       http: ownAfterRemoved.status,
       leaked: false,

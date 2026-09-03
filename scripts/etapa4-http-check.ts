@@ -284,18 +284,6 @@ async function main() {
   });
   createdOrgIds.push(orgA.id, orgB.id);
 
-  await prisma.user.update({
-    where: { id: String(profileA.id) },
-    data: { organizationId: orgA.id },
-  });
-  await prisma.user.update({
-    where: { id: String(profileB.id) },
-    data: { organizationId: orgA.id },
-  });
-  await prisma.user.update({
-    where: { id: String(profileC.id) },
-    data: { organizationId: orgB.id },
-  });
   await prisma.organizationMember.createMany({
     data: [
       {
@@ -442,10 +430,6 @@ async function main() {
     pass: partnerEscalate.status === 400 && mePartner.role === "CLIENT",
   });
 
-  await prisma.user.update({
-    where: { id: String(profileA.id) },
-    data: { role: "B2B_MEMBER" },
-  });
   await prisma.organizationMember.update({
     where: {
       userId_organizationId: {
@@ -458,11 +442,11 @@ async function main() {
   const memberPartner = await jsonFetch(`${BASE}/api/org/partner`, {
     method: "POST",
     headers: { "content-type": "application/json", cookie: cookieA },
-    body: JSON.stringify({ cnpj: "00", role: "B2B_ADMIN" }),
+    body: JSON.stringify({ cnpj: "00", role: "ADMIN" }),
   });
   record({
-    scenario: "B2B_MEMBER POST /api/org/partner",
-    role: "B2B_MEMBER",
+    scenario: "MEMBER POST /api/org/partner",
+    role: "CLIENT",
     tenant: "org-a",
     http: memberPartner.status,
     leaked: false,

@@ -9,7 +9,7 @@ function loadEnvFile(file: string) {
     if (!trimmed || trimmed.startsWith("#")) continue;
     const eq = trimmed.indexOf("=");
     if (eq <= 0) continue;
-    const key = trimmed.slice(0, eq).trim();
+    const key = trimmed.slice(eq + 1).trim();
     let value = trimmed.slice(eq + 1).trim();
     if (
       (value.startsWith('"') && value.endsWith('"')) ||
@@ -30,37 +30,23 @@ async function main() {
   const [
     organizations,
     users,
-    usersWithOrg,
-    b2bAdmin,
-    b2bMember,
-    clientWithOrg,
-    internalWithOrg,
-    b2bWithoutOrg,
     members,
     active,
     removed,
     owners,
     admins,
     memberRole,
+    ordersWithOrg,
   ] = await Promise.all([
     prisma.organization.count(),
     prisma.user.count(),
-    prisma.user.count({ where: { organizationId: { not: null } } }),
-    prisma.user.count({ where: { role: "B2B_ADMIN" } }),
-    prisma.user.count({ where: { role: "B2B_MEMBER" } }),
-    prisma.user.count({ where: { role: "CLIENT", organizationId: { not: null } } }),
-    prisma.user.count({
-      where: { role: { in: ["ADMIN", "OPERATOR"] }, organizationId: { not: null } },
-    }),
-    prisma.user.count({
-      where: { role: { in: ["B2B_ADMIN", "B2B_MEMBER"] }, organizationId: null },
-    }),
     prisma.organizationMember.count(),
     prisma.organizationMember.count({ where: { status: "ACTIVE" } }),
     prisma.organizationMember.count({ where: { status: "REMOVED" } }),
     prisma.organizationMember.count({ where: { orgRole: "OWNER" } }),
     prisma.organizationMember.count({ where: { orgRole: "ADMIN" } }),
     prisma.organizationMember.count({ where: { orgRole: "MEMBER" } }),
+    prisma.order.count({ where: { organizationId: { not: null } } }),
   ]);
 
   console.log(
@@ -68,10 +54,7 @@ async function main() {
       {
         organizations,
         users,
-        usersWithOrg,
-        b2bAdmin,
-        b2bMember,
-        inconsistencies: { clientWithOrg, internalWithOrg, b2bWithoutOrg },
+        ordersWithOrg,
         memberships: {
           total: members,
           ACTIVE: active,

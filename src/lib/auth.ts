@@ -204,7 +204,6 @@ export async function syncAuthUser(input: {
       where: { userId: null, customerEmail: email },
       data: {
         userId: row.id,
-        organizationId: row.organizationId,
       },
     });
 

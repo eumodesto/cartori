@@ -10,8 +10,6 @@ generator client {
 
 enum UserRole {
   CLIENT
-  B2B_MEMBER
-  B2B_ADMIN
   ADMIN
   OPERATOR
 }
@@ -85,8 +83,6 @@ model User {
   cpf            String?        @unique
   phone          String?
   role           UserRole       @default(CLIENT)
-  organizationId String?
-  organization   Organization?  @relation(fields: [organizationId], references: [id])
   organizationMemberships OrganizationMember[]
   orders         Order[]
   createdAt      DateTime       @default(now())
@@ -110,15 +106,13 @@ model Organization {
   city            String?
   state           String?
   cep             String?
-  members         User[]
   memberships     OrganizationMember[]
   orders          Order[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 }
 
-/// Vínculo User ↔ Organization. Fonte de verdade da autorização empresarial (Etapa 6B).
-/// User.organizationId / B2B_* permanecem só como compatibilidade (dual-write).
+/// Vínculo User ↔ Organization. Fonte de verdade da autorização empresarial.
 model OrganizationMember {
   id             String                   @id @default(uuid())
   organizationId String

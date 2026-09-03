@@ -16,11 +16,11 @@ import { digitsOnly } from "@/lib/utils";
 import { isValidCnpj } from "@/lib/validators";
 
 /**
- * Business onboarding (Etapa 5 + dual-write).
+ * Business onboarding.
  *
  * CLIENT without ACTIVE membership, or OWNER/ADMIN ACTIVE of the same org,
- * may register/update a CNPJ. Dual-write still writes legacy User.organizationId
- * and B2B_ADMIN; authorization reads OrganizationMember ACTIVE (Etapa 6B).
+ * may register/update a CNPJ. Creates Organization STANDARD + OWNER ACTIVE.
+ * User.role stays CLIENT.
  *
  * This flow never grants PARTNER. TBD — PARTNER ACTIVATION POLICY
  */
@@ -70,7 +70,6 @@ export async function postBusinessOnboarding(req: NextRequest) {
   const activeMemberships = await getActiveOrganizationMemberships(auth.context.userId);
   if (
     wouldViolateSingleOrg(
-      auth.context.organizationId,
       activeMemberships.map((row) => row.organizationId),
       existing?.id ?? null
     )
