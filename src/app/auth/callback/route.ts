@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
-import { syncAuthUser } from "@/lib/auth";
+import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
 import { isSupabaseConfigured, supabasePublicConfig } from "@/lib/supabase/config";
 import { supabaseAuthCookieOptions } from "@/lib/supabase/cookie-options";
 import { requestOrigin } from "@/lib/supabase/site-url";
@@ -47,11 +47,22 @@ export async function GET(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   if (user?.email) {
-    await syncAuthUser({
-      authId: user.id,
-      email: user.email,
-      name: typeof user.user_metadata?.name === "string" ? user.user_metadata.name : undefined,
-    });
+    try {
+      await syncAuthUser({
+        authId: user.id,
+        email: user.email,
+        name: typeof user.user_metadata?.name === "string" ? user.user_metadata.name : undefined,
+      });
+    } catch (error) {
+      if (error instanceof IdentityConflictError) {
+        console.warn("[auth] identity_conflict", { reason: error.reason, source: "oauth_callback" });
+        const fallback = new URL("/", origin);
+        fallback.searchParams.set("entrar", "1");
+        fallback.searchParams.set("next", next);
+        return NextResponse.redirect(fallback);
+      }
+      throw error;
+    }
   }
 
   return redirect;

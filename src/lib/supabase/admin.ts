@@ -35,3 +35,9 @@ export async function confirmAuthEmail(userId: string) {
   if (!admin) return { error: new Error("Supabase admin não configurado.") };
   return admin.auth.admin.updateUserById(userId, { email_confirm: true });
 }
+
+export async function deleteAuthUser(userId: string) {
+  const admin = createAdminSupabase();
+  if (!admin) return { error: new Error("Supabase admin não configurado.") };
+  return admin.auth.admin.deleteUser(userId);
+}

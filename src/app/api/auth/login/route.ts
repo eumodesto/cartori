@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { syncAuthUser } from "@/lib/auth";
+import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
 import { confirmAuthEmail, findAuthUserByEmail } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createRouteSupabase } from "@/lib/supabase/route";
@@ -47,11 +47,19 @@ export async function POST(req: NextRequest) {
     return json({ success: false, error: "E-mail ou senha incorretos." }, { status: 401 });
   }
 
-  const profile = await syncAuthUser({
-    authId: data.user.id,
-    email: data.user.email || email,
-    name: data.user.user_metadata?.name,
-  });
-
-  return json({ success: true, profile });
+  try {
+    const profile = await syncAuthUser({
+      authId: data.user.id,
+      email: data.user.email || email,
+      name: typeof data.user.user_metadata?.name === "string"
+        ? data.user.user_metadata.name
+        : undefined,
+    });
+    return json({ success: true, profile });
+  } catch (syncError) {
+    if (syncError instanceof IdentityConflictError) {
+      return json({ success: false, error: syncError.message }, { status: syncError.status });
+    }
+    throw syncError;
+  }
 }

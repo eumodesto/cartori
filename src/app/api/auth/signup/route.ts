@@ -1,9 +1,12 @@
 import { NextRequest } from "next/server";
-import { syncAuthUser } from "@/lib/auth";
+import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { createAdminSupabase } from "@/lib/supabase/admin";
+import { createAdminSupabase, deleteAuthUser } from "@/lib/supabase/admin";
 import { createRouteSupabase } from "@/lib/supabase/route";
-import { isValidCpf, isValidEmail, isValidPhone } from "@/lib/validators";
+import { prisma } from "@/lib/prisma";
+import { isValidCpf, isValidEmail, isValidPhone, normalizeCpf } from "@/lib/validators";
+
+const CPF_CONFLICT = "Já existe uma conta associada a este CPF.";
 
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -18,7 +21,8 @@ export async function POST(req: NextRequest) {
   const password = String(body.password || "");
   const name = String(body.name || "").trim();
   const phone = String(body.phone || "");
-  const cpf = String(body.cpf || "");
+  const cpfRaw = String(body.cpf || "");
+  const cpf = cpfRaw ? normalizeCpf(cpfRaw) : "";
 
   if (!name) {
     return Response.json({ success: false, error: "Informe o nome completo." }, { status: 400 });
@@ -35,8 +39,18 @@ export async function POST(req: NextRequest) {
   if (phone && !isValidPhone(phone)) {
     return Response.json({ success: false, error: "Telefone inválido." }, { status: 400 });
   }
-  if (cpf && !isValidCpf(cpf)) {
+  if (cpfRaw && !isValidCpf(cpfRaw)) {
     return Response.json({ success: false, error: "CPF inválido." }, { status: 400 });
+  }
+
+  if (cpf) {
+    const taken = await prisma.user.findUnique({
+      where: { cpf },
+      select: { id: true },
+    });
+    if (taken) {
+      return Response.json({ success: false, error: CPF_CONFLICT }, { status: 409 });
+    }
   }
 
   const admin = createAdminSupabase();
@@ -56,20 +70,29 @@ export async function POST(req: NextRequest) {
   };
 
   const created = await admin.auth.admin.createUser(userPayload);
+  const createdAuthId =
+    !created.error && created.data.user?.id ? created.data.user.id : null;
 
   if (created.error || !created.data.user) {
     const already = /already|registered|exists/i.test(created.error?.message || "");
     if (!already) {
       const recovered = await supabase.auth.signInWithPassword({ email, password });
       if (recovered.data.user) {
-        const profile = await syncAuthUser({
-          authId: recovered.data.user.id,
-          email,
-          name,
-          phone,
-          cpf,
-        });
-        return json({ success: true, profile });
+        try {
+          const profile = await syncAuthUser({
+            authId: recovered.data.user.id,
+            email: recovered.data.user.email || email,
+            name,
+            phone,
+            cpf,
+          });
+          return json({ success: true, profile });
+        } catch (error) {
+          if (error instanceof IdentityConflictError) {
+            return json({ success: false, error: error.message }, { status: error.status });
+          }
+          throw error;
+        }
       }
     }
     const message = already
@@ -82,19 +105,28 @@ export async function POST(req: NextRequest) {
 
   const signedIn = await supabase.auth.signInWithPassword({ email, password });
   if (signedIn.error || !signedIn.data.user) {
+    if (createdAuthId) await deleteAuthUser(createdAuthId);
     return json(
       { success: false, error: "Conta criada, mas não foi possível entrar. Use a aba Entrar." },
       { status: 400 }
     );
   }
 
-  const profile = await syncAuthUser({
-    authId: signedIn.data.user.id,
-    email,
-    name,
-    phone,
-    cpf,
-  });
-
-  return json({ success: true, profile });
+  try {
+    const profile = await syncAuthUser({
+      authId: signedIn.data.user.id,
+      email: signedIn.data.user.email || email,
+      name,
+      phone,
+      cpf,
+    });
+    return json({ success: true, profile });
+  } catch (error) {
+    if (error instanceof IdentityConflictError) {
+      await supabase.auth.signOut();
+      if (createdAuthId) await deleteAuthUser(createdAuthId);
+      return json({ success: false, error: error.message }, { status: error.status });
+    }
+    throw error;
+  }
 }

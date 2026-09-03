@@ -1,9 +1,10 @@
+import { Prisma, OrganizationPlan, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { AuthProfile } from "@/lib/auth-types";
 import { digitsOnly } from "@/lib/utils";
-import { OrganizationPlan, UserRole } from "@prisma/client";
+import { normalizeCpf } from "@/lib/validators";
 
 function toProfile(user: {
   id: string;
@@ -53,32 +54,46 @@ const userInclude = {
   organization: true,
 } as const;
 
+export class IdentityConflictError extends Error {
+  status = 409 as const;
+  constructor(
+    message = "Já existe uma conta associada a este CPF.",
+    readonly reason: "cpf" | "email" | "auth" = "cpf"
+  ) {
+    super(message);
+    this.name = "IdentityConflictError";
+  }
+}
+
+function uniqueViolation(error: unknown, field: string): boolean {
+  if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return false;
+  if (error.code !== "P2002") return false;
+  const target = error.meta?.target;
+  if (Array.isArray(target)) return target.includes(field);
+  if (typeof target === "string") return target.includes(field);
+  return field === "cpf";
+}
+
+function logIdentityConflict(
+  reason: string,
+  extra: Record<string, string | undefined>
+) {
+  console.warn("[auth] identity_conflict", { reason, ...extra });
+}
+
 export async function getAuthProfile(): Promise<AuthProfile | null> {
   if (!isSupabaseConfigured()) return null;
   const supabase = createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user?.email) return null;
+  if (!user?.id) return null;
 
-  const row = await prisma.user.findFirst({
-    where: {
-      OR: [{ authId: user.id }, { email: user.email.toLowerCase() }],
-    },
+  const row = await prisma.user.findUnique({
+    where: { authId: user.id },
     include: userInclude,
   });
-  if (!row) return null;
-
-  if (!row.authId) {
-    const linked = await prisma.user.update({
-      where: { id: row.id },
-      data: { authId: user.id },
-      include: userInclude,
-    });
-    return toProfile(linked);
-  }
-
-  return toProfile(row);
+  return row ? toProfile(row) : null;
 }
 
 export async function syncAuthUser(input: {
@@ -87,54 +102,116 @@ export async function syncAuthUser(input: {
   name?: string;
   phone?: string;
   cpf?: string;
-  role?: UserRole;
 }): Promise<AuthProfile> {
   const email = input.email.trim().toLowerCase();
-  const cpf = input.cpf ? digitsOnly(input.cpf) : undefined;
+  const cpf = normalizeCpf(input.cpf);
+  const phone = input.phone ? digitsOnly(input.phone) : undefined;
+  const name = input.name?.trim() || undefined;
 
-  const existing = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { authId: input.authId },
-        { email },
-        ...(cpf ? [{ cpf }] : []),
-      ],
-    },
+  const byAuth = await prisma.user.findUnique({
+    where: { authId: input.authId },
     include: userInclude,
   });
 
-  const row = existing
-    ? await prisma.user.update({
-        where: { id: existing.id },
+  if (byAuth) {
+    if (cpf && byAuth.cpf && byAuth.cpf !== cpf) {
+      const cpfOwner = await prisma.user.findUnique({ where: { cpf } });
+      if (cpfOwner && cpfOwner.id !== byAuth.id) {
+        logIdentityConflict("cpf_taken", { userId: byAuth.id });
+        throw new IdentityConflictError();
+      }
+    }
+
+    if (email !== byAuth.email) {
+      const emailOwner = await prisma.user.findUnique({ where: { email } });
+      if (emailOwner && emailOwner.id !== byAuth.id) {
+        logIdentityConflict("email_taken", { userId: byAuth.id });
+        throw new IdentityConflictError(
+          "Não foi possível sincronizar esta conta.",
+          "email"
+        );
+      }
+    }
+
+    try {
+      const row = await prisma.user.update({
+        where: { id: byAuth.id },
         data: {
-          authId: input.authId,
           email,
-          name: input.name?.trim() || existing.name,
-          phone: input.phone ? digitsOnly(input.phone) : existing.phone,
-          cpf: cpf || existing.cpf,
-          role: input.role || existing.role,
-        },
-        include: userInclude,
-      })
-    : await prisma.user.create({
-        data: {
-          authId: input.authId,
-          email,
-          name: input.name?.trim() || null,
-          phone: input.phone ? digitsOnly(input.phone) : null,
-          cpf: cpf || null,
-          role: input.role || "CLIENT",
+          name: name || byAuth.name,
+          phone: phone || byAuth.phone,
+          cpf: byAuth.cpf || cpf || null,
         },
         include: userInclude,
       });
+      return toProfile(row);
+    } catch (error) {
+      if (uniqueViolation(error, "cpf")) {
+        logIdentityConflict("cpf_unique", { userId: byAuth.id });
+        throw new IdentityConflictError();
+      }
+      if (uniqueViolation(error, "email")) {
+        logIdentityConflict("email_unique", { userId: byAuth.id });
+        throw new IdentityConflictError(
+          "Não foi possível sincronizar esta conta.",
+          "email"
+        );
+      }
+      throw error;
+    }
+  }
 
-  await prisma.order.updateMany({
-    where: { userId: null, customerEmail: email },
-    data: {
-      userId: row.id,
-      organizationId: row.organizationId,
-    },
-  });
+  if (cpf) {
+    const cpfOwner = await prisma.user.findUnique({ where: { cpf } });
+    if (cpfOwner) {
+      logIdentityConflict("cpf_taken", {});
+      throw new IdentityConflictError();
+    }
+  }
 
-  return toProfile(row);
+  const emailOwner = await prisma.user.findUnique({ where: { email } });
+  if (emailOwner) {
+    logIdentityConflict("email_taken", {});
+    throw new IdentityConflictError(
+      "Não foi possível sincronizar esta conta.",
+      "email"
+    );
+  }
+
+  try {
+    const row = await prisma.user.create({
+      data: {
+        authId: input.authId,
+        email,
+        name: name || null,
+        phone: phone || null,
+        cpf: cpf || null,
+        role: "CLIENT",
+      },
+      include: userInclude,
+    });
+
+    await prisma.order.updateMany({
+      where: { userId: null, customerEmail: email },
+      data: {
+        userId: row.id,
+        organizationId: row.organizationId,
+      },
+    });
+
+    return toProfile(row);
+  } catch (error) {
+    if (uniqueViolation(error, "cpf")) {
+      logIdentityConflict("cpf_unique", {});
+      throw new IdentityConflictError();
+    }
+    if (uniqueViolation(error, "email") || uniqueViolation(error, "authId")) {
+      logIdentityConflict("identity_unique", {});
+      throw new IdentityConflictError(
+        "Não foi possível sincronizar esta conta.",
+        "auth"
+      );
+    }
+    throw error;
+  }
 }

@@ -43,6 +43,12 @@ function checksumCnpj(digits: string): boolean {
   return d1 === Number(digits[12]) && d2 === Number(digits[13]);
 }
 
+/** Persistência e comparação: só dígitos. Não valida o checksum. */
+export function normalizeCpf(value: string | null | undefined): string {
+  const digits = digitsOnly(value || "");
+  return digits.length === 11 ? digits : "";
+}
+
 export function isValidCpf(value: string): boolean {
   return checksumCpf(digitsOnly(value));
 }

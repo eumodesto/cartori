@@ -13,6 +13,7 @@ import {
   isValidCpfCnpj,
   isValidEmail,
   isValidPhone,
+  normalizeCpf,
 } from "@/lib/validators";
 
 export async function GET() {
@@ -79,18 +80,18 @@ export async function POST(req: NextRequest) {
     const paymentMethod =
       body.paymentMethod === "CREDIT_CARD" ? "CREDIT_CARD" : "PIX";
 
-    const cpfDigits = digitsOnly(customer.cpfCnpj || "");
+    const cpfDigits = normalizeCpf(customer.cpfCnpj || "");
     try {
       await prisma.user.update({
         where: { id: profile.id },
         data: {
           name: String(customer.fullName || "").trim() || profile.name,
           phone: digitsOnly(customer.phone || "") || profile.phone,
-          ...(cpfDigits.length === 11 ? { cpf: cpfDigits } : {}),
+          ...(cpfDigits && !profile.cpf ? { cpf: cpfDigits } : {}),
         },
       });
     } catch {
-      // CPF duplicado ou dado já existente não deve impedir o pedido.
+      // CPF duplicado não transfere identidade e não deve impedir o pedido.
     }
 
     const order = await buildStoredOrder(
