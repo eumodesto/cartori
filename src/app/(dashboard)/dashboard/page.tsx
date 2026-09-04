@@ -3,22 +3,31 @@
 import * as React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Building2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
+import { BusinessBenefitsDialog } from "@/components/dashboard/business-benefits-dialog";
+import { BusinessOnboardingBanner } from "@/components/dashboard/business-onboarding-banner";
 import { MyOrders } from "@/components/dashboard/my-orders";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 
 function DashboardHome() {
-  const { profile, isBusiness } = useAuth();
+  const { profile, isBusiness, loading } = useAuth();
   const searchParams = useSearchParams();
   const [partnerOpen, setPartnerOpen] = React.useState(false);
+  const [benefitsOpen, setBenefitsOpen] = React.useState(false);
   const highlightId = searchParams.get("pedido");
   const firstName = profile?.name?.split(" ")[0] || "olá";
+  const showBusinessBanner = Boolean(profile) && !loading && !isBusiness;
+
+  const openCnpjFlow = React.useCallback(() => {
+    setBenefitsOpen(false);
+    setPartnerOpen(true);
+  }, []);
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title={`Painel, ${firstName}`}
         description={
@@ -35,25 +44,18 @@ function DashboardHome() {
         }
       />
 
-      {!isBusiness && (
-        <div className="rounded-2xl border border-brand-200 bg-brand-50/50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-          <div>
-            <p className="text-sm font-semibold text-brand-950">Cadastrar empresa</p>
-            <p className="text-xs text-neutral-600 mt-0.5">
-              Informe um CNPJ ativo. Isso libera recursos B2B e não habilita o programa de parceiro/revendedor.
-            </p>
-          </div>
-          <Button
-            variant="primary"
-            leftIcon={<Building2 className="w-4 h-4" />}
-            onClick={() => setPartnerOpen(true)}
-          >
-            Cadastrar CNPJ
-          </Button>
-        </div>
-      )}
+      <BusinessOnboardingBanner
+        eligible={showBusinessBanner}
+        onRegister={openCnpjFlow}
+        onViewBenefits={() => setBenefitsOpen(true)}
+      />
 
       <MyOrders highlightId={highlightId} />
+      <BusinessBenefitsDialog
+        isOpen={benefitsOpen}
+        onClose={() => setBenefitsOpen(false)}
+        onContinue={openCnpjFlow}
+      />
       <PartnerPlanDialog isOpen={partnerOpen} onClose={() => setPartnerOpen(false)} />
     </div>
   );
