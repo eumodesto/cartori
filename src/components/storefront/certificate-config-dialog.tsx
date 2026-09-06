@@ -38,12 +38,16 @@ interface CertificateConfigDialogProps {
   certificate: CertificateTypeConfig;
   onClose: () => void;
   onAdd: (items: CartItem[]) => void;
+  initialDocumentData?: Record<string, string>;
+  initialReferenceTag?: string;
 }
 
 export function CertificateConfigDialog({
   certificate,
   onClose,
   onAdd,
+  initialDocumentData,
+  initialReferenceTag,
 }: CertificateConfigDialogProps) {
   const [states, setStates] = useState<IBGEState[]>([]);
   const [selectedUf, setSelectedUf] = useState("");
@@ -53,11 +57,13 @@ export function CertificateConfigDialog({
   const [selectedCartorio, setSelectedCartorio] = useState("");
   const [loadingCities, setLoadingCities] = useState(false);
   const [loadingCartorios, setLoadingCartorios] = useState(false);
-  const [documentData, setDocumentData] = useState<Record<string, string>>({});
+  const [documentData, setDocumentData] = useState<Record<string, string>>(
+    () => initialDocumentData || {}
+  );
   const [format, setFormat] = useState<CertificateFormat>("DIGITAL_ECERTIDAO");
   const [hasApostille, setHasApostille] = useState(false);
   const [wantsTranslation, setWantsTranslation] = useState(false);
-  const [referenceTag, setReferenceTag] = useState("");
+  const [referenceTag, setReferenceTag] = useState(initialReferenceTag || "");
   const [error, setError] = useState("");
   const [docCities, setDocCities] = useState<IBGECity[]>([]);
   const [loadingDocCities, setLoadingDocCities] = useState(false);

@@ -114,6 +114,13 @@ export function canAccessOwnedOrder(
   return Boolean(orderUserId) && orderUserId === context.userId;
 }
 
+export function canAccessOwnedDossier(
+  context: AuthContext,
+  dossierUserId: string | null | undefined
+): boolean {
+  return Boolean(dossierUserId) && dossierUserId === context.userId;
+}
+
 export function orderOwnerFromContext(context: AuthContext): {
   userId: string;
   organizationId: string | null;

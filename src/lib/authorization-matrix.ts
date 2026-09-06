@@ -95,6 +95,27 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     notes: "Escopo OPERATOR (global vs assigned-only) não decidido.",
   },
   {
+    resource: "próprio dossiê (GET/POST /api/dossiers)",
+    CLIENT: "ALLOW",
+    OPERATOR: "ALLOW",
+    ADMIN: "ALLOW",
+    notes: "Dono = context.userId. Body userId/organizationId ignorados. organizationId é contexto.",
+  },
+  {
+    resource: "dossiê alheio (GET /api/dossiers/[id])",
+    CLIENT: "DENY",
+    OPERATOR: "DENY",
+    ADMIN: "DENY",
+    notes: "404. Sem OR por organizationId. ADMIN global FUTURE.",
+  },
+  {
+    resource: "listar dossiês da Organization",
+    CLIENT: "DENY",
+    OPERATOR: "TBD",
+    ADMIN: "FUTURE",
+    notes: "Fail-closed. Membership não lista dossiês do tenant.",
+  },
+  {
     resource: "equipe / invites / OrganizationMember",
     CLIENT: "FUTURE",
     OPERATOR: "DENY",

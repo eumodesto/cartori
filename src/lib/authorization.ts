@@ -18,6 +18,7 @@ export {
   buildAuthContext,
   canAccessOrganization,
   canAccessOwnedOrder,
+  canAccessOwnedDossier,
   canOnboardBusiness,
   hasActiveMembership,
   hasAllowedRole,

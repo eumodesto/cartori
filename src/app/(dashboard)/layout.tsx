@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
@@ -19,7 +17,6 @@ import {
   Users,
   Wallet,
   Bell,
-  Plus,
   FolderOpen,
 } from "lucide-react";
 
@@ -43,7 +40,7 @@ export default function DashboardLayout({
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("empresa") === "1") {
+    if (params.get("empresa") === "1" || params.get("parceiro") === "1") {
       setPartnerOpen(true);
     }
   }, []);
@@ -69,7 +66,7 @@ export default function DashboardLayout({
           label: "Solicitações",
           href: "/dashboard/solicitacoes",
           icon: <FileText className="w-4 h-4" />,
-          isActive: pathname === "/dashboard/solicitacoes",
+          isActive: pathname.startsWith("/dashboard/solicitacoes"),
         },
         {
           id: "dossiers",
@@ -77,15 +74,13 @@ export default function DashboardLayout({
           href: "/dashboard/dossies",
           icon: <FolderOpen className="w-4 h-4" />,
           isActive: pathname.startsWith("/dashboard/dossies"),
-          ...lockItem("/dashboard/dossies"),
         },
         {
           id: "search",
-          label: "Busca de Cartórios (CNJ)",
+          label: "Consulta de cartórios",
           href: "/dashboard/cartorios",
           icon: <Search className="w-4 h-4" />,
           isActive: pathname.startsWith("/dashboard/cartorios"),
-          ...lockItem("/dashboard/cartorios"),
         },
       ],
     },
@@ -157,21 +152,16 @@ export default function DashboardLayout({
               <input
                 type="text"
                 placeholder="Buscar por protocolo, CPF/CNPJ, imóvel ou cartório..."
-                className="w-full h-9 pl-9 pr-3 text-xs bg-neutral-50 border border-neutral-200 rounded-md focus:outline-none focus:border-brand-500 focus:bg-neutral-0 transition-colors placeholder:text-neutral-400"
+                className="w-full h-9 pl-9 pr-3 text-xs text-neutral-900 bg-neutral-50 border border-neutral-200 rounded-md focus:outline-none focus:border-brand-500 focus:bg-neutral-0 transition-colors placeholder:text-neutral-400"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/#certidoes">
-              <Button size="sm" variant="primary" leftIcon={<Plus className="w-3.5 h-3.5" />}>
-                Nova Solicitação
-              </Button>
-            </Link>
             <ThemeToggle variant="ghost" size="md" />
             <button
               type="button"
-              className="relative p-2 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-100/40 transition-colors"
+              className="relative p-2 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-950 dark:hover:bg-white/10 transition-colors"
               aria-label="Notificações operacionais"
             >
               <Bell className="w-4 h-4" />
@@ -194,7 +184,9 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto bg-surface-page p-6 lg:p-8">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-surface-page p-6 lg:p-8">
+          <div className="w-full max-w-[var(--layout-dashboard-max)]">{children}</div>
+        </main>
       </div>
       <PartnerPlanDialog isOpen={partnerOpen} onClose={() => setPartnerOpen(false)} />
     </div>

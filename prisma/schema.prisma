@@ -85,6 +85,7 @@ model User {
   role           UserRole       @default(CLIENT)
   organizationMemberships OrganizationMember[]
   orders         Order[]
+  dossiers       Dossier[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
@@ -108,6 +109,7 @@ model Organization {
   cep             String?
   memberships     OrganizationMember[]
   orders          Order[]
+  dossiers        Dossier[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 }
@@ -339,4 +341,88 @@ model ProductPrice {
 
   @@unique([productId, kind, state, format])
   @@index([productId])
+}
+
+enum DossierPurpose {
+  COMPRA_IMOVEL
+  FINANCIAMENTO
+  INVENTARIO
+  DUE_DILIGENCE_SOCIETARIA
+  PROCESSO
+  OUTRO
+}
+
+enum DossierStatus {
+  DRAFT
+  RUNNING
+  PARTIAL
+  READY
+  EXPIRED
+  ARCHIVED
+}
+
+enum SubjectKind {
+  PERSON
+  COMPANY
+  URBAN_PROPERTY
+  RURAL_PROPERTY
+  LAWSUIT
+}
+
+enum IdentifierKind {
+  CPF
+  CNPJ
+  MATRICULA
+  CAR
+  NIRF
+  PROCESSO_CNJ
+  OTHER
+}
+
+/// Caso de análise (caminho B). Ownership = userId, como Order. organizationId é contexto, não ACL.
+model Dossier {
+  id             String         @id @default(uuid())
+  seq            Int            @unique
+  protocol       String         @unique
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  title          String
+  purpose        DossierPurpose
+  purposeNote    String?        @db.Text
+  status         DossierStatus  @default(DRAFT)
+  subjects       DossierSubject[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model DossierSubject {
+  id            String               @id @default(uuid())
+  dossierId     String
+  dossier       Dossier              @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+  kind          SubjectKind
+  displayName   String
+  notes         String?              @db.Text
+  identifiers   SubjectIdentifier[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([dossierId])
+}
+
+model SubjectIdentifier {
+  id        String         @id @default(uuid())
+  subjectId String
+  subject   DossierSubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  kind      IdentifierKind
+  value     String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([subjectId, kind, value])
+  @@index([subjectId])
 }

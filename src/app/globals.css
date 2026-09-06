@@ -141,6 +141,9 @@
   --space-12: 48px;
   --space-16: 64px;
 
+  /* Layout — conteúdo operacional do dashboard (não aplica ao header) */
+  --layout-dashboard-max: 1520px;
+
   /* Radius */
   --radius-sm:   4px;
   --radius-md:   8px;

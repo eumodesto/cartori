@@ -39,8 +39,6 @@ export function isPartnerAccount(profile: AuthProfile | null | undefined) {
 }
 
 export const B2B_LOCKED_HREFS = [
-  "/dashboard/dossies",
-  "/dashboard/cartorios",
   "/dashboard/organizacao",
   "/dashboard/equipe",
   "/dashboard/financeiro",

@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 export interface PageContainerProps extends React.HTMLAttributes<HTMLDivElement> {
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "full";
+  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
 }
 
 export const PageContainer: React.FC<PageContainerProps> = ({
@@ -16,6 +16,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
     md: "max-w-5xl",
     lg: "max-w-6xl",
     xl: "max-w-7xl",
+    "2xl": "max-w-[var(--layout-dashboard-max)]",
     full: "max-w-full",
   };
 

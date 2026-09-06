@@ -4,6 +4,7 @@ import {
   buildAuthContext,
   canAccessOrganization,
   canAccessOwnedOrder,
+  canAccessOwnedDossier,
   canOnboardBusiness,
   hasActiveMembership,
   hasOrgRole,
@@ -79,6 +80,9 @@ assert(!canOnboardBusiness(operator), "OPERATOR negado no onboarding");
 assert(canAccessOwnedOrder(owner, "user-a"), "pedido próprio por userId");
 assert(!canAccessOwnedOrder(owner, "other"), "pedido alheio negado mesmo com membership");
 assert(!canAccessOwnedOrder(member, "user-a"), "MEMBER não lê pedido de outro userId");
+assert(canAccessOwnedDossier(owner, "user-a"), "dossiê próprio por userId");
+assert(!canAccessOwnedDossier(owner, "other"), "dossiê alheio negado mesmo com membership");
+assert(!canAccessOwnedDossier(member, "user-a"), "MEMBER não lê dossiê de outro userId");
 
 assert(
   !isBusinessAccount({

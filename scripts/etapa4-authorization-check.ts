@@ -3,6 +3,7 @@ import {
   buildAuthContext,
   canAccessOrganization,
   canAccessOwnedOrder,
+  canAccessOwnedDossier,
   canOnboardBusiness,
   hasAllowedRole,
   isInternalRole,
@@ -69,6 +70,12 @@ assert(!canAccessOwnedOrder(ownerA, "other"), "org owner does not own by tenant"
 assert(!canAccessOwnedOrder(admin, "ua"), "ADMIN has no implicit order bypass");
 assert(!canAccessOwnedOrder(operator, "ua"), "OPERATOR has no implicit order bypass");
 
+assert(canAccessOwnedDossier(clientA, "ua"), "client owns own dossier");
+assert(!canAccessOwnedDossier(clientB, "ua"), "client cannot read someone else's dossier");
+assert(!canAccessOwnedDossier(ownerA, "other"), "org owner does not own dossier by tenant");
+assert(!canAccessOwnedDossier(admin, "ua"), "ADMIN has no implicit dossier bypass");
+assert(!canAccessOwnedDossier(operator, "ua"), "OPERATOR has no implicit dossier bypass");
+
 assert(!canAccessOrganization(clientA, "org-a"), "CLIENT without membership denied");
 assert(canAccessOrganization(ownerA, "org-a"), "OWNER ACTIVE own org");
 assert(!canAccessOrganization(ownerA, "org-b"), "OWNER other org denied");
@@ -106,5 +113,28 @@ const partner = AUTHORIZATION_MATRIX.find((row) =>
 );
 assert(partner?.CLIENT === "ALLOW", "partner CLIENT documented");
 assert(partner?.OPERATOR === "DENY" && partner?.ADMIN === "DENY", "partner internal denied");
+
+const ownDossier = AUTHORIZATION_MATRIX.find((row) =>
+  row.resource.includes("próprio dossiê")
+);
+assert(ownDossier?.CLIENT === "ALLOW", "own dossier CLIENT documented");
+assert(
+  ownDossier?.OPERATOR === "ALLOW" && ownDossier?.ADMIN === "ALLOW",
+  "own dossier same ownership rule as orders"
+);
+
+const foreignDossier = AUTHORIZATION_MATRIX.find((row) =>
+  row.resource.includes("dossiê alheio")
+);
+assert(foreignDossier?.CLIENT === "DENY", "foreign dossier denied");
+assert(
+  foreignDossier?.OPERATOR === "DENY" && foreignDossier?.ADMIN === "DENY",
+  "foreign dossier no role bypass"
+);
+
+const orgDossiers = AUTHORIZATION_MATRIX.find((row) =>
+  row.resource.includes("listar dossiês da Organization")
+);
+assert(orgDossiers?.CLIENT === "DENY", "org-wide dossier list fail-closed");
 
 console.log("etapa4-authorization-check: PASS");
