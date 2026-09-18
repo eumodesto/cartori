@@ -34,6 +34,13 @@ function normalizeToken(raw: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+export function firstSearchParam(
+  value: string | string[] | undefined | null
+): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value ?? undefined;
+}
+
 export function resolveCertificateSlug(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const token = normalizeToken(raw);
@@ -49,6 +56,25 @@ export function resolveCertificateSlug(raw: string | null | undefined): string |
   if (alias) return alias;
 
   return null;
+}
+
+export function certificateFromParam(raw: string | null | undefined) {
+  const slug = resolveCertificateSlug(raw);
+  if (!slug) return null;
+  return getCertificateBySlug(slug) ?? null;
+}
+
+/** Slug canônico a partir de /certidao/[slug], ?certidao= ou ?servico=. */
+export function certificateSlugFromLocation(
+  pathname: string,
+  search: URLSearchParams | { get(name: string): string | null }
+) {
+  const fromPath = pathname.startsWith("/certidao/")
+    ? pathname.split("/").filter(Boolean)[1]
+    : null;
+  return resolveCertificateSlug(
+    fromPath || search.get(CERTIFICATE_QUERY_KEY) || search.get("servico")
+  );
 }
 
 export function certificatePath(slug: string) {

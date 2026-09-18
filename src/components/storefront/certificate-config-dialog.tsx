@@ -499,14 +499,21 @@ export function CertificateConfigDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="certificate-config-title"
+        className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8"
+      >
         <div className="bg-primary-900 text-white p-6 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
               Configuração Notarial • {certificate.categoryName}
             </span>
-            <h3 className="text-xl font-bold font-serif">{certificate.name}</h3>
+            <h3 id="certificate-config-title" className="text-xl font-bold font-serif">
+              {certificate.name}
+            </h3>
           </div>
           <button
             type="button"

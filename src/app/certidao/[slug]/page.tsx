@@ -25,6 +25,8 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   };
 }
 
+export const dynamicParams = true;
+
 export default function CertificateLandingPage({ params }: { params: Params }) {
   const slug = resolveCertificateSlug(params.slug);
   if (!slug) redirect("/#certidoes");

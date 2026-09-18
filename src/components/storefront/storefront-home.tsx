@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
+import { usePathname, useRouter } from "next/navigation";
+import { MVP_CERTIFICATES } from "@/lib/catalog";
 import {
   CERTIFICATE_QUERY_KEY,
+  certificateFromParam,
   certificateQueryPath,
-  resolveCertificateSlug,
+  certificateSlugFromLocation,
 } from "@/lib/certificate-links";
 import { CertificateTypeConfig } from "@/lib/types";
 import {
@@ -45,21 +46,31 @@ export function StorefrontHome({
   initialCertificateSlug?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { registerProductHandler } = useAmandaChatDock();
   const { addItem } = useCart();
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
   const [catalogQuery, setCatalogQuery] = useState("");
   const [catalogPage, setCatalogPage] = useState(1);
-  const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(null);
+  const urlCert = certificateFromParam(initialCertificateSlug);
+  const [optimisticCert, setOptimisticCert] = useState<CertificateTypeConfig | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+  const [locationCert, setLocationCert] = useState<CertificateTypeConfig | null>(null);
   const [addedNotice, setAddedNotice] = useState("");
+  const selectedCert = dismissed ? null : optimisticCert ?? urlCert ?? locationCert;
 
   const openCertificate = useCallback(
     (raw: string) => {
-      const slug = resolveCertificateSlug(raw);
-      const cert = slug ? getCertificateBySlug(slug) : undefined;
+      const cert = certificateFromParam(raw);
       if (!cert) return;
-      setSelectedCert(cert);
-      router.replace(certificateQueryPath(cert.slug), { scroll: false });
+      setDismissed(false);
+      setOptimisticCert(cert);
+      const url = new URL(window.location.href);
+      const alreadyOpen =
+        certificateSlugFromLocation(url.pathname, url.searchParams) === cert.slug;
+      if (!alreadyOpen) {
+        router.replace(certificateQueryPath(cert.slug), { scroll: false });
+      }
       requestAnimationFrame(() => {
         document.getElementById("certidoes")?.scrollIntoView({
           behavior: "smooth",
@@ -71,7 +82,9 @@ export function StorefrontHome({
   );
 
   const closeCertificate = useCallback(() => {
-    setSelectedCert(null);
+    setOptimisticCert(null);
+    setLocationCert(null);
+    setDismissed(true);
     const url = new URL(window.location.href);
     if (
       url.searchParams.has(CERTIFICATE_QUERY_KEY) ||
@@ -88,16 +101,22 @@ export function StorefrontHome({
   }, [openCertificate, registerProductHandler]);
 
   useEffect(() => {
+    setOptimisticCert(null);
+    if (initialCertificateSlug) {
+      setLocationCert(null);
+      setDismissed(false);
+      return;
+    }
     const url = new URL(window.location.href);
-    const slug = resolveCertificateSlug(
-      initialCertificateSlug ||
-        url.searchParams.get(CERTIFICATE_QUERY_KEY) ||
-        url.searchParams.get("servico")
+    const fromLocation = certificateFromParam(
+      certificateSlugFromLocation(url.pathname, url.searchParams)
     );
-    if (!slug) return;
-    const cert = getCertificateBySlug(slug);
-    if (!cert) return;
-    setSelectedCert(cert);
+    setLocationCert(fromLocation);
+    if (!fromLocation) setDismissed(false);
+  }, [initialCertificateSlug, pathname]);
+
+  useEffect(() => {
+    if (!selectedCert) return;
     const timer = window.setTimeout(() => {
       document.getElementById("certidoes")?.scrollIntoView({
         behavior: "smooth",
@@ -105,7 +124,7 @@ export function StorefrontHome({
       });
     }, 80);
     return () => window.clearTimeout(timer);
-  }, [initialCertificateSlug]);
+  }, [selectedCert?.slug]);
 
   const searchedCertificates = useMemo(() => {
     const needle = normalizeSearch(catalogQuery);
