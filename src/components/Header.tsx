@@ -14,7 +14,7 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-            <span>Documentos oficiais válidos em todo o território nacional • Assinatura Digital ICP-Brasil</span>
+            <span>A Cartori é uma Empresa privada, que faz a intermediação com órgãos competentes pelas emissões.</span>
           </div>
           <div className="hidden sm:flex items-center gap-4 text-slate-300">
             <span>Atendimento Notarial 24h</span>
