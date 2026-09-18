@@ -114,7 +114,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-white/10">
           <p className="text-neutral-400 text-sm">
-            © 2026 CARTORI. Todos os direitos reservados.
+            © 2026 CARTORI. Todos os direitos reservados. CNPJ 24.342.524/0001-29
           </p>
         </div>
       </div>
