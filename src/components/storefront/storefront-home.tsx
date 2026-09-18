@@ -359,7 +359,11 @@ export function StorefrontHome({
             </span>
             <h2 className="text-3xl font-extrabold text-slate-900 font-serif">Perguntas frequentes</h2>
             <p className="text-sm text-slate-600">
-              O essencial para pedir, pagar e acompanhar a certidão. Precisa de mais detalhes? Fale com a Amanda ou abra Contato.
+              O essencial para pedir, pagar e acompanhar a certidão. Precisa de mais detalhes? Fale com a Amanda ou abra{" "}
+              <a href="/suporte" className="font-semibold text-primary-700 underline underline-offset-2">
+                Suporte
+              </a>
+              .
             </p>
           </div>
           <div className="max-w-3xl mx-auto divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">

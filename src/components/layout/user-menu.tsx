@@ -24,7 +24,7 @@ export const defaultUserMenuActions: QuickTooltipAction[] = [
     id: "support",
     label: "Suporte",
     icon: <MessageCircle className="w-4 h-4" />,
-    href: "/contato",
+    href: "/suporte",
   },
   {
     id: "profile",

@@ -46,6 +46,10 @@ export function LegalPage({
               Política de privacidade
             </Link>
             {" · "}
+            <Link href="/suporte" className="text-brand-800 hover:underline">
+              Suporte
+            </Link>
+            {" · "}
             <Link href="mailto:atendimento@cartori.com.br" className="text-brand-800 hover:underline">
               atendimento@cartori.com.br
             </Link>

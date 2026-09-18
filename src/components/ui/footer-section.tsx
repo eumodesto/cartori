@@ -8,6 +8,7 @@ import { FOOTER_CERTIFICATE_LINKS, certificatePath } from "@/lib/certificate-lin
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Facebook, Instagram } from "lucide-react";
+import { FACEBOOK_URL, INSTAGRAM_URL } from "@/lib/support-contacts";
 
 interface FooterLink {
   title: string;
@@ -34,7 +35,7 @@ const footerLinks: FooterSectionData[] = [
       { title: "Para Advogados & Imobiliárias", href: "/#como-funciona" },
       { title: "Termos de Uso", href: "/termos" },
       { title: "Privacidade (LGPD)", href: "/privacidade" },
-      { title: "Suporte", href: "/contato" },
+      { title: "Suporte", href: "/suporte" },
     ],
   },
   {
@@ -49,8 +50,8 @@ const footerLinks: FooterSectionData[] = [
   {
     label: "Redes",
     links: [
-      { title: "Facebook", href: "https://www.facebook.com/cartori.certidoes", icon: Facebook },
-      { title: "Instagram", href: "https://www.instagram.com/cartori.certidoes", icon: Instagram },
+      { title: "Facebook", href: FACEBOOK_URL, icon: Facebook },
+      { title: "Instagram", href: INSTAGRAM_URL, icon: Instagram },
     ],
   },
 ];
