@@ -95,9 +95,20 @@ export function Footer() {
                     className="h-8 w-auto object-contain brightness-0 invert"
                   />
                 </Link>
-                <p className="max-w-3xl text-neutral-400 text-sm leading-relaxed">
-                  A Cartori é a vitrine online para solicitar certidões de nascimento, casamento, óbito, notas, imóveis e protesto — além de TRF, TRT e CCIR. O pedido é pago por PIX ou cartão no Mercado Pago. Cuidamos da diligência operacional junto ao cartório ou órgão: busca da serventia, emissão e envio digital ou em papel.
-                </p>
+                <div className="max-w-3xl space-y-3 text-neutral-400 text-sm leading-relaxed">
+                  <p>
+                    A Cartori é uma empresa privada e independente, sem vínculo, afiliação ou representação de órgãos públicos, cartórios, tribunais ou entidades governamentais.
+                  </p>
+                  <p>
+                    Prestamos serviço de intermediação e facilitação para solicitação de certidões e documentos junto aos órgãos e serventias responsáveis pela emissão.
+                  </p>
+                  <p>
+                    Os documentos também podem ser solicitados diretamente aos respectivos órgãos ou cartórios competentes. Os valores cobrados pela Cartori podem incluir taxas de serviço, atendimento, processamento e intermediação, além dos emolumentos e demais custos cobrados pelo órgão emissor, quando aplicáveis.
+                  </p>
+                  <p>
+                    A emissão, conteúdo, validade e prazo de disponibilização dos documentos são de responsabilidade do órgão ou serventia competente.
+                  </p>
+                </div>
               </AnimatedContainer>
 
               <div aria-hidden className="h-px bg-white/10" />
