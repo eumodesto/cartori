@@ -20,7 +20,6 @@ import type {
   PublicSubject,
 } from "@/lib/dossier-types";
 import { CertificateTypeConfig } from "@/lib/types";
-import { formatCurrency } from "@/lib/utils";
 
 export function DossierRecommendations({
   protocol,
@@ -116,9 +115,6 @@ export function DossierRecommendations({
                     <p className="text-sm text-neutral-700">{row.reason}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <p className="text-sm font-semibold text-neutral-900">
-                      a partir de {formatCurrency(row.basePrice)}
-                    </p>
                     <Button
                       type="button"
                       variant="primary"

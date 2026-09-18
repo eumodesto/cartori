@@ -290,7 +290,7 @@ export function AmandaChat({
                               {product.name}
                             </span>
                             <span className="block text-[10px] font-medium text-primary-900/70">
-                              {product.priceLabel} · {product.estimatedDays}
+                              {product.estimatedDays}
                             </span>
                           </span>
                           <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-extrabold">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { startingPriceFor } from "@/lib/pricing";
 import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
 import { CertificateTypeConfig } from "@/lib/types";
 import {
@@ -23,7 +22,6 @@ import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { CertificateConfigDialog } from "@/components/storefront/certificate-config-dialog";
 import { Pagination } from "@/components/ui/pagination";
 import { useCart } from "@/components/cart/cart-provider";
-import { formatCurrency } from "@/lib/utils";
 
 const CATALOG_PAGE_SIZE = 12;
 
@@ -257,10 +255,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-between gap-3">
-                  <span className="text-sm font-bold text-amber-300">
-                    A partir de {formatCurrency(startingPriceFor(cert))}
-                  </span>
+                <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-end">
                   <GetStartedButton
                     size="sm"
                     className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
