@@ -27,6 +27,7 @@ import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { CertificateConfigDialog } from "@/components/storefront/certificate-config-dialog";
 import { Pagination } from "@/components/ui/pagination";
 import { useCart } from "@/components/cart/cart-provider";
+import { useBusinessSignup } from "@/components/auth/business-signup-link";
 
 const CATALOG_PAGE_SIZE = 12;
 
@@ -45,6 +46,7 @@ export function StorefrontHome({
 }) {
   const { registerProductHandler } = useAmandaChatDock();
   const { addItem } = useCart();
+  const { open: openBusinessSignup } = useBusinessSignup();
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
   const [catalogQuery, setCatalogQuery] = useState("");
   const [catalogPage, setCatalogPage] = useState(1);
@@ -449,6 +451,15 @@ export function StorefrontHome({
                   </p>
                 </div>
               </div>
+
+              <GetStartedButton
+                size="md"
+                className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
+                iconClassName="bg-brand-950/15 text-brand-950"
+                onClick={openBusinessSignup}
+              >
+                Criar conta empresarial
+              </GetStartedButton>
             </div>
 
             <div className="lg:col-span-5 min-h-[420px]">

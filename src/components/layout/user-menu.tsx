@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/quick-tooltip-actions";
 import { useAuth } from "@/components/auth/auth-provider";
 import { AuthDialog } from "@/components/auth/auth-dialog";
-import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
+import {
+  AUTH_INTENT_EVENT,
+  COMPANY_DASHBOARD_PATH,
+  isCompanySignupSearch,
+  type AuthIntentDetail,
+  type AuthIntentKind,
+} from "@/lib/auth-intent";
 import { cn, safeAppPath } from "@/lib/utils";
 
 export const defaultUserMenuActions: QuickTooltipAction[] = [
@@ -49,20 +55,48 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   className,
   nextPath = "/dashboard",
 }) => {
-  const { profile, logout } = useAuth();
+  const { profile, isBusiness, loading, logout } = useAuth();
   const [authOpen, setAuthOpen] = React.useState(false);
-  const [partnerOpen, setPartnerOpen] = React.useState(false);
+  const [authMode, setAuthMode] = React.useState<"login" | "signup">("login");
+  const [authIntent, setAuthIntent] = React.useState<AuthIntentKind>("default");
   const [resolvedNext, setResolvedNext] = React.useState(nextPath);
 
+  const openAuth = React.useCallback(
+    (mode: "login" | "signup", intent: AuthIntentKind = "default") => {
+      setAuthMode(mode);
+      setAuthIntent(intent);
+      setAuthOpen(true);
+    },
+    []
+  );
+
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
+    const onIntent = (event: Event) => {
+      if (profile) return;
+      const detail = (event as CustomEvent<AuthIntentDetail>).detail;
+      openAuth(detail?.mode || "signup", detail?.intent || "default");
+    };
+    window.addEventListener(AUTH_INTENT_EVENT, onIntent);
+    return () => window.removeEventListener(AUTH_INTENT_EVENT, onIntent);
+  }, [openAuth, profile]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || loading) return;
     const params = new URLSearchParams(window.location.search);
     const next = params.get("next");
     if (next) setResolvedNext(safeAppPath(next, nextPath));
-    if (params.get("entrar") === "1" && !profile) {
-      setAuthOpen(true);
+    if (isCompanySignupSearch(params)) {
+      if (profile) {
+        window.location.replace(isBusiness ? "/dashboard" : COMPANY_DASHBOARD_PATH);
+        return;
+      }
+      openAuth("signup", "company");
+      return;
     }
-  }, [profile, nextPath]);
+    if (params.get("entrar") === "1" && !profile) {
+      openAuth("login");
+    }
+  }, [profile, isBusiness, loading, nextPath, openAuth]);
 
   const trigger = (
     <IconButton
@@ -76,7 +110,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         profile || actions
           ? undefined
           : () => {
-              setAuthOpen(true);
+              openAuth("login");
             }
       }
     />
@@ -86,14 +120,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     <>
       <AuthDialog
         isOpen={authOpen}
-        onClose={() => setAuthOpen(false)}
-        nextPath={resolvedNext}
-        initialMode="login"
-        onAuthenticated={({ wantsPartner }) => {
-          if (wantsPartner) setPartnerOpen(true);
+        onClose={() => {
+          setAuthOpen(false);
+          setAuthIntent("default");
         }}
+        nextPath={resolvedNext}
+        initialMode={authMode}
+        intent={authIntent}
       />
-      <PartnerPlanDialog isOpen={partnerOpen} onClose={() => setPartnerOpen(false)} />
     </>
   );
 

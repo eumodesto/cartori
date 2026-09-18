@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Building2, LogIn, UserRound } from "lucide-react";
+import { Building2, Check, LogIn, UserRound } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
 import { useAuth } from "@/components/auth/auth-provider";
+import { COMPANY_DASHBOARD_PATH, COMPANY_SAAS_BENEFITS, type AuthIntentKind } from "@/lib/auth-intent";
 import { maskPhone } from "@/lib/utils";
 
 export function AuthDialog({
@@ -23,6 +24,7 @@ export function AuthDialog({
   nextPath = "/dashboard",
   required = false,
   initialMode = "login",
+  intent = "default",
   title,
   description,
   onAuthenticated,
@@ -32,13 +34,17 @@ export function AuthDialog({
   nextPath?: string | null;
   required?: boolean;
   initialMode?: "login" | "signup";
+  intent?: AuthIntentKind;
   title?: string;
   description?: string;
   onAuthenticated?: (result: { wantsPartner: boolean }) => void;
 }) {
   const { refresh, configured } = useAuth();
+  const companyIntent = intent === "company";
   const [mode, setMode] = React.useState<"login" | "signup">(initialMode);
-  const [account, setAccount] = React.useState<"person" | "company">("person");
+  const [account, setAccount] = React.useState<"person" | "company">(
+    companyIntent ? "company" : "person"
+  );
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [phone, setPhone] = React.useState("");
@@ -54,18 +60,15 @@ export function AuthDialog({
   React.useEffect(() => {
     if (!isOpen) return;
     setMode(initialMode);
+    setAccount(companyIntent ? "company" : "person");
     reset();
-  }, [isOpen, initialMode]);
+  }, [isOpen, initialMode, companyIntent]);
 
   const finish = async (goPartner: boolean) => {
     await refresh();
     onAuthenticated?.({ wantsPartner: goPartner });
     onClose();
-    const destination = goPartner
-      ? nextPath
-        ? "/dashboard?empresa=1"
-        : null
-      : nextPath;
+    const destination = goPartner ? COMPANY_DASHBOARD_PATH : nextPath;
     if (destination) {
       window.location.assign(destination);
     }
@@ -96,7 +99,7 @@ export function AuthDialog({
         setError(data.error || "Confirme o e-mail para entrar.");
         return;
       }
-      await finish(mode === "signup" && account === "company");
+      await finish(companyIntent || (mode === "signup" && account === "company"));
     } catch {
       setError("Falha de conexão. Tente de novo.");
     } finally {
@@ -106,16 +109,23 @@ export function AuthDialog({
 
   return (
     <>
-      <Dialog isOpen={isOpen} onClose={required ? () => undefined : onClose} size="md">
+      <Dialog isOpen={isOpen} onClose={required ? () => undefined : onClose} size={companyIntent ? "lg" : "md"}>
         <DialogHeader onClose={required ? undefined : onClose}>
           <DialogTitle>
-            {title || (mode === "login" ? "Entrar na Cartori" : "Criar sua conta")}
+            {title ||
+              (companyIntent
+                ? "Conta para advocacias e imobiliárias"
+                : mode === "login"
+                  ? "Entrar na Cartori"
+                  : "Criar sua conta")}
           </DialogTitle>
           <DialogDescription>
             {description ||
-              (required
-                ? "Para concluir o pedido, entre ou crie uma conta. Depois do pagamento você acompanha tudo no Dashboard."
-                : "O Dashboard abre no modo pessoal. Cadastrar a empresa com CNPJ libera recursos B2B.")}
+              (companyIntent
+                ? "Crie a conta e siga para o dashboard empresarial. Com o CNPJ cadastrado, o escritório passa a operar no painel B2B que a Cartori já oferece."
+                : required
+                  ? "Para concluir o pedido, entre ou crie uma conta. Depois do pagamento você acompanha tudo no Dashboard."
+                  : "O Dashboard abre no modo pessoal. Cadastrar a empresa com CNPJ libera recursos B2B.")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
@@ -130,7 +140,24 @@ export function AuthDialog({
               ]}
             />
 
-            {mode === "signup" && (
+            {mode === "signup" && companyIntent && (
+              <>
+                <p className="inline-flex items-center gap-2 rounded-md border border-brand-200 bg-white px-3 py-2 text-xs font-semibold text-brand-950">
+                  <Building2 className="w-4 h-4 text-brand-700" />
+                  Advocacia ou imobiliária — cadastro com CNPJ no painel
+                </p>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg border border-brand-200 bg-brand-50/70 p-3">
+                  {COMPANY_SAAS_BENEFITS.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-xs text-brand-950 leading-snug">
+                      <Check className="w-3.5 h-3.5 mt-0.5 shrink-0 text-brand-700" aria-hidden />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {mode === "signup" && !companyIntent && (
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -207,7 +234,11 @@ export function AuthDialog({
               </Button>
             )}
             <Button type="submit" variant="primary" isLoading={loading} disabled={!configured}>
-              {mode === "login" ? "Entrar" : "Criar conta"}
+              {mode === "login"
+                ? "Entrar"
+                : companyIntent
+                  ? "Criar conta e ir ao painel"
+                  : "Criar conta"}
             </Button>
           </DialogFooter>
         </form>

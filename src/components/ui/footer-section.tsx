@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { HomeHashLink } from "@/components/storefront/home-hash-link";
+import { BusinessSignupLink } from "@/components/auth/business-signup-link";
 import { FOOTER_CERTIFICATE_LINKS, certificatePath } from "@/lib/certificate-links";
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -95,7 +96,11 @@ export function Footer() {
                         "hover:text-neutral-0 inline-flex items-center transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-sm";
                       return (
                       <li key={link.title}>
-                        {hash ? (
+                        {link.title === "Para Advogados & Imobiliárias" ? (
+                          <BusinessSignupLink className={className}>
+                            {link.title}
+                          </BusinessSignupLink>
+                        ) : hash ? (
                           <HomeHashLink hash={hash} className={className}>
                             {link.icon && <link.icon className="me-1 size-4" />}
                             {link.title}

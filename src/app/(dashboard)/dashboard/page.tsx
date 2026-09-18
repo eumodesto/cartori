@@ -18,6 +18,7 @@ function DashboardHome() {
   const [partnerOpen, setPartnerOpen] = React.useState(false);
   const [benefitsOpen, setBenefitsOpen] = React.useState(false);
   const highlightId = searchParams.get("pedido");
+  const wantsCompany = searchParams.get("empresa") === "1";
   const firstName = profile?.name?.split(" ")[0] || "olá";
   const showBusinessBanner = Boolean(profile) && !loading && !isBusiness;
 
@@ -25,6 +26,11 @@ function DashboardHome() {
     setBenefitsOpen(false);
     setPartnerOpen(true);
   }, []);
+
+  React.useEffect(() => {
+    if (!wantsCompany || loading || !profile || isBusiness) return;
+    setPartnerOpen(true);
+  }, [wantsCompany, loading, profile, isBusiness]);
 
   return (
     <div className="space-y-6">
@@ -56,7 +62,15 @@ function DashboardHome() {
         onClose={() => setBenefitsOpen(false)}
         onContinue={openCnpjFlow}
       />
-      <PartnerPlanDialog isOpen={partnerOpen} onClose={() => setPartnerOpen(false)} />
+      <PartnerPlanDialog
+        isOpen={partnerOpen}
+        onClose={() => setPartnerOpen(false)}
+        onSuccess={() => {
+          if (typeof window !== "undefined" && window.location.search.includes("empresa=1")) {
+            window.history.replaceState(null, "", "/dashboard");
+          }
+        }}
+      />
     </div>
   );
 }
