@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AmandaChat } from "@/components/cartori/amanda-chat";
 import { ChatLauncher } from "@/components/cartori/chat-launcher";
 import { ChatPanel } from "@/components/cartori/chat-panel";
+import { useAuth } from "@/components/auth/auth-provider";
 import {
   type ChatWidgetPhase,
   type LauncherPosition,
@@ -69,7 +70,11 @@ function AIChatWidget({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const enabled = isChatWidgetEnabled(pathname);
+  const { profile, loading: authLoading } = useAuth();
+  const enabled = isChatWidgetEnabled(pathname, {
+    platformRole: profile?.role,
+    authLoading,
+  });
   const [phase, setPhase] = React.useState<ChatWidgetPhase>("closed");
   const [heroInView, setHeroInView] = React.useState(false);
   const [parkEl, setParkEl] = React.useState<HTMLDivElement | null>(null);

@@ -22,7 +22,7 @@ Checkout, auth, pagamentos, ACL.
 **Em construção.**
 
 - POST `/api/amanda/chat`: OpenAI (`OPENAI_API_KEY`, modelo `OPENAI_MODEL` ou `gpt-4o-mini`).
-- Chat **público de propósito**: sem `requireAuth`. Widget na vitrine (`app/layout.tsx`, hero em `app/page.tsx`); excluído só de `/dashboard` e `/design-system`. Não há regra no código nem na docs exigindo login.
+- Chat **público de propósito**: sem `requireAuth`. Widget na vitrine (`app/layout.tsx`, hero em `app/page.tsx`); também no painel do cliente (`/dashboard`, solicitações, dossiês). Excluído da mesa operacional (`/dashboard/operacao`), do design system e de papéis `ADMIN` / `OPERATOR`. Não há regra exigindo login no chat.
 - Histórico: no máximo 16 turnos, 2000 chars, só `user`/`assistant`.
 - System prompt: `buildAmandaSystemPrompt(await listProducts())` — preços e campos do catálogo servidor.
 - Sem chave → 503.

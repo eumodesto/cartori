@@ -1,12 +1,22 @@
+import type { UserRole } from "@prisma/client";
+
 export type ChatWidgetPhase = "closed" | "opening" | "open" | "closing";
 
 export const chatWidgetConfig = {
   enabled: true,
   includedRoutes: [] as string[],
-  excludedRoutes: ["/dashboard", "/design-system"],
+  /** Mesa operacional e telas de design — não o painel do cliente. */
+  excludedRoutes: ["/dashboard/operacao", "/design-system"],
 };
 
-export function isChatWidgetEnabled(pathname: string): boolean {
+export function isStaffChatAudience(role?: UserRole | string | null) {
+  return role === "ADMIN" || role === "OPERATOR";
+}
+
+export function isChatWidgetEnabled(
+  pathname: string,
+  context?: { platformRole?: UserRole | string | null; authLoading?: boolean }
+): boolean {
   const { enabled, includedRoutes, excludedRoutes } = chatWidgetConfig;
   if (!enabled) return false;
 
@@ -14,6 +24,8 @@ export function isChatWidgetEnabled(pathname: string): boolean {
     pathname === route || pathname.startsWith(`${route}/`);
 
   if (excludedRoutes.some(matches)) return false;
+  if (isStaffChatAudience(context?.platformRole)) return false;
+  if (context?.authLoading && pathname.startsWith("/dashboard")) return false;
   if (includedRoutes.length === 0) return true;
   return includedRoutes.some(matches);
 }
