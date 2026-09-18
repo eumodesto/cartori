@@ -10,6 +10,7 @@ export interface InputProps
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   required?: boolean;
+  optional?: boolean;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -25,6 +26,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       id,
       disabled,
       required,
+      optional,
       ...props
     },
     ref
@@ -42,6 +44,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className="block text-sm font-medium text-neutral-800 select-none"
           >
             {label} {required && <span className="text-semantic-error">*</span>}
+            {!required && optional && (
+              <span className="ml-1 align-middle text-[11px] font-semibold uppercase tracking-wide text-brand-700 bg-brand-50 border border-brand-200 rounded px-1.5 py-0.5">
+                opcional
+              </span>
+            )}
           </label>
         )}
 

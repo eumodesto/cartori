@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { FileText, MapPin, Tag } from "lucide-react";
+import { FileText, HelpCircle, MapPin, Tag } from "lucide-react";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Tooltip } from "@/components/ui/tooltip";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,6 +35,28 @@ import {
 import { createId, formatCurrency } from "@/lib/utils";
 
 const ABROAD_FIELD_IDS = new Set(["traducao-juramentada", "apostilamento_traduzida"]);
+
+const AVERBACAO_EXPLANATION =
+  "Averbação é a anotação feita à margem do registro para constar alterações posteriores — como divórcio na certidão de casamento, alteração de nome ou reconhecimento de paternidade. Marque esta opção se você precisa da certidão já com as averbações.";
+
+function normalizeLabel(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+/** Campos cartoriais (livro, folha e termo) que devem ser sempre opcionais e destacados como tal. */
+function isOptionalCartorialField(field: FormFieldDefinition) {
+  if (field.type !== "text") return false;
+  const label = normalizeLabel(field.label);
+  return (
+    label === "numero da folha" ||
+    label === "numero do livro" ||
+    label === "numero do termo"
+  );
+}
 
 interface CertificateConfigDialogProps {
   certificate: CertificateTypeConfig;
@@ -215,15 +238,33 @@ export function CertificateConfigDialog({
     }
 
     if (field.type === "checkbox" && field.id !== "inteiro_teor") {
+      const isAverbacao = normalizeLabel(field.label) === "averbacao";
       return (
         <div key={field.id} className="sm:col-span-2 rounded-md border border-neutral-200 p-3">
-          <Checkbox
-            checked={documentData[field.id] === "true"}
-            onChange={(event) =>
-              setField(field.id, event.target.checked ? "true" : "false")
-            }
-            label={`${field.label}${extraSuffix(field)}${field.required ? " *" : ""}`}
-          />
+          <div className="flex items-start justify-between gap-2">
+            <Checkbox
+              checked={documentData[field.id] === "true"}
+              onChange={(event) =>
+                setField(field.id, event.target.checked ? "true" : "false")
+              }
+              label={`${field.label}${extraSuffix(field)}${field.required ? " *" : ""}`}
+            />
+            {isAverbacao && (
+              <Tooltip
+                content={AVERBACAO_EXPLANATION}
+                side="left"
+                className="max-w-[18rem] whitespace-normal leading-snug text-left"
+              >
+                <button
+                  type="button"
+                  aria-label="O que é averbação?"
+                  className="shrink-0 text-neutral-400 hover:text-brand-700 focus-visible:text-brand-700 outline-none rounded-full focus-visible:ring-2 focus-visible:ring-brand-500"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                </button>
+              </Tooltip>
+            )}
+          </div>
         </div>
       );
     }
@@ -242,11 +283,14 @@ export function CertificateConfigDialog({
       );
     }
 
+    const optionalCartorial = isOptionalCartorialField(field);
+
     return (
       <Input
         key={field.id}
         label={field.label}
-        required={field.required}
+        required={field.required && !optionalCartorial}
+        optional={optionalCartorial}
         type={field.type === "date" ? "date" : field.type === "number" ? "number" : "text"}
         placeholder={field.placeholder}
         helperText={field.helperText}
@@ -461,6 +505,7 @@ export function CertificateConfigDialog({
 
     for (const field of certificate.fields) {
       if (!fieldIsVisible(field) || !field.required) continue;
+      if (isOptionalCartorialField(field)) continue;
       if (field.type === "checkbox") {
         if (documentData[field.id] !== "true") {
           setError(`Marque o campo "${field.label}".`);
