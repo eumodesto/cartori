@@ -253,7 +253,7 @@ export function CertificateConfigDialog({
               <Tooltip
                 content={AVERBACAO_EXPLANATION}
                 side="left"
-                className="max-w-[18rem] whitespace-normal leading-snug text-left"
+                contentClassName="w-64 whitespace-normal normal-case tracking-normal leading-snug text-left"
               >
                 <button
                   type="button"

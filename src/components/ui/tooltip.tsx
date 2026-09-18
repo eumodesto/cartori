@@ -9,6 +9,7 @@ export interface TooltipProps {
   side?: "top" | "bottom" | "left" | "right";
   fullWidth?: boolean;
   className?: string;
+  contentClassName?: string;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({
@@ -17,6 +18,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   side = "top",
   fullWidth = false,
   className,
+  contentClassName,
 }) => {
   const [isVisible, setIsVisible] = React.useState(false);
 
@@ -47,7 +49,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
           className={cn(
             "absolute z-50 px-2.5 py-1 text-[11px] font-medium text-neutral-0 bg-neutral-950 rounded-sm shadow-xs whitespace-nowrap pointer-events-none animate-in fade-in duration-fast",
             sideStyles[side],
-            className
+            contentClassName
           )}
         >
           {content}
