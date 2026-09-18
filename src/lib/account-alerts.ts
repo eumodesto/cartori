@@ -78,7 +78,7 @@ export async function listAccountAlerts(userId: string): Promise<AccountAlert[]>
       protocol: order.protocol,
       title: "Nova mensagem",
       body: preview(message.body) || "A equipe Cartori enviou uma mensagem.",
-      href: `/dashboard/solicitacoes/${order.id}`,
+      href: `/painel/pedidos/${order.id}`,
       createdAt: message.createdAt.toISOString(),
     });
   }
@@ -99,7 +99,7 @@ export async function listAccountAlerts(userId: string): Promise<AccountAlert[]>
       body: note
         ? preview(`${statusLabel}. ${note}`)
         : `Pedido ${order.protocol}: ${statusLabel}.`,
-      href: `/dashboard/solicitacoes/${order.id}`,
+      href: `/painel/pedidos/${order.id}`,
       createdAt: event.createdAt.toISOString(),
     });
   }

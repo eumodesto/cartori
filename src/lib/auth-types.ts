@@ -39,9 +39,9 @@ export function isPartnerAccount(profile: AuthProfile | null | undefined) {
 }
 
 export const B2B_LOCKED_HREFS = [
-  "/dashboard/organizacao",
-  "/dashboard/equipe",
-  "/dashboard/financeiro",
+  "/painel/empresa",
+  "/painel/equipe",
+  "/painel/financeiro",
 ];
 
 /** @deprecated use B2B_LOCKED_HREFS — recursos empresariais, não Partner. */

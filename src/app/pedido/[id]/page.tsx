@@ -143,7 +143,7 @@ export default function PedidoPage() {
           )}
 
           {notFound && (
-            <Link href="/dashboard">
+            <Link href="/painel">
               <Button variant="outline">Abrir painel</Button>
             </Link>
           )}
@@ -163,7 +163,7 @@ export default function PedidoPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/dashboard">
+                <Link href="/painel">
                   <Button>Abrir painel</Button>
                 </Link>
                 <Link href="/">

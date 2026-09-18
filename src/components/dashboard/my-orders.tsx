@@ -185,7 +185,7 @@ export function MyOrders({
                 >
                   <TableCell className="font-mono text-xs">
                     <Link
-                      href={`/dashboard/solicitacoes/${order.id}`}
+                      href={`/painel/pedidos/${order.id}`}
                       className="text-brand-800 hover:underline"
                     >
                       {order.protocol}

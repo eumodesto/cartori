@@ -3,8 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { AuthProfile } from "@/lib/auth-types";
+import { queueTemplateEmail } from "@/lib/email";
 import { digitsOnly } from "@/lib/utils";
 import { normalizeCpf } from "@/lib/validators";
+
+function siteUrl(path: string) {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(
+    /\/$/,
+    ""
+  );
+  return `${base}${path}`;
+}
 
 type ProfileOrganization = {
   id: string;
@@ -204,6 +213,17 @@ export async function syncAuthUser(input: {
       where: { userId: null, customerEmail: email },
       data: {
         userId: row.id,
+      },
+    });
+
+    // E-mail de boas-vindas (nova conta). Não bloqueia o cadastro.
+    void queueTemplateEmail({
+      key: "account_created",
+      to: row.email,
+      toUserId: row.id,
+      vars: {
+        customerName: row.name || row.email,
+        appLink: siteUrl("/painel"),
       },
     });
 

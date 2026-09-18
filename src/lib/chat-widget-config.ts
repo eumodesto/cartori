@@ -5,8 +5,8 @@ export type ChatWidgetPhase = "closed" | "opening" | "open" | "closing";
 export const chatWidgetConfig = {
   enabled: true,
   includedRoutes: [] as string[],
-  /** Mesa operacional e telas de design — não o painel do cliente. */
-  excludedRoutes: ["/dashboard/operacao", "/design-system"],
+  /** Mesa operacional, administração e telas de design — não o painel do cliente. */
+  excludedRoutes: ["/operacao", "/admin", "/design-system"],
 };
 
 export function isStaffChatAudience(role?: UserRole | string | null) {
@@ -25,7 +25,13 @@ export function isChatWidgetEnabled(
 
   if (excludedRoutes.some(matches)) return false;
   if (isStaffChatAudience(context?.platformRole)) return false;
-  if (context?.authLoading && pathname.startsWith("/dashboard")) return false;
+  if (
+    context?.authLoading &&
+    (pathname.startsWith("/painel") ||
+      pathname.startsWith("/operacao") ||
+      pathname.startsWith("/admin"))
+  )
+    return false;
   if (includedRoutes.length === 0) return true;
   return includedRoutes.some(matches);
 }

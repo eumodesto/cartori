@@ -30,13 +30,13 @@ export const defaultUserMenuActions: QuickTooltipAction[] = [
     id: "profile",
     label: "Perfil",
     icon: <PersonStanding className="w-4 h-4" />,
-    href: "/dashboard",
+    href: "/painel/perfil",
   },
   {
     id: "team",
     label: "Equipe",
     icon: <Users className="w-4 h-4" />,
-    href: "/dashboard/equipe",
+    href: "/painel/equipe",
   },
 ];
 
@@ -53,7 +53,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   side = "bottom",
   size = "sm",
   className,
-  nextPath = "/dashboard",
+  nextPath = "/pos-login",
 }) => {
   const { profile, isBusiness, loading, logout } = useAuth();
   const [authOpen, setAuthOpen] = React.useState(false);
@@ -87,7 +87,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     if (next) setResolvedNext(safeAppPath(next, nextPath));
     if (isCompanySignupSearch(params)) {
       if (profile) {
-        window.location.replace(isBusiness ? "/dashboard" : COMPANY_DASHBOARD_PATH);
+        window.location.replace(isBusiness ? "/painel" : COMPANY_DASHBOARD_PATH);
         return;
       }
       openAuth("signup", "company");
@@ -166,7 +166,13 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               id: "account",
               label: "Minha conta",
               icon: <UserRound className="w-4 h-4" />,
-              href: "/dashboard",
+              href: "/painel",
+            },
+            {
+              id: "profile",
+              label: "Meu perfil",
+              icon: <PersonStanding className="w-4 h-4" />,
+              href: "/painel/perfil",
             },
             "separator",
             {

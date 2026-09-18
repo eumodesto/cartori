@@ -21,7 +21,7 @@ import { maskPhone } from "@/lib/utils";
 export function AuthDialog({
   isOpen,
   onClose,
-  nextPath = "/dashboard",
+  nextPath = "/pos-login",
   required = false,
   initialMode = "login",
   intent = "default",

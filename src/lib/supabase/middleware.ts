@@ -27,8 +27,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
-  if (isDashboard && !user) {
+  const path = request.nextUrl.pathname;
+  const isProtected =
+    path.startsWith("/painel") ||
+    path.startsWith("/operacao") ||
+    path.startsWith("/admin");
+  if (isProtected && !user) {
     const loginUrl = request.nextUrl.clone();
     if (loginUrl.hostname === "0.0.0.0") loginUrl.hostname = "localhost";
     loginUrl.pathname = "/";

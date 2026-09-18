@@ -159,7 +159,7 @@ export function OrderCasePanel({
     return (
       <Alert variant="error" title="Pedido">
         {error || "Pedido não encontrado."}{" "}
-        <Link href={staff ? "/dashboard/operacao" : "/dashboard/solicitacoes"} className="underline">
+        <Link href={staff ? "/operacao/pedidos" : "/painel/pedidos"} className="underline">
           Voltar
         </Link>
       </Alert>

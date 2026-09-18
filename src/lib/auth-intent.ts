@@ -1,5 +1,5 @@
 export const COMPANY_SIGNUP_PATH = "/?cadastro=empresa";
-export const COMPANY_DASHBOARD_PATH = "/dashboard?empresa=1";
+export const COMPANY_DASHBOARD_PATH = "/painel?empresa=1";
 export const AUTH_INTENT_EVENT = "cartori:open-auth";
 
 export type AuthIntentKind = "default" | "company";

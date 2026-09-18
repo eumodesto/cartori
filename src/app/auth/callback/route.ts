@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const origin = requestOrigin(request);
   const code = searchParams.get("code");
-  const next = safeAppPath(searchParams.get("next") || "/dashboard");
+  const next = safeAppPath(searchParams.get("next") || "/painel");
 
   if (!code || !isSupabaseConfigured()) {
     const fallback = new URL("/", origin);
