@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
+import { Facebook, Instagram } from "lucide-react";
 
 interface FooterLink {
   title: string;
@@ -50,10 +50,8 @@ const footerLinks: FooterSectionData[] = [
   {
     label: "Redes",
     links: [
-      { title: "Facebook", href: "#", icon: Facebook },
-      { title: "Instagram", href: "#", icon: Instagram },
-      { title: "YouTube", href: "#", icon: Youtube },
-      { title: "LinkedIn", href: "#", icon: Linkedin },
+      { title: "Facebook", href: "https://www.facebook.com/cartori.certidoes", icon: Facebook },
+      { title: "Instagram", href: "https://www.instagram.com/cartori.certidoes", icon: Instagram },
     ],
   },
 ];
@@ -97,6 +95,9 @@ export function Footer() {
                       <li key={link.title}>
                         <Link
                           href={link.href}
+                          {...(link.href.startsWith("http")
+                            ? { target: "_blank", rel: "noopener noreferrer" }
+                            : {})}
                           className="hover:text-neutral-0 inline-flex items-center transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-sm"
                         >
                           {link.icon && <link.icon className="me-1 size-4" />}
