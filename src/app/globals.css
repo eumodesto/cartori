@@ -282,6 +282,17 @@
 @layer base {
   html {
     font-family: var(--font-mori);
+    overflow-x: hidden;
+  }
+
+  /* Anti-overflow global: nenhuma página desloca lateralmente no mobile. */
+  html,
+  body {
+    max-width: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
   }
 
   h1,

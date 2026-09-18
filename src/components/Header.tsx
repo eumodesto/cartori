@@ -1,12 +1,14 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { ShoppingBag, ShieldCheck } from "lucide-react";
+import { ShoppingBag, ShieldCheck, Menu, X } from "lucide-react";
 import { AccountAlerts } from "@/components/layout/account-alerts";
 import { UserMenu } from "@/components/layout/user-menu";
 import { HomeHashLink } from "@/components/storefront/home-hash-link";
 
 export function Header({ cartCount = 0 }: { cartCount?: number }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-neutral-0/95 backdrop-blur border-b border-slate-200 dark:border-neutral-200 shadow-sm">
       {/* Top Banner Oficial */}
@@ -62,13 +64,13 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
         </nav>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <AccountAlerts />
           <UserMenu side="bottom" size="sm" />
 
           <Link
             href="/carrinho"
-            className="relative flex items-center gap-2 bg-primary-800 hover:bg-primary-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm transition-all hover:shadow"
+            className="relative flex items-center gap-2 bg-primary-800 hover:bg-primary-900 text-white text-xs font-bold px-3 sm:px-4 py-2.5 rounded-xl shadow-sm transition-all hover:shadow"
           >
             <ShoppingBag className="w-4 h-4 text-amber-400" />
             <span>Pedido</span>
@@ -78,8 +80,45 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
               </span>
             )}
           </Link>
+
+          <button
+            type="button"
+            onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={menuOpen}
+            className="md:hidden p-2 rounded-lg text-slate-700 dark:text-neutral-700 hover:bg-slate-100 dark:hover:bg-neutral-100/50 transition-colors"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile nav */}
+      {menuOpen && (
+        <nav className="md:hidden border-t border-slate-200 dark:border-neutral-200 bg-white dark:bg-neutral-0 px-4 py-3 flex flex-col gap-1 text-sm font-semibold text-slate-700 dark:text-neutral-700">
+          <HomeHashLink
+            hash="certidoes"
+            className="py-2 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-100/50"
+            onClick={() => setMenuOpen(false)}
+          >
+            Certidões
+          </HomeHashLink>
+          <HomeHashLink
+            hash="como-funciona"
+            className="py-2 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-100/50"
+            onClick={() => setMenuOpen(false)}
+          >
+            Como Funciona
+          </HomeHashLink>
+          <HomeHashLink
+            hash="faq"
+            className="py-2 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-100/50"
+            onClick={() => setMenuOpen(false)}
+          >
+            Dúvidas
+          </HomeHashLink>
+        </nav>
+      )}
     </header>
   );
 }
