@@ -520,11 +520,11 @@ export default function DesignSystemShowcasePage() {
               {/* User Menu / Quick Tooltip Actions */}
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-3">
-                  User Menu (Quick Tooltip Actions)
+                  User Menu (conta)
                 </h4>
                 <p className="text-xs text-neutral-500 mb-4 max-w-xl">
-                  Padrão oficial do menu de usuário: ícone circular → hover, foco ou toque revela atalhos de
-                  Suporte, Perfil e Equipe. Usado no Header B2C, no header do SaaS e no rodapé da Sidebar.
+                  Ícone único de perfil: visitante abre o modal Entrar/Criar conta; logado mostra Minha
+                  conta e Sair. Alertas de status e mensagens ficam no sino ao lado.
                 </p>
                 <div className="flex flex-wrap items-center gap-8">
                   <div className="flex flex-col items-center gap-2 min-h-[72px] justify-center">

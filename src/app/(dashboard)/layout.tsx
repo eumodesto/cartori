@@ -4,6 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AppSidebar, type NavGroup } from "@/components/layout/app-sidebar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { AccountAlerts } from "@/components/layout/account-alerts";
 import { UserMenu } from "@/components/layout/user-menu";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -16,7 +17,6 @@ import {
   Building2,
   Users,
   Wallet,
-  Bell,
   FolderOpen,
   Inbox,
 } from "lucide-react";
@@ -173,13 +173,7 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-3">
             <ThemeToggle variant="ghost" size="md" />
-            <button
-              type="button"
-              className="relative p-2 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-950 dark:hover:bg-white/10 transition-colors"
-              aria-label="Notificações operacionais"
-            >
-              <Bell className="w-4 h-4" />
-            </button>
+            <AccountAlerts />
             <UserMenu side="bottom" size="sm" />
             <div className="h-5 w-[1px] bg-neutral-200" />
             <div className="flex items-center gap-2.5 pl-1">

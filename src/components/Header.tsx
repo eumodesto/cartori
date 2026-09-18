@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ShoppingBag, ShieldCheck } from "lucide-react";
+import { AccountAlerts } from "@/components/layout/account-alerts";
 import { UserMenu } from "@/components/layout/user-menu";
 
 export function Header({ cartCount = 0 }: { cartCount?: number }) {
@@ -52,6 +53,7 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
+          <AccountAlerts />
           <UserMenu side="bottom" size="sm" />
 
           <Link

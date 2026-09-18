@@ -118,7 +118,7 @@ export function AuthDialog({
                 : "O Dashboard abre no modo pessoal. Cadastrar a empresa com CNPJ libera recursos B2B.")}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={submit}>
+        <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
           <DialogContent className="space-y-4">
             <Tabs
               variant="pill"

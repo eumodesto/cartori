@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Building2, LayoutDashboard, LogOut, MessageCircle, PersonStanding, User, Users } from "lucide-react";
+import { LogOut, MessageCircle, PersonStanding, User, UserRound, Users } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import {
   QuickTooltipActions,
   type QuickTooltipAction,
@@ -10,7 +11,7 @@ import {
 import { useAuth } from "@/components/auth/auth-provider";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
-import { safeAppPath } from "@/lib/utils";
+import { cn, safeAppPath } from "@/lib/utils";
 
 export const defaultUserMenuActions: QuickTooltipAction[] = [
   {
@@ -23,7 +24,7 @@ export const defaultUserMenuActions: QuickTooltipAction[] = [
     id: "profile",
     label: "Perfil",
     icon: <PersonStanding className="w-4 h-4" />,
-    href: "/minha-conta",
+    href: "/dashboard",
   },
   {
     id: "team",
@@ -48,9 +49,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   className,
   nextPath = "/dashboard",
 }) => {
-  const { profile, logout, isBusiness } = useAuth();
+  const { profile, logout } = useAuth();
   const [authOpen, setAuthOpen] = React.useState(false);
-  const [authMode, setAuthMode] = React.useState<"login" | "signup">("login");
   const [partnerOpen, setPartnerOpen] = React.useState(false);
   const [resolvedNext, setResolvedNext] = React.useState(nextPath);
 
@@ -60,93 +60,94 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     const next = params.get("next");
     if (next) setResolvedNext(safeAppPath(next, nextPath));
     if (params.get("entrar") === "1" && !profile) {
-      setAuthMode("login");
       setAuthOpen(true);
     }
   }, [profile, nextPath]);
 
-  const loggedActions: QuickTooltipAction[] = [
-    {
-      id: "dashboard",
-      label: "Dashboard",
-      icon: <LayoutDashboard className="w-4 h-4" />,
-      href: "/dashboard",
-    },
-    {
-      id: "support",
-      label: "Suporte",
-      icon: <MessageCircle className="w-4 h-4" />,
-      href: "/#faq",
-    },
-    ...(!isBusiness
-      ? [
-          {
-            id: "partner",
-            label: "Cadastrar empresa",
-            icon: <Building2 className="w-4 h-4" />,
-            onClick: () => setPartnerOpen(true),
-          } satisfies QuickTooltipAction,
-        ]
-      : []),
-    {
-      id: "logout",
-      label: "Sair",
-      icon: <LogOut className="w-4 h-4" />,
-      onClick: () => {
-        logout().catch(() => undefined);
-      },
-    },
-  ];
+  const trigger = (
+    <IconButton
+      type="button"
+      icon={<User className="w-4 h-4" />}
+      aria-label={profile ? "Minha conta" : "Entrar"}
+      variant="outline"
+      size={size}
+      className="rounded-full"
+      onClick={
+        profile || actions
+          ? undefined
+          : () => {
+              setAuthOpen(true);
+            }
+      }
+    />
+  );
 
-  const guestActions: QuickTooltipAction[] = [
-    {
-      id: "login",
-      label: "Entrar",
-      icon: <User className="w-4 h-4" />,
-      onClick: () => {
-        setAuthMode("login");
-        setAuthOpen(true);
-      },
-    },
-    {
-      id: "signup",
-      label: "Criar conta",
-      icon: <User className="w-4 h-4" />,
-      onClick: () => {
-        setAuthMode("signup");
-        setAuthOpen(true);
-      },
-    },
-  ];
-
-  return (
+  const dialogs = (
     <>
-      <QuickTooltipActions
-        triggerLabel={profile ? profile.name || profile.email : "Menu do usuário"}
-        actions={actions || (profile ? loggedActions : guestActions)}
-        side={side}
-        className={className}
-        trigger={
-          <IconButton
-            type="button"
-            icon={<User className="w-4 h-4" />}
-            aria-label="Menu do usuário"
-            variant="outline"
-            size={size}
-            className="rounded-full"
-          />
-        }
-      />
       <AuthDialog
         isOpen={authOpen}
         onClose={() => setAuthOpen(false)}
         nextPath={resolvedNext}
-        initialMode={authMode}
+        initialMode="login"
         onAuthenticated={({ wantsPartner }) => {
           if (wantsPartner) setPartnerOpen(true);
         }}
       />
       <PartnerPlanDialog isOpen={partnerOpen} onClose={() => setPartnerOpen(false)} />
+    </>
+  );
+
+  if (actions) {
+    return (
+      <>
+        <QuickTooltipActions
+          triggerLabel={profile ? profile.name || profile.email : "Menu do usuário"}
+          actions={actions}
+          side={side}
+          className={className}
+          trigger={trigger}
+        />
+        {dialogs}
+      </>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className={cn("inline-flex", className)}>
+        {trigger}
+        {dialogs}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className={cn("inline-flex", className)}>
+        <DropdownMenu
+          align="right"
+          trigger={trigger}
+          items={[
+            {
+              id: "account",
+              label: "Minha conta",
+              icon: <UserRound className="w-4 h-4" />,
+              href: "/dashboard",
+            },
+            "separator",
+            {
+              id: "logout",
+              label: "Sair",
+              icon: <LogOut className="w-4 h-4" />,
+              destructive: true,
+              onClick: () => {
+                logout().catch(() => undefined);
+              },
+            },
+          ]}
+        />
+      </div>
+      {dialogs}
     </>
   );
 };
