@@ -4,7 +4,10 @@ import {
   canAccessOrganization,
   canAccessOwnedOrder,
   canAccessOwnedDossier,
+  canAccessOrderCase,
+  canOperateCases,
   canOnboardBusiness,
+  canStaffSetOrderStatus,
   hasAllowedRole,
   isInternalRole,
   isTenantRole,
@@ -69,6 +72,15 @@ assert(!canAccessOwnedOrder(clientB, "ua"), "client cannot own someone else's or
 assert(!canAccessOwnedOrder(ownerA, "other"), "org owner does not own by tenant");
 assert(!canAccessOwnedOrder(admin, "ua"), "ADMIN has no implicit order bypass");
 assert(!canAccessOwnedOrder(operator, "ua"), "OPERATOR has no implicit order bypass");
+
+assert(canOperateCases(admin) && canOperateCases(operator), "staff operates cases");
+assert(!canOperateCases(clientA) && !canOperateCases(ownerA), "CLIENT/OWNER are not ops desk");
+assert(canAccessOrderCase(clientA, "ua"), "client case own order");
+assert(!canAccessOrderCase(clientB, "ua"), "client case foreign denied");
+assert(canAccessOrderCase(admin, "ua") && canAccessOrderCase(operator, "ua"), "staff case any order");
+assert(canStaffSetOrderStatus("WAITING_CUSTOMER"), "staff can request customer action");
+assert(!canStaffSetOrderStatus("PAID"), "staff cannot mark PAID");
+assert(!canStaffSetOrderStatus("PENDING_PAYMENT"), "staff cannot mark pending payment");
 
 assert(canAccessOwnedDossier(clientA, "ua"), "client owns own dossier");
 assert(!canAccessOwnedDossier(clientB, "ua"), "client cannot read someone else's dossier");
@@ -136,5 +148,17 @@ const orgDossiers = AUTHORIZATION_MATRIX.find((row) =>
   row.resource.includes("listar dossiês da Organization")
 );
 assert(orgDossiers?.CLIENT === "DENY", "org-wide dossier list fail-closed");
+
+const opsQueue = AUTHORIZATION_MATRIX.find((row) =>
+  row.resource.includes("fila operacional")
+);
+assert(opsQueue?.CLIENT === "DENY", "ops queue client denied");
+assert(opsQueue?.OPERATOR === "ALLOW" && opsQueue?.ADMIN === "ALLOW", "ops queue staff allow");
+
+const foreignCase = AUTHORIZATION_MATRIX.find((row) =>
+  row.resource.includes("caso de pedido alheio")
+);
+assert(foreignCase?.CLIENT === "DENY", "foreign case client denied");
+assert(foreignCase?.OPERATOR === "ALLOW" && foreignCase?.ADMIN === "ALLOW", "foreign case staff");
 
 console.log("etapa4-authorization-check: PASS");

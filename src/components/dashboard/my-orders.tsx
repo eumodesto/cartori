@@ -183,7 +183,14 @@ export function MyOrders({
                   key={order.id}
                   isSelected={order.id === highlightId}
                 >
-                  <TableCell className="font-mono text-xs">{order.protocol}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    <Link
+                      href={`/dashboard/solicitacoes/${order.id}`}
+                      className="text-brand-800 hover:underline"
+                    >
+                      {order.protocol}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <p className="font-medium text-neutral-900">{names}</p>
                     <p className="text-[11px] text-neutral-500">

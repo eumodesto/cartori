@@ -11,7 +11,7 @@ Pedido autenticado nasce e é lido pelo `userId` do contexto. Membership não ab
 
 ## Quando usar
 
-`GET/POST /api/orders`, `GET /api/orders/[id]`, card, checkout, `order-store`, `buildStoredOrder`.
+`GET/POST /api/orders`, `GET /api/orders/[id]`, card, checkout, `order-store`, `buildStoredOrder`, caso do pedido (`/messages`, `/attachments`), mesa `/api/ops`.
 
 ## Quando NÃO usar
 
@@ -40,9 +40,9 @@ Leitura:
 ## Invariantes
 
 - Ownership B2C = `order.userId === context.userId`.
-- Pedido alheio → 404 (`order_not_owned`).
-- ADMIN/OPERATOR **não** leem pedido de outro usuário nesta etapa (matriz DENY / FUTURE).
-- Valor cobrado depois vem do total persistido — skill `payment-integrity`.
+- Pedido alheio na rota de cliente → 404 (`order_not_owned`).
+- ADMIN/OPERATOR **não** usam `GET /api/orders/[id]` para pedido alheio. Mesa: `canOperateCases` + `/api/ops/orders`.
+- Staff **não** marca `PAID` / `PENDING_PAYMENT` (pagamento continua server-authoritative).
 
 ## Fluxo correto
 
@@ -51,6 +51,7 @@ Checkout autenticado → POST `/api/orders` com customer + items → servidor mo
 ## Helpers existentes
 
 `src/lib/order-access.ts`
+`src/lib/case-access.ts` / `case-store.ts` / `case-storage.ts` / `case-email.ts`
 `src/lib/order-store.ts` (`getOwnedOrder`, `listOrdersByUser`, `saveOrder`)
 `src/lib/orders.ts` (`buildStoredOrder`, `toClientOrder`)
 `src/lib/pricing.ts`

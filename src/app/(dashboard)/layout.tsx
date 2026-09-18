@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AppSidebar } from "@/components/layout/app-sidebar";
+import { AppSidebar, type NavGroup } from "@/components/layout/app-sidebar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
@@ -18,6 +18,7 @@ import {
   Wallet,
   Bell,
   FolderOpen,
+  Inbox,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -50,7 +51,9 @@ export default function DashboardLayout({
       ? { locked: true, onLockedClick: () => setPartnerOpen(true) }
       : {};
 
-  const sidebarGroups = [
+  const isStaff = profile?.role === "ADMIN" || profile?.role === "OPERATOR";
+
+  const sidebarGroups: NavGroup[] = [
     {
       label: "Operações Cartoriais",
       items: [
@@ -68,6 +71,17 @@ export default function DashboardLayout({
           icon: <FileText className="w-4 h-4" />,
           isActive: pathname.startsWith("/dashboard/solicitacoes"),
         },
+        ...(isStaff
+          ? [
+              {
+                id: "ops",
+                label: "Mesa operacional",
+                href: "/dashboard/operacao",
+                icon: <Inbox className="w-4 h-4" />,
+                isActive: pathname.startsWith("/dashboard/operacao"),
+              },
+            ]
+          : []),
         {
           id: "dossiers",
           label: "Dossiês & Processos",

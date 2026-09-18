@@ -47,6 +47,7 @@ enum OrderStatus {
   PAID
   IN_ANALYSIS
   IN_CARTORIO_SEARCH
+  WAITING_CUSTOMER
   CERTIFICATE_ISSUED
   SHIPPED
   COMPLETED
@@ -86,6 +87,8 @@ model User {
   organizationMemberships OrganizationMember[]
   orders         Order[]
   dossiers       Dossier[]
+  caseMessages   CaseMessage[]     @relation("CaseMessageAuthor")
+  caseAttachments CaseAttachment[] @relation("CaseAttachmentUploader")
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
@@ -176,6 +179,10 @@ model Order {
 
   items          OrderItem[]
   payments       Payment[]
+  caseMessages   CaseMessage[]
+  caseAttachments CaseAttachment[]
+  caseEvents     CaseEvent[]
+  emailOutbox    EmailOutbox[]
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -425,4 +432,94 @@ model SubjectIdentifier {
 
   @@unique([subjectId, kind, value])
   @@index([subjectId])
+}
+
+enum CaseAuthorKind {
+  CLIENT
+  STAFF
+  SYSTEM
+}
+
+enum CaseAttachmentKind {
+  RG
+  CNH
+  CERTIDAO
+  COMPROVANTE
+  RESIDENCIA
+  OTHER
+}
+
+enum CaseEventType {
+  STATUS_CHANGED
+  MESSAGE_POSTED
+  ATTACHMENT_UPLOADED
+}
+
+enum EmailOutboxStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+/// Thread operacional do pedido. Não é chat global nem ACL de Organization.
+model CaseMessage {
+  id           String         @id @default(uuid())
+  orderId      String
+  order        Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  authorUserId String?
+  author       User?          @relation("CaseMessageAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+  authorKind   CaseAuthorKind
+  body         String         @db.Text
+  attachments  CaseAttachment[]
+  createdAt    DateTime       @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model CaseAttachment {
+  id               String              @id @default(uuid())
+  orderId          String
+  order            Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  messageId        String?
+  message          CaseMessage?        @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  uploadedByUserId String?
+  uploadedBy       User?               @relation("CaseAttachmentUploader", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  kind             CaseAttachmentKind
+  originalName     String
+  mimeType         String
+  sizeBytes        Int
+  storagePath      String              @unique
+  createdAt        DateTime            @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model CaseEvent {
+  id          String        @id @default(uuid())
+  orderId     String
+  order       Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actorUserId String?
+  type        CaseEventType
+  payload     Json?
+  createdAt   DateTime      @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model EmailOutbox {
+  id         String            @id @default(uuid())
+  orderId    String?
+  order      Order?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  toEmail    String
+  toUserId   String?
+  template   String
+  payload    Json
+  status     EmailOutboxStatus @default(PENDING)
+  attempts   Int               @default(0)
+  lastError  String?           @db.Text
+  sentAt     DateTime?
+  createdAt  DateTime          @default(now())
+
+  @@index([status, createdAt])
+  @@index([orderId])
 }

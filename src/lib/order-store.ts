@@ -27,18 +27,7 @@ function money(value: Prisma.Decimal | number | string | null | undefined): numb
 }
 
 function toStoredStatus(status: OrderStatus): StoredOrderStatus {
-  if (
-    status === "PENDING_PAYMENT" ||
-    status === "PAID" ||
-    status === "IN_ANALYSIS" ||
-    status === "CANCELLED"
-  ) {
-    return status;
-  }
-  if (status === "COMPLETED" || status === "CERTIFICATE_ISSUED" || status === "SHIPPED") {
-    return "PAID";
-  }
-  return "PENDING_PAYMENT";
+  return status;
 }
 
 function toStoredPaymentStatus(status: PaymentStatus): StoredPaymentStatus {

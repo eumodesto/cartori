@@ -121,6 +121,35 @@ export function canAccessOwnedDossier(
   return Boolean(dossierUserId) && dossierUserId === context.userId;
 }
 
+/** Mesa operacional Cartori. Não é OrganizationMemberRole.ADMIN. */
+export function canOperateCases(context: AuthContext): boolean {
+  return context.platformRole === "ADMIN" || context.platformRole === "OPERATOR";
+}
+
+export function canAccessOrderCase(
+  context: AuthContext,
+  orderUserId: string | null | undefined
+): boolean {
+  if (canOperateCases(context)) return true;
+  return canAccessOwnedOrder(context, orderUserId);
+}
+
+export const STAFF_SETTABLE_ORDER_STATUSES = [
+  "IN_ANALYSIS",
+  "IN_CARTORIO_SEARCH",
+  "WAITING_CUSTOMER",
+  "CERTIFICATE_ISSUED",
+  "SHIPPED",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+
+export type StaffSettableOrderStatus = (typeof STAFF_SETTABLE_ORDER_STATUSES)[number];
+
+export function canStaffSetOrderStatus(status: string): status is StaffSettableOrderStatus {
+  return (STAFF_SETTABLE_ORDER_STATUSES as readonly string[]).includes(status);
+}
+
 export function orderOwnerFromContext(context: AuthContext): {
   userId: string;
   organizationId: string | null;

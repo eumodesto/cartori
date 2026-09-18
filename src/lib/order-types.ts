@@ -1,9 +1,15 @@
 import { CartItem, CertificateFormat, CustomerData } from "@/lib/types";
 
 export type StoredOrderStatus =
+  | "DRAFT"
   | "PENDING_PAYMENT"
   | "PAID"
   | "IN_ANALYSIS"
+  | "IN_CARTORIO_SEARCH"
+  | "WAITING_CUSTOMER"
+  | "CERTIFICATE_ISSUED"
+  | "SHIPPED"
+  | "COMPLETED"
   | "CANCELLED";
 
 export type StoredPaymentStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";

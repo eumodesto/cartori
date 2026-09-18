@@ -86,8 +86,8 @@ UI dashboard: `isBusinessLockedHref` / `B2B_LOCKED_HREFS` trava dossiês, organi
 ## Gaps reais / TBD
 
 - Equipe / invites: FUTURE.
-- ADMIN global Cartori: FUTURE (nenhuma API admin).
-- OPERATOR fila operacional / assigned vs global: TBD.
+- ADMIN global Cartori (usuários/papéis): FUTURE.
+- Mesa operacional do **pedido**: ALLOW para OPERATOR e ADMIN (`/api/ops`, `canOperateCases`). Assignment por operador TBD.
 - Ativação Partner: TBD.
 
 ## Validação

@@ -19,7 +19,10 @@ export {
   canAccessOrganization,
   canAccessOwnedOrder,
   canAccessOwnedDossier,
+  canAccessOrderCase,
+  canOperateCases,
   canOnboardBusiness,
+  canStaffSetOrderStatus,
   hasActiveMembership,
   hasAllowedRole,
   hasOrgRole,
@@ -27,9 +30,11 @@ export {
   isTenantRole,
   orderOwnerFromContext,
   pickSingleActiveMembership,
+  STAFF_SETTABLE_ORDER_STATUSES,
   type AuthContext,
   type InternalRole,
   type OrganizationAccessOptions,
+  type StaffSettableOrderStatus,
   type TenantRole,
 } from "@/lib/authorization-policy";
 

@@ -32,6 +32,7 @@ const STATUS_MAP: Record<string, { label: string; semantic: StatusType }> = {
   PAID: { label: "Pago", semantic: "success" },
   IN_ANALYSIS: { label: "Em análise", semantic: "info" },
   IN_CARTORIO_SEARCH: { label: "Busca no cartório", semantic: "info" },
+  WAITING_CUSTOMER: { label: "Ação do cliente", semantic: "warning" },
   CERTIFICATE_ISSUED: { label: "Certidão emitida", semantic: "success" },
   SHIPPED: { label: "Enviada", semantic: "info" },
   COMPLETED: { label: "Concluída", semantic: "success" },
@@ -47,3 +48,16 @@ export function livePixCode(qrCode?: string) {
   if (/^CARTORI-.+-DEMO$/i.test(qrCode)) return "";
   return qrCode;
 }
+
+export const STAFF_STATUS_OPTIONS = [
+  "IN_ANALYSIS",
+  "IN_CARTORIO_SEARCH",
+  "WAITING_CUSTOMER",
+  "CERTIFICATE_ISSUED",
+  "SHIPPED",
+  "COMPLETED",
+  "CANCELLED",
+].map((value) => ({
+  value,
+  label: orderStatusMeta(value).label,
+}));
