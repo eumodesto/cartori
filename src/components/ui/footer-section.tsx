@@ -42,7 +42,7 @@ const footerLinks: FooterSectionData[] = [
     label: "Recursos",
     links: [
       { title: "Catálogo de Serviços", href: "/#certidoes" },
-      { title: "Painel B2B", href: "/dashboard" },
+      { title: "Painel B2B", href: "/?cadastro=empresa" },
       { title: "Como Funciona", href: "/#como-funciona" },
     ],
   },
@@ -96,7 +96,8 @@ export function Footer() {
                         "hover:text-neutral-0 inline-flex items-center transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-sm";
                       return (
                       <li key={link.title}>
-                        {link.title === "Para Advogados & Imobiliárias" ? (
+                        {link.title === "Para Advogados & Imobiliárias" ||
+                        link.title === "Painel B2B" ? (
                           <BusinessSignupLink className={className}>
                             {link.title}
                           </BusinessSignupLink>
