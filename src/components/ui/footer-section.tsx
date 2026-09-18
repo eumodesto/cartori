@@ -85,8 +85,8 @@ export function Footer() {
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,transparent_28%,rgba(0,0,0,0.18)_100%)]"
           />
 
-          <div className="relative px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
-            <div className="flex w-full flex-col gap-8">
+          <div className="relative py-12 lg:py-16">
+            <div className="flex w-full flex-col gap-10">
               <AnimatedContainer className="w-full space-y-4">
                 <Link href="/" className="inline-flex items-center">
                   <img
@@ -95,17 +95,17 @@ export function Footer() {
                     className="h-8 w-auto object-contain brightness-0 invert"
                   />
                 </Link>
-                <p className="w-full max-w-none text-neutral-400 text-sm leading-relaxed">
+                <p className="max-w-3xl text-neutral-400 text-sm leading-relaxed">
                   A Cartori é a vitrine online para solicitar certidões de nascimento, casamento, óbito, notas, imóveis e protesto — além de TRF, TRT e CCIR. O pedido é pago por PIX ou cartão no Mercado Pago. Cuidamos da diligência operacional junto ao cartório ou órgão: busca da serventia, emissão e envio digital ou em papel.
                 </p>
               </AnimatedContainer>
 
               <div aria-hidden className="h-px bg-white/10" />
 
-              <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
                 {footerLinks.map((section, index) => (
                   <AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
-                    <div className="mb-10 md:mb-0">
+                    <div>
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-0 font-sans">{section.label}</h3>
                       <ul className="text-neutral-400 mt-4 space-y-2 text-sm">
                         {section.links.map((link) => {
