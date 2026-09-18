@@ -20,6 +20,7 @@ export {
   canAccessOwnedOrder,
   canAccessOwnedDossier,
   canAccessOrderCase,
+  canManageUsers,
   canOperateCases,
   canOnboardBusiness,
   canStaffSetOrderStatus,

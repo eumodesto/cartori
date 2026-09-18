@@ -126,6 +126,15 @@ export function canOperateCases(context: AuthContext): boolean {
   return context.platformRole === "ADMIN" || context.platformRole === "OPERATOR";
 }
 
+/**
+ * Administração global de usuários/clientes (Cartori).
+ * Apenas platformRole ADMIN. OPERATOR NÃO gerencia usuários (fail-closed).
+ * Não confundir com OrganizationMemberRole.ADMIN.
+ */
+export function canManageUsers(context: AuthContext): boolean {
+  return context.platformRole === "ADMIN";
+}
+
 export function canAccessOrderCase(
   context: AuthContext,
   orderUserId: string | null | undefined
