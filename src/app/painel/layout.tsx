@@ -17,7 +17,6 @@ import {
   FolderOpen,
   Inbox,
   UserCog,
-  UserRound,
 } from "lucide-react";
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
@@ -138,18 +137,6 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           },
         ]
       : []),
-    {
-      label: "Conta",
-      items: [
-        {
-          id: "profile",
-          label: "Meu perfil",
-          href: "/painel/perfil",
-          icon: <UserRound className="w-4 h-4" />,
-          isActive: pathname.startsWith("/painel/perfil"),
-        },
-      ],
-    },
   ];
 
   return (
