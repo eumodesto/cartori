@@ -523,3 +523,21 @@ model EmailOutbox {
   @@index([status, createdAt])
   @@index([orderId])
 }
+
+/// Override editável de template de e-mail. Sem linha = usa o default do código.
+model EmailTemplate {
+  key       String   @id
+  subject   String
+  body      String   @db.Text
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Configuração chave/valor da aplicação (ex.: integração Resend). Server-only.
+model AppSetting {
+  key       String   @id
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

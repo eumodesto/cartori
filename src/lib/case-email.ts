@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { deliverEmail } from "@/lib/email";
 import { orderStatusMeta } from "@/lib/order-status";
 
 type CaseMailTemplate = "status_changed" | "new_message" | "attachment_uploaded";
@@ -38,28 +39,6 @@ function renderEmail(input: QueueInput) {
   };
 }
 
-async function deliver(to: string, subject: string, text: string) {
-  const key = process.env.RESEND_API_KEY || "";
-  const from = process.env.EMAIL_FROM || "";
-  if (!key || !from || from.includes("placeholder")) {
-    return { sent: false as const, error: "EMAIL_FROM / RESEND_API_KEY ausentes" };
-  }
-
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from, to: [to], subject, text }),
-  });
-  if (!res.ok) {
-    const body = (await res.text()).slice(0, 400);
-    return { sent: false as const, error: `${res.status} ${body}` };
-  }
-  return { sent: true as const };
-}
-
 export async function queueCaseEmail(input: QueueInput) {
   const email = input.toEmail.trim().toLowerCase();
   if (!email) return null;
@@ -82,7 +61,7 @@ export async function queueCaseEmail(input: QueueInput) {
   });
 
   try {
-    const result = await deliver(email, rendered.subject, rendered.text);
+    const result = await deliverEmail(email, rendered.subject, rendered.text);
     await prisma.emailOutbox.update({
       where: { id: row.id },
       data: result.sent
