@@ -18,6 +18,8 @@ const client = {
   phone: null,
   cpf: null,
   role: "CLIENT" as const,
+  avatarUrl: null,
+  notificationPrefs: {},
   organization: null,
 };
 assert(!isBusinessAccount(client), "CLIENT without org is not business");

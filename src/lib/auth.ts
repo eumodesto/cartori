@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { AuthProfile } from "@/lib/auth-types";
 import { queueTemplateEmail } from "@/lib/email";
+import { resolveNotificationPrefs } from "@/lib/notification-prefs";
 import { digitsOnly } from "@/lib/utils";
 import { normalizeCpf } from "@/lib/validators";
 
@@ -49,6 +50,8 @@ function toProfile(user: {
   phone: string | null;
   cpf: string | null;
   role: UserRole;
+  avatarUrl: string | null;
+  notificationPrefs: unknown;
   organizationMemberships: Array<{ organization: ProfileOrganization }>;
 }): AuthProfile {
   const organization = user.organizationMemberships[0]?.organization ?? null;
@@ -60,6 +63,8 @@ function toProfile(user: {
     phone: user.phone,
     cpf: user.cpf,
     role: user.role,
+    avatarUrl: user.avatarUrl,
+    notificationPrefs: resolveNotificationPrefs(user.notificationPrefs),
     organization: organization ? toAuthOrganization(organization) : null,
   };
 }

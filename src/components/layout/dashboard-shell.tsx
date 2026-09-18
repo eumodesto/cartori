@@ -74,8 +74,19 @@ export function DashboardShell({
             <UserMenu side="bottom" size="sm" />
             <div className="h-5 w-[1px] bg-neutral-200" />
             <div className="flex items-center gap-2.5 pl-1">
-              <div className="w-8 h-8 rounded-full bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-950 font-bold text-xs shrink-0">
-                {loading ? "…" : initials}
+              <div className="w-8 h-8 rounded-full bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-950 font-bold text-xs shrink-0 overflow-hidden">
+                {profile?.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={profile.avatarUrl}
+                    alt="Foto de perfil"
+                    className="w-full h-full object-cover"
+                  />
+                ) : loading ? (
+                  "…"
+                ) : (
+                  initials
+                )}
               </div>
               <div className="hidden md:block text-left">
                 <span className="text-xs font-semibold text-neutral-900 block leading-tight">

@@ -20,6 +20,8 @@ export type AuthProfile = {
   phone: string | null;
   cpf: string | null;
   role: UserRole;
+  avatarUrl: string | null;
+  notificationPrefs: Record<string, boolean>;
   organization: AuthOrganization | null;
 };
 

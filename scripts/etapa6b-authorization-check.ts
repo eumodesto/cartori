@@ -93,6 +93,8 @@ assert(
     phone: null,
     cpf: null,
     role: "CLIENT",
+    avatarUrl: null,
+    notificationPrefs: {},
     organization: null,
   }),
   "isBusiness falso sem organization no perfil (membership)"
@@ -107,6 +109,8 @@ assert(
     phone: null,
     cpf: null,
     role: "CLIENT",
+    avatarUrl: null,
+    notificationPrefs: {},
     organization: {
       id: "org-a",
       name: "Empresa A",

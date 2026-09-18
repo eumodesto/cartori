@@ -84,6 +84,9 @@ model User {
   cpf            String?        @unique
   phone          String?
   role           UserRole       @default(CLIENT)
+  avatarUrl      String?
+  /// Preferências de notificação por e-mail (JSON de booleans por categoria).
+  notificationPrefs Json?
   organizationMemberships OrganizationMember[]
   orders         Order[]
   dossiers       Dossier[]

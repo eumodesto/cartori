@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { requireAuth } from "@/lib/authorization";
 import { getAuthProfile } from "@/lib/auth";
+import { sanitizeNotificationPrefs } from "@/lib/notification-prefs";
 import { prisma } from "@/lib/prisma";
 import { digitsOnly } from "@/lib/utils";
 import { isValidPhone } from "@/lib/validators";
@@ -23,7 +25,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const data: { name?: string; phone?: string } = {};
+  const data: Prisma.UserUpdateInput = {};
 
   if (body.name !== undefined) {
     const name = String(body.name || "").trim();
@@ -45,6 +47,10 @@ export async function PATCH(req: NextRequest) {
       );
     }
     data.phone = digitsOnly(phone);
+  }
+
+  if (body.notificationPrefs !== undefined) {
+    data.notificationPrefs = sanitizeNotificationPrefs(body.notificationPrefs);
   }
 
   if (Object.keys(data).length === 0) {
