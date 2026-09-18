@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Trash2, Plus } from "lucide-react";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
+import { CatalogBrowser } from "@/components/storefront/catalog-browser";
 import { OrderSummary } from "@/components/storefront/order-summary";
 import { useCart } from "@/components/cart/cart-provider";
 import { Button } from "@/components/ui/button";
@@ -28,14 +29,14 @@ export default function CarrinhoPage() {
           {!hydrated ? (
             <p className="text-sm text-neutral-500">Carregando pedido...</p>
           ) : items.length === 0 ? (
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-0 px-6 py-16 text-center space-y-3">
-              <h2 className="text-lg font-semibold text-neutral-900">Nenhuma certidão no pedido</h2>
-              <p className="text-sm text-neutral-500">
-                Escolha o tipo de certidão, informe o cartório e os dados do documento.
-              </p>
-              <Link href="/#certidoes">
-                <Button>Ver catálogo</Button>
-              </Link>
+            <div id="pedido-catalogo" className="space-y-10">
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-0 px-6 py-8 text-center space-y-1">
+                <h2 className="text-lg font-semibold text-neutral-900">Nenhuma certidão no pedido</h2>
+                <p className="text-sm text-neutral-500">
+                  Escolha o tipo de certidão abaixo, informe o cartório e os dados do documento.
+                </p>
+              </div>
+              <CatalogBrowser scrollTargetId="pedido-catalogo" />
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -1,43 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { MVP_CERTIFICATES } from "@/lib/catalog";
-import {
-  CERTIFICATE_QUERY_KEY,
-  certificateFromParam,
-  certificateSlugFromLocation,
-} from "@/lib/certificate-links";
-import { CertificateTypeConfig } from "@/lib/types";
+import { useState, useEffect } from "react";
 import {
   Building2,
   CheckCircle,
-  Clock,
   Lock,
   Download,
   Users,
 } from "lucide-react";
 import { AmandaHeroSlot, useAmandaChatDock } from "@/components/cartori/ai-chat-widget";
-import { FilterTags } from "@/components/ui/filter-tags";
 import { WhisperText } from "@/components/ui/whisper-text";
-import { LivingOrigamiBg } from "@/components/ui/living-origami-bg";
 import { GetStartedButton } from "@/components/ui/get-started-button";
-import { SlideUpText } from "@/components/ui/slide-up-text";
 import { Testimonials } from "@/components/ui/testimonials-columns";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
-import { CertificateConfigDialog } from "@/components/storefront/certificate-config-dialog";
-import { Pagination } from "@/components/ui/pagination";
-import { useCart } from "@/components/cart/cart-provider";
+import { CatalogBrowser } from "@/components/storefront/catalog-browser";
 import { useBusinessSignup } from "@/components/auth/business-signup-link";
-
-const CATALOG_PAGE_SIZE = 12;
-
-function normalizeSearch(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
 
 export function StorefrontHome({
   initialCertificateSlug,
@@ -45,100 +22,8 @@ export function StorefrontHome({
   initialCertificateSlug?: string;
 }) {
   const { registerProductHandler } = useAmandaChatDock();
-  const { addItem } = useCart();
   const { open: openBusinessSignup } = useBusinessSignup();
-  const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
-  const [catalogQuery, setCatalogQuery] = useState("");
-  const [catalogPage, setCatalogPage] = useState(1);
-  const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(
-    () => certificateFromParam(initialCertificateSlug)
-  );
   const [addedNotice, setAddedNotice] = useState("");
-
-  const openCertificate = useCallback((raw: string) => {
-    const cert = certificateFromParam(raw);
-    if (!cert) return;
-    setSelectedCert(cert);
-    const next = `/certidao/${cert.slug}`;
-    if (window.location.pathname !== next) {
-      window.history.replaceState(null, "", next);
-    }
-  }, []);
-
-  const closeCertificate = useCallback(() => {
-    setSelectedCert(null);
-    if (
-      window.location.pathname.startsWith("/certidao/") ||
-      window.location.search.includes(CERTIFICATE_QUERY_KEY) ||
-      window.location.search.includes("servico=")
-    ) {
-      window.history.replaceState(null, "", "/");
-    }
-  }, []);
-
-  useEffect(() => {
-    registerProductHandler(openCertificate);
-    return () => registerProductHandler(null);
-  }, [openCertificate, registerProductHandler]);
-
-  useEffect(() => {
-    const fromProp = certificateFromParam(initialCertificateSlug);
-    if (fromProp) {
-      setSelectedCert(fromProp);
-      return;
-    }
-    const fromLocation = certificateFromParam(
-      certificateSlugFromLocation(
-        window.location.pathname,
-        new URL(window.location.href).searchParams
-      )
-    );
-    if (fromLocation) setSelectedCert(fromLocation);
-  }, [initialCertificateSlug]);
-
-
-  const searchedCertificates = useMemo(() => {
-    const needle = normalizeSearch(catalogQuery);
-    if (!needle) return MVP_CERTIFICATES;
-    return MVP_CERTIFICATES.filter((cert) => {
-      const haystack = normalizeSearch(
-        [cert.name, cert.shortDescription, cert.categoryName, cert.slug].join(" ")
-      );
-      return haystack.includes(needle);
-    });
-  }, [catalogQuery]);
-
-  const categoryFilters = [
-    { id: "all", label: "Todas as Certidões" },
-    { id: "registro-civil", label: "Registro Civil" },
-    { id: "notas", label: "Tabelionato de Notas" },
-    { id: "imoveis", label: "Registro de Imóveis" },
-    { id: "protesto", label: "Protesto de Títulos" },
-    { id: "distribuidores-judiciais", label: "Distribuidores Judiciais" },
-    { id: "rural", label: "Cadastro rural (INCRA)" },
-  ].map((filter) => ({
-    ...filter,
-    count:
-      filter.id === "all"
-        ? searchedCertificates.length
-        : searchedCertificates.filter((cert) => cert.category === filter.id).length,
-  }));
-
-  const filteredCertificates = searchedCertificates.filter((cert) => {
-    if (activeCategories.size === 0) return true;
-    return activeCategories.has(cert.category);
-  });
-
-  const catalogPageCount = Math.max(1, Math.ceil(filteredCertificates.length / CATALOG_PAGE_SIZE));
-  const currentCatalogPage = Math.min(catalogPage, catalogPageCount);
-  const pagedCertificates = filteredCertificates.slice(
-    (currentCatalogPage - 1) * CATALOG_PAGE_SIZE,
-    currentCatalogPage * CATALOG_PAGE_SIZE
-  );
-
-  useEffect(() => {
-    setCatalogPage(1);
-  }, [catalogQuery, activeCategories]);
 
   useEffect(() => {
     const scrollToHash = () => {
@@ -153,32 +38,8 @@ export function StorefrontHome({
     return () => window.removeEventListener("hashchange", scrollToHash);
   }, []);
 
-  const goToCatalogPage = (page: number) => {
-    setCatalogPage(page);
-    document.getElementById("certidoes")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
   return (
     <StorefrontShell>
-      {selectedCert && (
-        <CertificateConfigDialog
-          certificate={selectedCert}
-          onClose={closeCertificate}
-          onAdd={(items) => {
-            items.forEach(addItem);
-            closeCertificate();
-            setAddedNotice(
-              items.length === 1
-                ? `${items[0].certificateName} adicionada ao pedido.`
-                : `${items.length} certidões adicionadas ao pedido.`
-            );
-            window.setTimeout(() => setAddedNotice(""), 5000);
-          }}
-        />
-      )}
       {addedNotice && (
         <div className="bg-semantic-success-bg border-b border-semantic-success-border text-sm text-neutral-800 px-4 py-2.5 text-center">
           {addedNotice}{" "}
@@ -253,101 +114,20 @@ export function StorefrontHome({
       {/* Catalog & Dynamic Request Section */}
       <section id="certidoes" className="scroll-mt-32 py-16 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-            <span className="text-xs uppercase font-bold tracking-widest text-primary-700 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
-              Catálogo de Serviços
-            </span>
-            <h2 className="text-3xl font-extrabold text-slate-900 font-serif">
-              Selecione a Certidão Desejada
-            </h2>
-            <p className="text-sm text-slate-600">
-              Escolha o tipo de certidão para configurar a localização (Estado, Cidade e Cartório) e dados do documento.
-            </p>
-
-            <FilterTags
-              className="pt-4"
-              items={categoryFilters}
-              active={activeCategories}
-              onChange={setActiveCategories}
-              query={catalogQuery}
-              onQueryChange={setCatalogQuery}
-              searchPlaceholder="Buscar por nome, tipo ou cartório..."
-            />
-          </div>
-
-          {/* Certificate Cards Grid */}
-          {filteredCertificates.length === 0 ? (
-            <div className="rounded-2xl border border-neutral-200 bg-neutral-0 px-6 py-12 text-center">
-              <p className="text-sm font-medium text-neutral-900">Nenhuma certidão encontrada</p>
-              <p className="mt-1 text-xs text-neutral-500">
-                Tente outro termo ou limpe a busca para ver o catálogo completo.
-              </p>
-            </div>
-          ) : (
-          <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pagedCertificates.map((cert) => (
-              <div
-                key={cert.id}
-                className="relative overflow-hidden rounded-2xl border border-white/15 p-6 shadow-sm hover:shadow-lg hover:border-amber-400/40 transition-all flex flex-col justify-between group"
-              >
-                <LivingOrigamiBg seed={cert.id} birdCount={7} />
-
-                <div className="relative z-10 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-white/15 text-white px-2.5 py-1 rounded-md border border-white/20">
-                      {cert.categoryName}
-                    </span>
-                    <span className="text-xs text-slate-300 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-amber-300" />
-                      {cert.estimatedDays}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors font-serif">
-                      <SlideUpText
-                        split="characters"
-                        stagger={0.03}
-                        inView
-                        once
-                        className="text-lg font-bold font-serif"
-                      >
-                        {cert.name}
-                      </SlideUpText>
-                    </h3>
-                    <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
-                      {cert.shortDescription}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-end">
-                  <GetStartedButton
-                    size="sm"
-                    className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
-                    iconClassName="bg-brand-950/15 text-brand-950"
-                    onClick={() => openCertificate(cert.slug)}
-                  >
-                    Solicitar
-                  </GetStartedButton>
-                </div>
-              </div>
-            ))}
-          </div>
-          {catalogPageCount > 1 && (
-            <Pagination
-              className="mt-8"
-              currentPage={currentCatalogPage}
-              totalPages={catalogPageCount}
-              totalItems={filteredCertificates.length}
-              itemsPerPage={CATALOG_PAGE_SIZE}
-              itemLabel="certidões"
-              onPageChange={goToCatalogPage}
-            />
-          )}
-          </>
-          )}
+          <CatalogBrowser
+            deepLink
+            scrollTargetId="certidoes"
+            initialCertificateSlug={initialCertificateSlug}
+            registerOpenHandler={registerProductHandler}
+            onAdded={(items) => {
+              setAddedNotice(
+                items.length === 1
+                  ? `${items[0].certificateName} adicionada ao pedido.`
+                  : `${items.length} certidões adicionadas ao pedido.`
+              );
+              window.setTimeout(() => setAddedNotice(""), 5000);
+            }}
+          />
         </div>
       </section>
 
