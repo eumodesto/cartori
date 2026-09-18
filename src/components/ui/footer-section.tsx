@@ -58,8 +58,8 @@ const footerLinks: FooterSectionData[] = [
 export function Footer() {
   return (
     <footer className="relative w-full bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="relative overflow-hidden rounded-[1.75rem] border border-white/20 text-neutral-300 shadow-[0_18px_50px_rgba(1,30,55,0.22),inset_0_1px_0_rgba(255,255,255,0.28)] md:rounded-[2rem]">
+      <div className="max-w-7xl mx-auto px-0 py-0 sm:px-6 sm:py-8 lg:px-8">
+        <div className="relative overflow-hidden rounded-none border-y border-white/20 text-neutral-300 shadow-[0_18px_50px_rgba(1,30,55,0.22),inset_0_1px_0_rgba(255,255,255,0.28)] sm:rounded-[1.75rem] sm:border md:rounded-[2rem]">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-brand-950"
