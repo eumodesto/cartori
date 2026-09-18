@@ -73,7 +73,7 @@ export const Dialog: React.FC<DialogProps> = ({
           onClick={(event) => event.stopPropagation()}
           className={cn(
             "relative w-full bg-neutral-0 rounded-xl shadow-lg border border-neutral-200 overflow-hidden",
-            "flex flex-col max-h-[min(90vh,40rem)] animate-in fade-in zoom-in-95 duration-fast",
+            "flex flex-col max-h-[min(92vh,52rem)] animate-in fade-in zoom-in-95 duration-fast",
             sizeStyles[size],
             className
           )}
