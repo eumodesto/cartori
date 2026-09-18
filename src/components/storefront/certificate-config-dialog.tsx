@@ -514,9 +514,9 @@ export function CertificateConfigDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="certificate-config-title"
-        className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8"
+        className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8 flex flex-col max-h-[calc(100dvh-4rem)]"
       >
-        <div className="bg-primary-900 text-white p-6 flex items-center justify-between">
+        <div className="shrink-0 bg-primary-900 text-white p-6 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
               Configuração Notarial • {certificate.categoryName}
@@ -535,7 +535,7 @@ export function CertificateConfigDialog({
           </button>
         </div>
 
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-6 space-y-6 flex-1 min-h-0 overflow-y-auto">
           {certificate.requiresCartorio && (
             <div className="space-y-4">
               <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
@@ -790,7 +790,7 @@ export function CertificateConfigDialog({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50">
+        <div className="shrink-0 px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50">
           <div>
             <span className="text-[10px] text-slate-400 uppercase block font-semibold">
               {issuanceItems.length > 1 ? "Valor das duas certidões" : "Valor deste item"}
