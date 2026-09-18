@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { StorefrontHome } from "@/components/storefront/storefront-home";
 import { getCertificateBySlug } from "@/lib/catalog";
 import {
-  certificateQueryPath,
   listCertificatePathParams,
   resolveCertificateSlug,
 } from "@/lib/certificate-links";
@@ -28,5 +28,5 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
 export default function CertificateLandingPage({ params }: { params: Params }) {
   const slug = resolveCertificateSlug(params.slug);
   if (!slug) redirect("/#certidoes");
-  redirect(certificateQueryPath(slug));
+  return <StorefrontHome initialCertificateSlug={slug} />;
 }
