@@ -14,7 +14,7 @@ export default function CarrinhoPage() {
   return (
     <StorefrontShell>
       <section className="bg-surface-page py-10 lg:py-14">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-700">
               Vitrine Cartori
