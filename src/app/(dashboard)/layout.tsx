@@ -21,6 +21,7 @@ import {
   Inbox,
   UserCog,
   UserRound,
+  Mail,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -141,6 +142,13 @@ export default function DashboardLayout({
                 href: "/dashboard/usuarios",
                 icon: <UserCog className="w-4 h-4" />,
                 isActive: pathname.startsWith("/dashboard/usuarios"),
+              },
+              {
+                id: "emails",
+                label: "E-mails & Templates",
+                href: "/dashboard/emails",
+                icon: <Mail className="w-4 h-4" />,
+                isActive: pathname.startsWith("/dashboard/emails"),
               },
             ],
           },
