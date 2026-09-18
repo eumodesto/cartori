@@ -85,7 +85,7 @@ export function Footer() {
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,transparent_28%,rgba(0,0,0,0.18)_100%)]"
           />
 
-          <div className="relative py-12 lg:py-16">
+          <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-16">
             <div className="flex w-full flex-col gap-10">
               <AnimatedContainer className="w-full space-y-4">
                 <Link href="/" className="inline-flex items-center">
