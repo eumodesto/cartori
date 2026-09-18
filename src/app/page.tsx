@@ -102,6 +102,19 @@ export default function HomePage() {
     setCatalogPage(1);
   }, [catalogQuery, activeCategories]);
 
+  useEffect(() => {
+    const scrollToHash = () => {
+      const id = window.location.hash.replace(/^#/, "");
+      if (!id) return;
+      window.requestAnimationFrame(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    };
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, []);
+
   const goToCatalogPage = (page: number) => {
     setCatalogPage(page);
     document.getElementById("certidoes")?.scrollIntoView({
@@ -184,7 +197,7 @@ export default function HomePage() {
       </section>
 
       {/* Catalog & Dynamic Request Section */}
-      <section id="certidoes" className="py-16 bg-slate-50 border-b border-slate-200">
+      <section id="certidoes" className="scroll-mt-32 py-16 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
             <span className="text-xs uppercase font-bold tracking-widest text-primary-700 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
@@ -301,8 +314,52 @@ export default function HomePage() {
         />
       )}
 
+      <section id="faq" className="scroll-mt-32 py-16 bg-neutral-0 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+            <span className="text-xs uppercase font-bold tracking-widest text-primary-700 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
+              Dúvidas
+            </span>
+            <h2 className="text-3xl font-extrabold text-slate-900 font-serif">Perguntas frequentes</h2>
+            <p className="text-sm text-slate-600">
+              O essencial para pedir, pagar e acompanhar a certidão. Precisa de mais detalhes? Fale com a Amanda ou abra Contato.
+            </p>
+          </div>
+          <div className="max-w-3xl mx-auto divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+            {[
+              {
+                q: "Como solicito uma certidão?",
+                a: "Escolha o tipo no catálogo, informe estado, cidade e cartório (quando souber) e os dados do documento. Depois confirme o pedido e pague com PIX ou cartão.",
+              },
+              {
+                q: "A certidão tem validade oficial?",
+                a: "Sim. São documentos oficiais com validade em todo o território nacional. A via digital sai como e-certidão com assinatura ICP-Brasil; a via em papel é enviada pelos Correios.",
+              },
+              {
+                q: "Como acompanho o status e as mensagens?",
+                a: "Com a conta, abra Minha conta no Dashboard. Lá ficam o status da solicitação, recados da equipe e o envio de documentos.",
+              },
+              {
+                q: "E se eu não souber o cartório?",
+                a: "Sinalize no formulário que não conhece a serventia. A equipe Cartori faz a busca operacional e segue a emissão.",
+              },
+            ].map((item) => (
+              <details key={item.q} className="group px-5 py-4">
+                <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900 flex items-center justify-between gap-4">
+                  {item.q}
+                  <span className="text-slate-400 group-open:rotate-45 transition-transform text-lg leading-none">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-2 text-sm text-slate-600 leading-relaxed">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* B2B Section for Lawyers & Real Estate */}
-      <section id="b2b" className="py-20 bg-primary-950 text-white relative overflow-hidden">
+      <section id="como-funciona" className="scroll-mt-32 py-20 bg-primary-950 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">

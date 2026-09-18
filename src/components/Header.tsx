@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ShoppingBag, ShieldCheck } from "lucide-react";
 import { AccountAlerts } from "@/components/layout/account-alerts";
 import { UserMenu } from "@/components/layout/user-menu";
+import { HomeHashLink } from "@/components/storefront/home-hash-link";
 
 export function Header({ cartCount = 0 }: { cartCount?: number }) {
   return (
@@ -40,15 +41,24 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
 
         {/* Center Nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-700 dark:text-neutral-700">
-          <Link href="#certidoes" className="hover:text-primary-600 dark:hover:text-brand-400 transition-colors">
+          <HomeHashLink
+            hash="certidoes"
+            className="hover:text-primary-600 dark:hover:text-brand-400 transition-colors"
+          >
             Certidões
-          </Link>
-          <Link href="#como-funciona" className="hover:text-primary-600 dark:hover:text-brand-400 transition-colors">
+          </HomeHashLink>
+          <HomeHashLink
+            hash="como-funciona"
+            className="hover:text-primary-600 dark:hover:text-brand-400 transition-colors"
+          >
             Como Funciona
-          </Link>
-          <Link href="#faq" className="hover:text-primary-600 dark:hover:text-brand-400 transition-colors">
+          </HomeHashLink>
+          <HomeHashLink
+            hash="faq"
+            className="hover:text-primary-600 dark:hover:text-brand-400 transition-colors"
+          >
             Dúvidas
-          </Link>
+          </HomeHashLink>
         </nav>
 
         {/* Action Buttons */}

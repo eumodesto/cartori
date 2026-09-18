@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { HomeHashLink } from "@/components/storefront/home-hash-link";
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Facebook, Instagram } from "lucide-react";
@@ -21,18 +22,18 @@ const footerLinks: FooterSectionData[] = [
   {
     label: "Certidões",
     links: [
-      { title: "Nascimento", href: "#certidoes" },
-      { title: "Casamento", href: "#certidoes" },
-      { title: "Óbito", href: "#certidoes" },
-      { title: "Negativa de Testamento", href: "#certidoes" },
-      { title: "Matrícula de Imóvel", href: "#certidoes" },
-      { title: "Protesto", href: "#certidoes" },
+      { title: "Nascimento", href: "/#certidoes" },
+      { title: "Casamento", href: "/#certidoes" },
+      { title: "Óbito", href: "/#certidoes" },
+      { title: "Negativa de Testamento", href: "/#certidoes" },
+      { title: "Matrícula de Imóvel", href: "/#certidoes" },
+      { title: "Protesto", href: "/#certidoes" },
     ],
   },
   {
     label: "Empresa",
     links: [
-      { title: "Para Advogados & Imobiliárias", href: "#b2b" },
+      { title: "Para Advogados & Imobiliárias", href: "/#como-funciona" },
       { title: "Termos de Uso", href: "/termos" },
       { title: "Privacidade (LGPD)", href: "/privacidade" },
       { title: "Suporte", href: "/contato" },
@@ -41,9 +42,9 @@ const footerLinks: FooterSectionData[] = [
   {
     label: "Recursos",
     links: [
-      { title: "Catálogo de Serviços", href: "#certidoes" },
+      { title: "Catálogo de Serviços", href: "/#certidoes" },
       { title: "Painel B2B", href: "/dashboard" },
-      { title: "Como Funciona", href: "#b2b" },
+      { title: "Como Funciona", href: "/#como-funciona" },
       { title: "Ajuda", href: "/contato" },
     ],
   },
@@ -91,20 +92,32 @@ export function Footer() {
                 <div className="mb-10 md:mb-0">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-0 font-sans">{section.label}</h3>
                   <ul className="text-neutral-400 mt-4 space-y-2 text-sm">
-                    {section.links.map((link) => (
+                    {section.links.map((link) => {
+                      const hash = link.href.startsWith("/#") ? link.href.slice(2) : null;
+                      const className =
+                        "hover:text-neutral-0 inline-flex items-center transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-sm";
+                      return (
                       <li key={link.title}>
+                        {hash ? (
+                          <HomeHashLink hash={hash} className={className}>
+                            {link.icon && <link.icon className="me-1 size-4" />}
+                            {link.title}
+                          </HomeHashLink>
+                        ) : (
                         <Link
                           href={link.href}
                           {...(link.href.startsWith("http")
                             ? { target: "_blank", rel: "noopener noreferrer" }
                             : {})}
-                          className="hover:text-neutral-0 inline-flex items-center transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-sm"
+                          className={className}
                         >
                           {link.icon && <link.icon className="me-1 size-4" />}
                           {link.title}
                         </Link>
+                        )}
                       </li>
-                    ))}
+                    );
+                    })}
                   </ul>
                 </div>
               </AnimatedContainer>
