@@ -40,7 +40,7 @@ export const SUPPORT_CHANNELS = [
     id: "conta",
     title: "Minha conta",
     description: "Acompanhe status, recados da equipe e documentos no painel da sua solicitação.",
-    href: "/dashboard",
+    href: "/painel",
     action: "Abrir o painel",
     external: false,
   },

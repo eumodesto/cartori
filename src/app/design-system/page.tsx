@@ -149,7 +149,7 @@ export default function DesignSystemShowcasePage() {
           </Link>
           <span className="text-neutral-600">|</span>
           <Link
-            href="/dashboard"
+            href="/painel"
             className="text-brand-300 hover:text-neutral-0 transition-colors font-medium"
           >
             Ir ao Dashboard

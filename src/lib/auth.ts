@@ -223,7 +223,7 @@ export async function syncAuthUser(input: {
       toUserId: row.id,
       vars: {
         customerName: row.name || row.email,
-        appLink: siteUrl("/dashboard"),
+        appLink: siteUrl("/painel"),
       },
     });
 

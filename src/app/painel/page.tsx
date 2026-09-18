@@ -67,7 +67,7 @@ function DashboardHome() {
         onClose={() => setPartnerOpen(false)}
         onSuccess={() => {
           if (typeof window !== "undefined" && window.location.search.includes("empresa=1")) {
-            window.history.replaceState(null, "", "/dashboard");
+            window.history.replaceState(null, "", "/painel");
           }
         }}
       />

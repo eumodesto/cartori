@@ -13,7 +13,7 @@ export default function DossiersPage() {
         title="Dossiês"
         description="Cada dossiê vira um pacote de certidões do catálogo, amarrado à finalidade e às pessoas ou imóveis do caso. O pedido segue o checkout atual."
         actions={
-          <Link href="/dashboard/dossies/novo">
+          <Link href="/painel/dossies/novo">
             <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
               Novo dossiê
             </Button>

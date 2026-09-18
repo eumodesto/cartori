@@ -14,7 +14,7 @@ export function requestOrigin(request: NextRequest) {
   return request.nextUrl.origin.replace("0.0.0.0", "localhost").replace(/\/$/, "");
 }
 
-export function cartoriAuthCallbackUrl(request: NextRequest, nextPath = "/dashboard") {
-  const next = nextPath.startsWith("/") ? nextPath : "/dashboard";
+export function cartoriAuthCallbackUrl(request: NextRequest, nextPath = "/painel") {
+  const next = nextPath.startsWith("/") ? nextPath : "/painel";
   return `${requestOrigin(request)}/auth/callback?next=${encodeURIComponent(next)}`;
 }

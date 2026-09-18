@@ -49,7 +49,7 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: "Pedido não encontrado." }, { status: 404 });
   }
 
-  const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(/\/$/, "")}/dashboard/solicitacoes/${params.id}`;
+  const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(/\/$/, "")}/painel/pedidos/${params.id}`;
   await queueTemplateEmail({
     key: orderStatusTemplateKey(status),
     to: updated.order.customerEmail,

@@ -15,7 +15,7 @@ export default function SolicitacaoDetailPage() {
         title="Acompanhamento"
         description="Mensagens da Cartori, status da certidão e envio de RG, CNH, certidões e comprovantes."
         actions={
-          <Link href="/dashboard/solicitacoes">
+          <Link href="/painel/pedidos">
             <Button variant="outline">Todas as solicitações</Button>
           </Link>
         }

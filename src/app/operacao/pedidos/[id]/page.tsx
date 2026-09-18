@@ -19,7 +19,7 @@ export default function OperacaoDetailPage() {
 
   React.useEffect(() => {
     if (!loading && profile && !isStaffRole(profile.role)) {
-      router.replace("/dashboard");
+      router.replace("/painel");
     }
   }, [loading, profile, router]);
 
@@ -34,7 +34,7 @@ export default function OperacaoDetailPage() {
         title="Pedido na mesa"
         description="Status, mensagem e arquivos. Atualizar avisa o cliente por e-mail."
         actions={
-          <Link href="/dashboard/operacao">
+          <Link href="/operacao/pedidos">
             <Button variant="outline">Fila</Button>
           </Link>
         }

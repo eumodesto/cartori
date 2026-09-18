@@ -56,7 +56,7 @@ export default function UsuarioDetailPage({
 
   React.useEffect(() => {
     if (!loading && profile && !isAdmin) {
-      router.replace("/dashboard");
+      router.replace("/painel");
     }
   }, [loading, profile, isAdmin, router]);
 
@@ -112,7 +112,7 @@ export default function UsuarioDetailPage({
   return (
     <div className="max-w-2xl space-y-6">
       <Link
-        href="/dashboard/usuarios"
+        href="/admin/usuarios"
         className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800"
       >
         <ArrowLeft className="w-3.5 h-3.5" />

@@ -80,7 +80,7 @@ export default function UsuariosPage() {
 
   React.useEffect(() => {
     if (!loading && profile && !isAdmin) {
-      router.replace("/dashboard");
+      router.replace("/painel");
     }
   }, [loading, profile, isAdmin, router]);
 
@@ -185,7 +185,7 @@ export default function UsuariosPage() {
               <TableRow key={user.id}>
                 <TableCell>
                   <Link
-                    href={`/dashboard/usuarios/${user.id}`}
+                    href={`/admin/usuarios/${user.id}`}
                     className="font-medium text-brand-800 hover:underline"
                   >
                     {user.name || "(sem nome)"}

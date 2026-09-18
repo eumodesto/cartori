@@ -13,7 +13,7 @@ export function useBusinessSignup() {
   const { profile, isBusiness, loading } = useAuth();
   const href = profile
     ? isBusiness
-      ? "/dashboard"
+      ? "/painel"
       : COMPANY_DASHBOARD_PATH
     : COMPANY_SIGNUP_PATH;
 

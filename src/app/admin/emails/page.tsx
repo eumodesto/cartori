@@ -72,7 +72,7 @@ export default function EmailsPage() {
   >(null);
 
   React.useEffect(() => {
-    if (!loading && profile && !isAdmin) router.replace("/dashboard");
+    if (!loading && profile && !isAdmin) router.replace("/painel");
   }, [loading, profile, isAdmin, router]);
 
   const loadTemplateIntoEditor = React.useCallback((tpl: EmailTemplate) => {

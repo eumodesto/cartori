@@ -79,7 +79,7 @@ export function DossierList() {
         <p className="mt-2 text-sm text-neutral-600">
           Crie uma análise de pessoa, empresa ou imóvel. O dossiê monta o pacote de certidões para pedir no checkout.
         </p>
-        <Link href="/dashboard/dossies/novo" className="mt-6 inline-flex">
+        <Link href="/painel/dossies/novo" className="mt-6 inline-flex">
           <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
             Novo dossiê
           </Button>
@@ -104,7 +104,7 @@ export function DossierList() {
           <TableRow key={dossier.id}>
             <TableCell>
               <Link
-                href={`/dashboard/dossies/${dossier.id}`}
+                href={`/painel/dossies/${dossier.id}`}
                 className="font-mono text-xs text-brand-700 hover:text-brand-950"
               >
                 {dossier.protocol}

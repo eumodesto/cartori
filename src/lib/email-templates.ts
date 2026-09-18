@@ -43,12 +43,12 @@ const V = {
   orderLink: {
     name: "orderLink",
     description: "Link para o pedido no painel",
-    sample: "https://www.cartori.com.br/dashboard/solicitacoes/abc123",
+    sample: "https://www.cartori.com.br/painel/pedidos/abc123",
   },
   appLink: {
     name: "appLink",
     description: "Link para o painel/portal",
-    sample: "https://www.cartori.com.br/dashboard",
+    sample: "https://www.cartori.com.br/painel",
   },
   total: {
     name: "total",

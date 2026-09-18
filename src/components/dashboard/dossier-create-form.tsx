@@ -81,7 +81,7 @@ export function DossierCreateForm() {
         setError(data.error || "Não foi possível criar o dossiê.");
         return;
       }
-      router.push(`/dashboard/dossies/${data.dossier.id}`);
+      router.push(`/painel/dossies/${data.dossier.id}`);
     } catch {
       setError("Falha de conexão. Tente de novo.");
     } finally {

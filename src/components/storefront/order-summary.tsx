@@ -72,8 +72,8 @@ export function OrderSummary({
       <p className="text-[11px] text-neutral-500 leading-relaxed">
         Pagamento único via Mercado Pago. Após a confirmação, o pedido entra na
         fila de emissão. Acompanhe depois em{" "}
-        <Link href="/dashboard" className="underline underline-offset-2">
-          /dashboard
+        <Link href="/painel" className="underline underline-offset-2">
+          /painel
         </Link>
         .
       </p>

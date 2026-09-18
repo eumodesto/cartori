@@ -63,7 +63,7 @@ export function createId(): string {
   });
 }
 
-export function safeAppPath(value: string | null | undefined, fallback = "/dashboard") {
+export function safeAppPath(value: string | null | undefined, fallback = "/painel") {
   if (!value) return fallback;
   if (!value.startsWith("/")) return fallback;
   if (value.startsWith("//") || value.startsWith("/\\")) return fallback;

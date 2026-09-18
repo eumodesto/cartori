@@ -39,7 +39,7 @@ export default function OperacaoPage() {
 
   React.useEffect(() => {
     if (!loading && profile && !isStaffRole(profile.role)) {
-      router.replace("/dashboard");
+      router.replace("/painel");
     }
   }, [loading, profile, router]);
 
@@ -88,7 +88,7 @@ export default function OperacaoPage() {
                 <TableRow key={order.id}>
                   <TableCell>
                     <Link
-                      href={`/dashboard/operacao/${order.id}`}
+                      href={`/operacao/pedidos/${order.id}`}
                       className="font-mono text-xs text-brand-800 hover:underline"
                     >
                       {order.protocol}

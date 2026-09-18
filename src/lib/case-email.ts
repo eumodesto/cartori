@@ -20,7 +20,7 @@ function appUrl(path: string) {
 }
 
 function renderEmail(input: QueueInput) {
-  const link = appUrl(`/dashboard/solicitacoes/${input.orderId}`);
+  const link = appUrl(`/painel/pedidos/${input.orderId}`);
   if (input.template === "status_changed") {
     return {
       subject: `Cartori · pedido ${input.protocol} atualizado`,
