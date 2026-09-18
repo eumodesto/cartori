@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
+import {
+  CERTIFICATE_QUERY_KEY,
+  certificateQueryPath,
+  resolveCertificateSlug,
+} from "@/lib/certificate-links";
 import { CertificateTypeConfig } from "@/lib/types";
 import {
   Building2,
@@ -34,6 +40,7 @@ function normalizeSearch(value: string) {
 }
 
 export default function HomePage() {
+  const router = useRouter();
   const { registerProductHandler } = useAmandaChatDock();
   const { addItem } = useCart();
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
@@ -42,22 +49,53 @@ export default function HomePage() {
   const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(null);
   const [addedNotice, setAddedNotice] = useState("");
 
-  const handleSelectProduct = useCallback((slug: string) => {
+  const openCertificate = useCallback(
+    (raw: string) => {
+      const slug = resolveCertificateSlug(raw);
+      const cert = slug ? getCertificateBySlug(slug) : undefined;
+      if (!cert) return;
+      setSelectedCert(cert);
+      router.replace(certificateQueryPath(cert.slug), { scroll: false });
+      requestAnimationFrame(() => {
+        document.getElementById("certidoes")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      });
+    },
+    [router]
+  );
+
+  const closeCertificate = useCallback(() => {
+    setSelectedCert(null);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has(CERTIFICATE_QUERY_KEY) || url.searchParams.has("servico")) {
+      router.replace("/", { scroll: false });
+    }
+  }, [router]);
+
+  useEffect(() => {
+    registerProductHandler(openCertificate);
+    return () => registerProductHandler(null);
+  }, [openCertificate, registerProductHandler]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const slug = resolveCertificateSlug(
+      url.searchParams.get(CERTIFICATE_QUERY_KEY) || url.searchParams.get("servico")
+    );
+    if (!slug) return;
     const cert = getCertificateBySlug(slug);
     if (!cert) return;
     setSelectedCert(cert);
-    requestAnimationFrame(() => {
+    const timer = window.setTimeout(() => {
       document.getElementById("certidoes")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
-    });
+    }, 80);
+    return () => window.clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    registerProductHandler(handleSelectProduct);
-    return () => registerProductHandler(null);
-  }, [handleSelectProduct, registerProductHandler]);
 
   const searchedCertificates = useMemo(() => {
     const needle = normalizeSearch(catalogQuery);
@@ -273,7 +311,7 @@ export default function HomePage() {
                     size="sm"
                     className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
                     iconClassName="bg-brand-950/15 text-brand-950"
-                    onClick={() => setSelectedCert(cert)}
+                    onClick={() => openCertificate(cert.slug)}
                   >
                     Solicitar
                   </GetStartedButton>
@@ -300,10 +338,10 @@ export default function HomePage() {
       {selectedCert && (
         <CertificateConfigDialog
           certificate={selectedCert}
-          onClose={() => setSelectedCert(null)}
+          onClose={closeCertificate}
           onAdd={(items) => {
             items.forEach(addItem);
-            setSelectedCert(null);
+            closeCertificate();
             setAddedNotice(
               items.length === 1
                 ? `${items[0].certificateName} adicionada ao pedido.`

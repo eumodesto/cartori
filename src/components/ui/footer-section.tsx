@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { HomeHashLink } from "@/components/storefront/home-hash-link";
+import { FOOTER_CERTIFICATE_LINKS, certificatePath } from "@/lib/certificate-links";
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Facebook, Instagram } from "lucide-react";
@@ -21,14 +22,10 @@ interface FooterSectionData {
 const footerLinks: FooterSectionData[] = [
   {
     label: "Certidões",
-    links: [
-      { title: "Nascimento", href: "/#certidoes" },
-      { title: "Casamento", href: "/#certidoes" },
-      { title: "Óbito", href: "/#certidoes" },
-      { title: "Negativa de Testamento", href: "/#certidoes" },
-      { title: "Matrícula de Imóvel", href: "/#certidoes" },
-      { title: "Protesto", href: "/#certidoes" },
-    ],
+    links: FOOTER_CERTIFICATE_LINKS.map((item) => ({
+      title: item.title,
+      href: certificatePath(item.slug),
+    })),
   },
   {
     label: "Empresa",
