@@ -71,12 +71,6 @@ export function StorefrontHome({
       if (!alreadyOpen) {
         router.replace(certificateQueryPath(cert.slug), { scroll: false });
       }
-      requestAnimationFrame(() => {
-        document.getElementById("certidoes")?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      });
     },
     [router]
   );
@@ -115,16 +109,6 @@ export function StorefrontHome({
     if (!fromLocation) setDismissed(false);
   }, [initialCertificateSlug, pathname]);
 
-  useEffect(() => {
-    if (!selectedCert) return;
-    const timer = window.setTimeout(() => {
-      document.getElementById("certidoes")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 80);
-    return () => window.clearTimeout(timer);
-  }, [selectedCert?.slug]);
 
   const searchedCertificates = useMemo(() => {
     const needle = normalizeSearch(catalogQuery);
@@ -192,6 +176,22 @@ export function StorefrontHome({
 
   return (
     <StorefrontShell>
+      {selectedCert && (
+        <CertificateConfigDialog
+          certificate={selectedCert}
+          onClose={closeCertificate}
+          onAdd={(items) => {
+            items.forEach(addItem);
+            closeCertificate();
+            setAddedNotice(
+              items.length === 1
+                ? `${items[0].certificateName} adicionada ao pedido.`
+                : `${items.length} certidões adicionadas ao pedido.`
+            );
+            window.setTimeout(() => setAddedNotice(""), 5000);
+          }}
+        />
+      )}
       {addedNotice && (
         <div className="bg-semantic-success-bg border-b border-semantic-success-border text-sm text-neutral-800 px-4 py-2.5 text-center">
           {addedNotice}{" "}
@@ -363,23 +363,6 @@ export function StorefrontHome({
           )}
         </div>
       </section>
-
-      {selectedCert && (
-        <CertificateConfigDialog
-          certificate={selectedCert}
-          onClose={closeCertificate}
-          onAdd={(items) => {
-            items.forEach(addItem);
-            closeCertificate();
-            setAddedNotice(
-              items.length === 1
-                ? `${items[0].certificateName} adicionada ao pedido.`
-                : `${items.length} certidões adicionadas ao pedido.`
-            );
-            window.setTimeout(() => setAddedNotice(""), 5000);
-          }}
-        />
-      )}
 
       <section id="faq" className="scroll-mt-32 py-16 bg-neutral-0 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

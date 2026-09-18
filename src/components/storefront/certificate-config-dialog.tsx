@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { FileText, MapPin, Tag } from "lucide-react";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,15 @@ export function CertificateConfigDialog({
   const [error, setError] = useState("");
   const [docCities, setDocCities] = useState<IBGECity[]>([]);
   const [loadingDocCities, setLoadingDocCities] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
 
   const isUnknownCartorio = selectedCartorio === "unknown";
   const needsIbgeFields = certificate.fields.some(
@@ -498,8 +508,8 @@ export function CertificateConfigDialog({
     onAdd(expandInteiroTeorCartItems(certificate, item));
   };
 
-  return (
-    <div className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+  const overlay = (
+    <div className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 overflow-y-auto">
       <div
         role="dialog"
         aria-modal="true"
@@ -829,4 +839,7 @@ export function CertificateConfigDialog({
       </div>
     </div>
   );
+
+  if (!mounted) return overlay;
+  return createPortal(overlay, document.body);
 }
