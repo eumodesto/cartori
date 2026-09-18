@@ -44,7 +44,6 @@ const footerLinks: FooterSectionData[] = [
       { title: "Catálogo de Serviços", href: "/#certidoes" },
       { title: "Painel B2B", href: "/dashboard" },
       { title: "Como Funciona", href: "/#como-funciona" },
-      { title: "Ajuda", href: "/contato" },
     ],
   },
   {
