@@ -19,6 +19,8 @@ import {
   Wallet,
   FolderOpen,
   Inbox,
+  UserCog,
+  UserRound,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -52,6 +54,7 @@ export default function DashboardLayout({
       : {};
 
   const isStaff = profile?.role === "ADMIN" || profile?.role === "OPERATOR";
+  const isAdmin = profile?.role === "ADMIN";
 
   const sidebarGroups: NavGroup[] = [
     {
@@ -124,6 +127,34 @@ export default function DashboardLayout({
           icon: <Wallet className="w-4 h-4" />,
           isActive: pathname.startsWith("/dashboard/financeiro"),
           ...lockItem("/dashboard/financeiro"),
+        },
+      ],
+    },
+    ...(isAdmin
+      ? [
+          {
+            label: "Administração",
+            items: [
+              {
+                id: "users",
+                label: "Usuários & Clientes",
+                href: "/dashboard/usuarios",
+                icon: <UserCog className="w-4 h-4" />,
+                isActive: pathname.startsWith("/dashboard/usuarios"),
+              },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: "Conta",
+      items: [
+        {
+          id: "profile",
+          label: "Meu perfil",
+          href: "/dashboard/perfil",
+          icon: <UserRound className="w-4 h-4" />,
+          isActive: pathname.startsWith("/dashboard/perfil"),
         },
       ],
     },

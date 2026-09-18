@@ -168,6 +168,12 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               icon: <UserRound className="w-4 h-4" />,
               href: "/dashboard",
             },
+            {
+              id: "profile",
+              label: "Meu perfil",
+              icon: <PersonStanding className="w-4 h-4" />,
+              href: "/dashboard/perfil",
+            },
             "separator",
             {
               id: "logout",
