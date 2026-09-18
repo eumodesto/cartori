@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { OrderStatus } from "@prisma/client";
 import { canStaffSetOrderStatus } from "@/lib/authorization";
 import { requireStaffOps } from "@/lib/case-access";
-import { queueCaseEmail, statusLabelForEmail } from "@/lib/case-email";
+import { statusLabelForEmail } from "@/lib/case-email";
+import { queueTemplateEmail } from "@/lib/email";
+import { orderStatusTemplateKey } from "@/lib/email-templates";
 import { loadOrderCase, updateOrderOperationalStatus } from "@/lib/case-store";
 import { sanitizeCaseBody } from "@/lib/case-types";
 
@@ -47,14 +49,18 @@ export async function PATCH(
     return NextResponse.json({ success: false, error: "Pedido não encontrado." }, { status: 404 });
   }
 
-  await queueCaseEmail({
-    orderId: params.id,
-    toEmail: updated.order.customerEmail,
+  const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(/\/$/, "")}/dashboard/solicitacoes/${params.id}`;
+  await queueTemplateEmail({
+    key: orderStatusTemplateKey(status),
+    to: updated.order.customerEmail,
     toUserId: updated.order.userId,
-    template: "status_changed",
-    protocol: updated.order.protocol,
-    preview: note,
-    statusLabel: statusLabelForEmail(status),
+    orderId: params.id,
+    vars: {
+      customerName: updated.order.customerName,
+      protocol: updated.order.protocol,
+      statusLabel: statusLabelForEmail(status),
+      orderLink,
+    },
   });
 
   const data = await loadOrderCase(params.id);

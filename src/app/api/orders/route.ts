@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { orderOwnerFromContext, requireAuth } from "@/lib/authorization";
+import { queueTemplateEmail } from "@/lib/email";
 import { saveOrder, listOrdersByUser } from "@/lib/order-store";
 import { buildStoredOrder, toClientOrder } from "@/lib/orders";
 import {
@@ -8,7 +9,7 @@ import {
   prepareCardOrder,
 } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
-import { digitsOnly } from "@/lib/utils";
+import { digitsOnly, formatCurrency } from "@/lib/utils";
 import {
   isValidCpfCnpj,
   isValidEmail,
@@ -110,6 +111,42 @@ export async function POST(req: NextRequest) {
       orderOwnerFromContext(auth.context)
     );
     await saveOrder(order);
+
+    // Notificações do pedido (não bloqueiam o checkout).
+    const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(/\/$/, "")}/dashboard/solicitacoes/${order.id}`;
+    const itemsList = order.items
+      .map((item) => `- ${item.certificateName} (${item.city}/${item.state})`)
+      .join("\n");
+    void queueTemplateEmail({
+      key: "order_created",
+      to: order.customerEmail,
+      toUserId: order.userId,
+      orderId: order.id,
+      vars: {
+        customerName: order.customerName,
+        protocol: order.protocol,
+        total: formatCurrency(order.totalAmount),
+        itemsList,
+        orderLink,
+      },
+    });
+    if (
+      order.items.some(
+        (item) => item.certificateType === "certidao-negativa-de-testamento"
+      )
+    ) {
+      void queueTemplateEmail({
+        key: "docs_request_testamento",
+        to: order.customerEmail,
+        toUserId: order.userId,
+        orderId: order.id,
+        vars: {
+          customerName: order.customerName,
+          protocol: order.protocol,
+          orderLink,
+        },
+      });
+    }
 
     if (paymentMethod === "CREDIT_CARD") {
       const prepared = await prepareCardOrder(order);
