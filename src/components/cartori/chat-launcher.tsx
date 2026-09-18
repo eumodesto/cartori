@@ -148,14 +148,14 @@ export function ChatLauncher({
       onKeyDown={onKeyDown}
       aria-label="Abrir conversa com Amanda, Especialista em Certidões. Arraste para reposicionar."
       className={cn(
-        "fixed z-40 flex items-center gap-3 rounded-2xl pr-4 pl-1.5 py-1.5",
+        "group fixed z-40 flex items-center gap-3 rounded-2xl pr-4 pl-1.5 py-1.5",
         !position && "right-3 bottom-3 md:right-6 md:bottom-6",
-        "bg-brand-950/95 text-left text-neutral-0 shadow-md",
+        "bg-brand-950/95 text-left text-neutral-950 shadow-md",
         "border border-white/15 backdrop-blur-md",
         dragging ? "cursor-grabbing" : "cursor-grab",
         "select-none touch-none",
         "transition-colors duration-normal",
-        "hover:border-amber-400/40 hover:bg-brand-900",
+        "hover:border-amber-400/40 hover:bg-brand-900 hover:text-neutral-0",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950",
         className
       )}
@@ -169,8 +169,10 @@ export function ChatLauncher({
         />
       </span>
       <span className="min-w-0 pr-1">
-        <span className="block text-sm font-semibold leading-tight">Amanda</span>
-        <span className="block text-[11px] text-amber-200/90 leading-tight mt-0.5">
+        <span className="block text-sm font-semibold leading-tight text-[#011E37] group-hover:text-white">
+          Amanda
+        </span>
+        <span className="block text-[11px] font-medium leading-tight mt-0.5 text-[#0B496C] group-hover:text-amber-100">
           Especialista em Certidões
         </span>
       </span>
