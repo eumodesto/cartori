@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 export default function SolicitacoesPage() {
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <PageHeader
         title="Solicitações"
         description="Pedidos da sua conta. Depois do pagamento, o andamento e os downloads ficam aqui."

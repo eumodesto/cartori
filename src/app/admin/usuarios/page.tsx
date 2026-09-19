@@ -125,7 +125,7 @@ export default function UsuariosPage() {
   });
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <PageHeader
         title="Usuários & Clientes"
         description="Gestão de contas da plataforma. Visualize clientes e equipe, e ajuste dados e papel de acesso."

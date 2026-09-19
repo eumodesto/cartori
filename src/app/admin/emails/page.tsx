@@ -218,7 +218,7 @@ export default function EmailsPage() {
   };
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <PageHeader
         title="E-mails & Templates"
         description="Configure a integração de envio (Resend/SMTP) e edite os templates de e-mail transacionais da Cartori."

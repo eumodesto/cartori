@@ -10,7 +10,7 @@ export default function SolicitacaoDetailPage() {
   const params = useParams<{ id: string }>();
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <PageHeader
         title="Acompanhamento"
         description="Mensagens da Cartori, status da certidão e envio de RG, CNH, certidões e comprovantes."

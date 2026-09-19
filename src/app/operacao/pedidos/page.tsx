@@ -63,7 +63,7 @@ export default function OperacaoPage() {
   if (!isStaffRole(profile.role)) return null;
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <PageHeader
         title="Mesa operacional"
         description="Pedidos de todos os clientes. Atualize o status, envie mensagem e peça documentos. O cliente recebe e-mail para voltar ao painel."

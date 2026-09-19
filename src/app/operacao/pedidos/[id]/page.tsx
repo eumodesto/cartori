@@ -29,7 +29,7 @@ export default function OperacaoDetailPage() {
   if (!isStaffRole(profile.role)) return null;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <PageHeader
         title="Pedido na mesa"
         description="Status, mensagem e arquivos. Atualizar avisa o cliente por e-mail."

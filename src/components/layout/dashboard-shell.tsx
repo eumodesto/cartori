@@ -155,7 +155,7 @@ export function DashboardShell({
         </header>
 
         <main className="flex-1 overflow-y-auto overflow-x-hidden bg-surface-page p-4 sm:p-6 lg:p-8">
-          <div className="w-full max-w-[var(--layout-dashboard-max)]">{children}</div>
+          <div className="mx-auto w-full max-w-[var(--layout-dashboard-max)]">{children}</div>
         </main>
       </div>
     </div>
