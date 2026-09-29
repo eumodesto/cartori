@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { requireAuth } from "@/lib/authorization";
 import { getAuthProfile } from "@/lib/auth";
+import { sanitizeNotificationPrefs } from "@/lib/notification-prefs";
 import { prisma } from "@/lib/prisma";
 import { digitsOnly } from "@/lib/utils";
-import { isValidPhone } from "@/lib/validators";
+import { isValidCpf, isValidPhone, normalizeCpf } from "@/lib/validators";
 
 /**
  * Perfil próprio (self-service). Qualquer usuário autenticado edita apenas
@@ -23,7 +25,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const data: { name?: string; phone?: string } = {};
+  const data: Prisma.UserUpdateInput = {};
 
   if (body.name !== undefined) {
     const name = String(body.name || "").trim();
@@ -45,6 +47,39 @@ export async function PATCH(req: NextRequest) {
       );
     }
     data.phone = digitsOnly(phone);
+  }
+
+  if (body.notificationPrefs !== undefined) {
+    data.notificationPrefs = sanitizeNotificationPrefs(body.notificationPrefs);
+  }
+
+  // CPF é identidade: só pode ser DEFINIDO quando ainda está vazio (nunca sobrescrito aqui).
+  if (body.cpf !== undefined) {
+    const current = await prisma.user.findUnique({
+      where: { id: auth.context.userId },
+      select: { cpf: true },
+    });
+    if (!current?.cpf) {
+      const raw = String(body.cpf || "");
+      if (!isValidCpf(raw)) {
+        return NextResponse.json(
+          { success: false, error: "CPF inválido." },
+          { status: 400 }
+        );
+      }
+      const cpf = normalizeCpf(raw);
+      const taken = await prisma.user.findUnique({
+        where: { cpf },
+        select: { id: true },
+      });
+      if (taken && taken.id !== auth.context.userId) {
+        return NextResponse.json(
+          { success: false, error: "Este CPF já está em uso." },
+          { status: 409 }
+        );
+      }
+      data.cpf = cpf;
+    }
   }
 
   if (Object.keys(data).length === 0) {

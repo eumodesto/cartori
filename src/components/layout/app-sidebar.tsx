@@ -143,8 +143,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     ? "w-10 h-10 justify-center rounded-lg"
                     : "w-full gap-3 px-2.5 py-2 rounded-md text-xs font-medium",
                   isActive
-                    ? "bg-brand-50 text-brand-950 dark:bg-brand-50/20 dark:text-brand-300 font-semibold shadow-xs"
-                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-100/40",
+                    ? "bg-brand-50 text-brand-950 dark:bg-white/15 dark:text-white font-semibold shadow-xs"
+                    : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200/70 hover:text-neutral-900 dark:hover:bg-white/10 dark:hover:text-white",
                   item.locked && "opacity-80"
                 );
 

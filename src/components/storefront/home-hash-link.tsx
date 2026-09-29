@@ -8,10 +8,12 @@ export function HomeHashLink({
   hash,
   className,
   children,
+  onClick,
 }: {
   hash: string;
   className?: string;
   children: ReactNode;
+  onClick?: () => void;
 }) {
   const pathname = usePathname();
   const href = `/#${hash}`;
@@ -21,6 +23,7 @@ export function HomeHashLink({
       href={href}
       className={className}
       onClick={(event) => {
+        onClick?.();
         if (pathname !== "/") return;
         const el = document.getElementById(hash);
         if (!el) return;

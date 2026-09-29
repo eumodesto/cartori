@@ -94,7 +94,7 @@ export const DialogHeader: React.FC<React.HTMLAttributes<HTMLDivElement> & { onC
 }) => (
   <div
     className={cn(
-      "flex items-start justify-between gap-4 px-6 py-4 border-b border-neutral-200 bg-neutral-50/50 shrink-0",
+      "flex items-start justify-between gap-4 px-4 py-4 sm:px-6 border-b border-neutral-200 bg-neutral-50/50 shrink-0",
       className
     )}
     {...props}
@@ -138,7 +138,7 @@ export const DialogContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   children,
   ...props
 }) => (
-  <div className={cn("p-6 overflow-y-auto min-h-0 flex-1", className)} {...props}>
+  <div className={cn("p-4 sm:p-6 overflow-y-auto min-h-0 flex-1", className)} {...props}>
     {children}
   </div>
 );
@@ -150,7 +150,10 @@ export const DialogFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 }) => (
   <div
     className={cn(
-      "flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-200 bg-neutral-50/50 shrink-0",
+      // Mobile-safe por padrão: empilha e botões ocupam a largura toda; em telas maiores volta a linha alinhada à direita.
+      "flex flex-col-reverse gap-2 px-4 py-4 sm:px-6 border-t border-neutral-200 bg-neutral-50/50 shrink-0",
+      "sm:flex-row sm:items-center sm:justify-end sm:gap-3",
+      "[&>button]:w-full sm:[&>button]:w-auto",
       className
     )}
     {...props}

@@ -1,6 +1,29 @@
 import { prisma } from "@/lib/prisma";
 import { resolveEmailCredentials, resolveEmailTemplate } from "@/lib/email-settings";
 import { renderTemplateString } from "@/lib/email-templates";
+import {
+  notificationCategoryForTemplate,
+  resolveNotificationPrefs,
+} from "@/lib/notification-prefs";
+
+/** Respeita a preferência do usuário. Fail-open (em erro, envia) para não perder transacional. */
+async function shouldSendTemplateToUser(
+  userId: string | null | undefined,
+  templateKey: string
+): Promise<boolean> {
+  const category = notificationCategoryForTemplate(templateKey);
+  if (!category || !userId) return true;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationPrefs: true },
+    });
+    const prefs = resolveNotificationPrefs(user?.notificationPrefs);
+    return prefs[category] !== false;
+  } catch {
+    return true;
+  }
+}
 
 export type DeliveryResult = { sent: true } | { sent: false; error: string };
 
@@ -44,6 +67,9 @@ export async function queueTemplateEmail(input: {
   try {
     const email = input.to.trim().toLowerCase();
     if (!email) return null;
+
+    // Respeita a preferência de notificação do usuário (transacional crítico sempre envia).
+    if (!(await shouldSendTemplateToUser(input.toUserId, input.key))) return null;
 
     const resolved = await resolveEmailTemplate(input.key);
     if (!resolved || !resolved.active) return null;
