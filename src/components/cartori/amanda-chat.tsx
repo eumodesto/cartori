@@ -232,7 +232,7 @@ export function AmandaChat({
                 <h3 className="text-white text-base font-semibold mb-1 font-serif">
                   Olá, eu sou a Amanda.
                 </h3>
-                <p className="text-slate-300 text-xs leading-relaxed">
+                <p className="text-slate-100 text-xs leading-relaxed">
                   Pergunte sobre o serviço que você precisa. Eu respondo a sua dúvida e te direciono ao pedido certo.
                 </p>
               </div>
@@ -271,8 +271,8 @@ export function AmandaChat({
                   className={cn(
                     "max-w-[85%] px-3 py-2 text-sm leading-relaxed",
                     msg.role === "user"
-                      ? "bg-amber-500 text-primary-950 rounded-2xl rounded-tr-md font-medium whitespace-pre-wrap"
-                      : "bg-white/10 text-slate-100 rounded-2xl rounded-tl-md border border-white/10"
+                    ? "bg-amber-500 text-primary-950 rounded-2xl rounded-tr-md font-medium whitespace-pre-wrap"
+                    : "bg-white/15 text-white rounded-2xl rounded-tl-md border border-white/15"
                   )}
                 >
                   {msg.content ? <p className="whitespace-pre-wrap">{msg.content}</p> : null}
@@ -346,7 +346,7 @@ export function AmandaChat({
             placeholder="Pergunte à Amanda..."
             maxLength={2000}
             disabled={isTyping}
-            className="w-full bg-white/10 border border-white/20 rounded-xl py-2.5 pl-3.5 pr-12 text-sm text-white placeholder:text-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/80"
+            className="w-full bg-white/10 border border-white/20 rounded-xl py-2.5 pl-3.5 pr-12 text-sm text-white placeholder:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/80"
           />
           <button
             type="submit"

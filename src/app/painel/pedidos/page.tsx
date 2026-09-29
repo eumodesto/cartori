@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { MyOrders } from "@/components/dashboard/my-orders";
@@ -8,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export default function SolicitacoesPage() {
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title="Solicitações"
         description="Pedidos da sua conta. Depois do pagamento, o andamento e os downloads ficam aqui."
@@ -20,7 +21,11 @@ export default function SolicitacoesPage() {
           </Link>
         }
       />
-      <MyOrders />
+      <React.Suspense
+        fallback={<p className="text-sm text-neutral-500">Carregando pedidos...</p>}
+      >
+        <MyOrders enablePayment />
+      </React.Suspense>
     </div>
   );
 }

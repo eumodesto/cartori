@@ -154,7 +154,7 @@ export default function CheckoutPage() {
 
   const goToDashboard = (orderId: string) => {
     clearCart();
-    router.push(`/painel?pedido=${orderId}`);
+    router.push(`/painel/pedidos?pay=${orderId}`);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {

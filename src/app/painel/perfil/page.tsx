@@ -9,6 +9,7 @@ import { Alert } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/components/auth/auth-provider";
 import { maskCpfCnpj } from "@/lib/utils";
+import { isValidCpf } from "@/lib/validators";
 import {
   NOTIFICATION_CATEGORIES,
   resolveNotificationPrefs,
@@ -53,6 +54,7 @@ export default function PerfilPage() {
 
   const [name, setName] = React.useState("");
   const [phone, setPhone] = React.useState("");
+  const [cpf, setCpf] = React.useState("");
   const [savingData, setSavingData] = React.useState(false);
   const [dataMsg, setDataMsg] = React.useState<Msg>(null);
 
@@ -128,10 +130,17 @@ export default function PerfilPage() {
     setSavingData(true);
     setDataMsg(null);
     try {
+      const needsCpf = !profile.cpf;
+      if (needsCpf && !isValidCpf(cpf)) {
+        setDataMsg({ type: "error", text: "Informe um CPF válido." });
+        return;
+      }
+      const payload: Record<string, unknown> = { name, phone };
+      if (needsCpf) payload.cpf = cpf;
       const res = await fetch("/api/account/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!data.success) setDataMsg({ type: "error", text: data.error || "Não foi possível salvar." });
@@ -225,7 +234,7 @@ export default function PerfilPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title="Meu perfil"
         description="Gerencie sua foto, dados de contato, e-mail, senha e as notificações que deseja receber."
@@ -284,7 +293,18 @@ export default function PerfilPage() {
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="CPF" value={profile.cpf ? maskCpfCnpj(profile.cpf) : "—"} disabled />
+            {profile.cpf ? (
+              <Input label="CPF" value={maskCpfCnpj(profile.cpf)} disabled />
+            ) : (
+              <Input
+                label="CPF"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+                required
+                placeholder="000.000.000-00"
+                helperText="Informe seu CPF para completar o cadastro."
+              />
+            )}
             <Input
               label="Papel de acesso"
               value={ROLE_LABEL[profile.role] ?? profile.role}
