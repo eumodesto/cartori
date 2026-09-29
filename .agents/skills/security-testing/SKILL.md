@@ -11,7 +11,7 @@ Provar que a invariante de segurança ainda vale. O Cartori não tem suíte Vite
 
 ## Quando usar
 
-Depois de alterar `authorization*`, `auth.ts`, `org-*`, `order-access`, rotas `/api/auth`, `/api/org`, `/api/orders`.
+Depois de alterar `authorization*`, `auth.ts`, `org-*`, `order-access`, rotas `/api/auth`, `/api/org`, `/api/orders`. Depois de nova tabela Prisma / grants / RLS: `scripts/inspect-supabase-rls.ts`.
 
 ## Quando NÃO usar
 
@@ -32,6 +32,7 @@ Não há `"test"` no `package.json`. Checks existentes:
 | `scripts/etapa6b-authorization-check.ts` | Policy 6B (ACTIVE) |
 | `scripts/etapa6-http-check.ts` | HTTP membership |
 | `scripts/etapa6-db-counts.ts` | Contagens 6B/6C |
+| `scripts/inspect-supabase-rls.ts` | Grants + RLS deny-all (Data API fechada) |
 
 Typecheck/lint/build: `npx tsc --noEmit` (se tsconfig permitir), `npm run lint`, `npm run build`. Não há script `typecheck` nomeado.
 
@@ -60,3 +61,4 @@ Typecheck/lint/build: `npx tsc --noEmit` (se tsconfig permitir), `npm run lint`,
 ## Validação
 
 Policy scripts exit 0. Mudança de matriz → atualizar `authorization-matrix.ts` **e** o script que a espelha, na mesma onda.
+Nova tabela Prisma → `inspect-supabase-rls.ts --schema-only` verde; live inspect quando houver `DATABASE_URL`.

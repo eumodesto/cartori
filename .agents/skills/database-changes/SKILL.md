@@ -24,8 +24,9 @@ Valor de pagamento — `payment-integrity`.
 - Datasource: `url` = pooled `DATABASE_URL`; `directUrl` = `DATABASE_URL_UNPOOLED` (migrations).
 - Comandos: `npm run db:migrate` (`prisma migrate deploy`), `db:push` (não usar como substituto de migrate em fluxo real), `db:seed`.
 - Transações reais: onboarding (`persistCreatorOnboarding`), `saveOrder`, mark PAID no reconcile.
-- Etapa 0: `prisma/migrations/20260902230000_revoke_data_api_anon_authenticated/` revoga ALL em tabelas Prisma para `anon` e `authenticated`. Não revoga `service_role`. Rollback no mesmo diretório.
-- `OrganizationMember`: no banco atual, `anon` e `authenticated` **não** têm SELECT/INSERT/UPDATE/DELETE (`relacl` só `postgres` + `service_role`). Data API fechada para essa tabela.
+- Etapa 0: `prisma/migrations/20260902230000_revoke_data_api_anon_authenticated/` revoga ALL nas tabelas Prisma de então para `anon` e `authenticated`. Não revoga `service_role`. Não ligava RLS. Rollback no mesmo diretório.
+- Lock Data API: `prisma/migrations/20260918010000_lock_public_rls_deny_data_api/` revoga ALL em **todas** as tabelas Prisma atuais (inclui `OrganizationMember`, `Dossier*`) **e** liga RLS sem policies (deny-all para `anon`/`authenticated`). `postgres` tem `rolbypassrls`; Prisma segue. Não é ACL de tenant.
+- Inventário: `npx tsx scripts/inspect-supabase-rls.ts` (live) ou `--schema-only`.
 
 ## Invariantes
 
@@ -38,7 +39,7 @@ Valor de pagamento — `payment-integrity`.
 
 1. Alterar `prisma/schema.prisma`.
 2. Criar migration SQL em `prisma/migrations/<timestamp>_<name>/`.
-3. Nova tabela no schema `public`: o padrão da Etapa 0 é **sem** GRANT a `anon`/`authenticated` (DEFAULT PRIVILEGES já revogados). Confirmar no banco se tocar Data API/PostgREST.
+3. Nova tabela no schema `public`: **sem** GRANT a `anon`/`authenticated` (DEFAULT PRIVILEGES) **e** `ENABLE ROW LEVEL SECURITY` na mesma migration, sem `CREATE POLICY`. Confirmar com `scripts/inspect-supabase-rls.ts`.
 4. `prisma generate` (postinstall já roda).
 5. Não commitar `.env`.
 
@@ -49,10 +50,11 @@ Valor de pagamento — `payment-integrity`.
 `src/lib/org-membership.ts` (`$transaction`)
 `src/lib/order-store.ts` (`saveOrder` transaction)
 `prisma/migrations/`
+`scripts/inspect-supabase-rls.ts`
 
 ## Não faça
 
-- RLS no Prisma como substituto de `requireAuth` (authz é na aplicação).
+- RLS de tenant / `USING (true)` como substituto de `requireAuth` (authz é na aplicação). RLS deny-all no `public` é só fechar PostgREST.
 - Recriar `User.organizationId` ou papéis `B2B_*` (removidos na 6C).
 - Incluir secrets na migration.
 
@@ -63,4 +65,5 @@ Valor de pagamento — `payment-integrity`.
 ## Validação
 
 `scripts/etapa5-db-counts.ts`, `scripts/etapa6-db-counts.ts` (contagens, não substituem migrate).
+`scripts/inspect-supabase-rls.ts` após migration de tabela/grants/RLS.
 Após migration: generate + typecheck do app se o schema mudou (fora desta skill docs-only).
