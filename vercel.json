@@ -1,5 +1,4 @@
 {
   "framework": "nextjs",
-  "buildCommand": "node scripts/vercel-build.mjs",
-  "regions": ["gru1"]
+  "buildCommand": "node scripts/vercel-build.mjs"
 }
