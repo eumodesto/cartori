@@ -13,15 +13,19 @@ function run(command, args) {
 
 run("npx", ["prisma", "generate"]);
 
-if (!process.env.DATABASE_URL_UNPOOLED && process.env.DATABASE_URL) {
-  process.env.DATABASE_URL_UNPOOLED = process.env.DATABASE_URL;
-}
+// Migrations rodam APENAS em produção e SOMENTE com a conexão direta (não-pooled).
+// - Preview/Development nunca migram (build não quebra por falta de env/permissão de banco).
+// - Nunca migrar via pgbouncer (pooled): prisma migrate exige conexão direta (DATABASE_URL_UNPOOLED).
+const vercelEnv = process.env.VERCEL_ENV || "";
+const directUrl = process.env.DATABASE_URL_UNPOOLED || "";
 
-if (process.env.DATABASE_URL && process.env.DATABASE_URL_UNPOOLED) {
+if (vercelEnv === "production" && directUrl) {
   run("npx", ["prisma", "migrate", "deploy"]);
 } else {
   console.warn(
-    "Skipping prisma migrate deploy: DATABASE_URL / DATABASE_URL_UNPOOLED not set."
+    `Pulando 'prisma migrate deploy' (VERCEL_ENV="${vercelEnv || "unset"}", directUrl=${
+      directUrl ? "set" : "unset"
+    }). Migrações só em produção e via conexão direta.`
   );
 }
 
