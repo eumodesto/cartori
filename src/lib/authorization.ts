@@ -24,6 +24,8 @@ export {
   canOperateCases,
   canOnboardBusiness,
   canStaffSetOrderStatus,
+  canStaffTransitionOrderStatus,
+  staffTransitionTargets,
   hasActiveMembership,
   hasAllowedRole,
   hasOrgRole,

@@ -16,6 +16,8 @@ export interface TabsProps {
   activeTab: string;
   onChange: (tabId: string) => void;
   variant?: "underline" | "pill";
+  /** Abas dividem a largura toda do container (segmented control). */
+  fullWidth?: boolean;
   className?: string;
 }
 
@@ -24,6 +26,7 @@ export const Tabs: React.FC<TabsProps> = ({
   activeTab,
   onChange,
   variant = "underline",
+  fullWidth = false,
   className,
 }) => {
   return (
@@ -32,6 +35,7 @@ export const Tabs: React.FC<TabsProps> = ({
       className={cn(
         "flex items-center gap-1 border-b border-neutral-200 overflow-x-auto",
         variant === "pill" && "border-b-0 bg-neutral-100 p-1 rounded-lg gap-1",
+        variant === "pill" && !fullWidth && "w-fit max-w-full",
         className
       )}
     >
@@ -42,12 +46,14 @@ export const Tabs: React.FC<TabsProps> = ({
           return (
             <button
               key={tab.id}
+              type="button"
               role="tab"
               aria-selected={isActive}
               disabled={tab.disabled}
               onClick={() => onChange(tab.id)}
               className={cn(
                 "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors select-none outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
+                fullWidth && "flex-1 justify-center py-2 text-sm",
                 isActive
                   ? "bg-neutral-0 text-neutral-900 shadow-xs font-semibold"
                   : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60",
@@ -76,6 +82,7 @@ export const Tabs: React.FC<TabsProps> = ({
         return (
           <button
             key={tab.id}
+            type="button"
             role="tab"
             aria-selected={isActive}
             disabled={tab.disabled}

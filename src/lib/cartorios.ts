@@ -270,7 +270,9 @@ export function listOfficialServentias(uf?: string): CartorioInfo[] {
   const prefix = uf ? `${uf.toUpperCase().trim()}_` : "";
   return Object.entries(SERVENTIAS_OFICIAIS_DATABASE)
     .filter(([key]) => !prefix || key.startsWith(prefix))
-    .flatMap(([, list]) => list);
+    .flatMap(([, list]) =>
+      list.map((item) => ({ ...item, source: "official-catalog" as const }))
+    );
 }
 
 function filterByCategory(list: CartorioInfo[], category: string): CartorioInfo[] {
@@ -299,6 +301,7 @@ function toCartorioInfo(row: {
     attribution: attributionFromCodes(row.attributions),
     state: row.state,
     city: row.city,
+    source: "database",
     address: row.address || undefined,
     phone: row.phone || undefined,
     email: row.email || undefined,
@@ -378,7 +381,13 @@ export async function getCartoriosByCityAndCategory(
 
   const specificCityServentias = SERVENTIAS_OFICIAIS_DATABASE[lookupKey];
   if (specificCityServentias?.length) {
-    return filterByCategory(specificCityServentias, category);
+    return filterByCategory(
+      specificCityServentias.map((item) => ({
+        ...item,
+        source: "official-catalog" as const,
+      })),
+      category
+    );
   }
 
   const placeholder = (
@@ -392,6 +401,7 @@ export async function getCartoriosByCityAndCategory(
     attribution,
     state: upperUf,
     city: normalizedCity,
+    source: "placeholder",
   });
 
   if (category === "registro-civil") {

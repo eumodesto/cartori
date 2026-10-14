@@ -19,10 +19,11 @@ Checkout, auth, pagamentos, ACL.
 
 ## Estado atual
 
-**Em construção.**
+**No painel, depois do primeiro pedido.**
 
 - POST `/api/amanda/chat`: OpenAI (`OPENAI_API_KEY`, modelo `OPENAI_MODEL` ou `gpt-4o-mini`).
-- Chat **público de propósito**: sem `requireAuth`. Widget na vitrine (`app/layout.tsx`, hero em `app/page.tsx`); também no painel do cliente (`/dashboard`, solicitações, dossiês). Excluído da mesa operacional (`/dashboard/operacao`), do design system e de papéis `ADMIN` / `OPERATOR`. Não há regra exigindo login no chat.
+- Só cliente autenticado (`User.role` CLIENT) com ao menos um `Order` do próprio `userId`. GET devolve `{ available }` para o widget. Sem sessão, sem pedido ou papel de mesa → a rota não chama a OpenAI.
+- Widget só em `/painel` (`chat-widget-config`). Fora da vitrine, do hero, de `/operacao`, `/admin` e do design system. “Pedido” aqui é a solicitação criada no checkout, sem exigir status `PAID`.
 - Histórico: no máximo 16 turnos, 2000 chars, só `user`/`assistant`.
 - System prompt: `buildAmandaSystemPrompt(await listProducts())` — preços e campos do catálogo servidor.
 - Sem chave → 503.
@@ -31,15 +32,16 @@ Checkout, auth, pagamentos, ACL.
 ## Invariantes
 
 - Preço/prazo/campos da Amanda vêm de `listProducts()`, não de alucinação solta no prompt estático.
-- Pedido real continua no checkout autenticado. O chat público não substitui sessão.
+- Pedido real continua no checkout autenticado. O chat não abre na vitrine e não substitui sessão.
 - Não logar `OPENAI_API_KEY`.
 
 ## Fluxo correto
 
-Mensagens sanitizadas → carrega catálogo → system prompt → completion → `extractAmandaProducts` para cards. Pedido real continua no checkout autenticado.
+Sessão de CLIENT com pedido → mensagens sanitizadas → catálogo → system prompt → completion → `extractAmandaProducts` para cards. Sem isso a rota para antes da OpenAI.
 
 ## Helpers existentes
 
+`src/lib/amanda-access.ts`
 `src/lib/amanda-knowledge.ts`
 `src/lib/amanda-products.ts`
 `src/lib/amanda-history.ts`
@@ -58,6 +60,7 @@ Mensagens sanitizadas → carrega catálogo → system prompt → completion →
 
 ## Validação
 
+Sem sessão, sem pedido ou papel que não seja CLIENT → a OpenAI não é chamada.
 Sem API key → 503.
 Body sem user message → 400.
 Resposta usa slugs existentes em `listProducts`.

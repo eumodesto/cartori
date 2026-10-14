@@ -12,7 +12,7 @@ import {
   CASE_ATTACHMENT_KINDS,
   type PublicOrderCase,
 } from "@/lib/case-types";
-import { orderStatusMeta, STAFF_STATUS_OPTIONS } from "@/lib/order-status";
+import { orderStatusMeta } from "@/lib/order-status";
 
 function authorLabel(kind: string) {
   if (kind === "STAFF") return "Cartori";
@@ -27,7 +27,7 @@ export function OrderCasePanel({
   orderId: string;
   staff?: boolean;
 }) {
-  const [data, setData] = React.useState<PublicOrderCase | null>(null);
+  const [data, setData] = React.useState<(PublicOrderCase & { allowedStatuses?: string[] }) | null>(null);
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [body, setBody] = React.useState("");
@@ -106,6 +106,22 @@ export function OrderCasePanel({
       });
       if (!put.ok) {
         setError("O arquivo não chegou ao armazenamento.");
+        return;
+      }
+      const done = await fetch(`/api/orders/${orderId}/attachments/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          attachmentId: json.pending.id,
+          storagePath: json.pending.storagePath,
+          kind: json.pending.kind,
+          fileName: json.pending.originalName,
+          mimeType: file.type || json.pending.mimeType,
+        }),
+      });
+      const confirmed = await done.json();
+      if (!confirmed.success) {
+        setError(confirmed.error || "O arquivo enviado não passou na conferência.");
         return;
       }
       await load();
@@ -193,7 +209,10 @@ export function OrderCasePanel({
               label="Status operacional"
               value={status}
               onChange={(event) => setStatus(event.target.value)}
-              options={STAFF_STATUS_OPTIONS}
+              options={(data.allowedStatuses || []).map((value) => ({
+                value,
+                label: orderStatusMeta(value).label,
+              }))}
             />
             <Button variant="primary" onClick={saveStatus} disabled={sending}>
               Atualizar e avisar o cliente

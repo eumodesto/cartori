@@ -47,7 +47,18 @@ export const Dialog: React.FC<DialogProps> = ({
     };
   }, [isOpen]);
 
+  const pressStartedOutside = React.useRef(false);
+
   if (!isOpen || !mounted) return null;
+
+  const handleBackdropMouseDown = (event: React.MouseEvent) => {
+    pressStartedOutside.current = event.target === event.currentTarget;
+  };
+  const handleBackdropClick = (event: React.MouseEvent) => {
+    const outside = pressStartedOutside.current && event.target === event.currentTarget;
+    pressStartedOutside.current = false;
+    if (outside) onClose();
+  };
 
   const sizeStyles = {
     sm: "max-w-sm",
@@ -60,17 +71,16 @@ export const Dialog: React.FC<DialogProps> = ({
     <div className="fixed inset-0 z-[100]">
       <div
         className="fixed inset-0 bg-neutral-950/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-fast"
-        onClick={onClose}
         aria-hidden="true"
       />
       <div
         className="relative flex min-h-full items-center justify-center p-4 sm:p-6"
-        onClick={onClose}
+        onMouseDown={handleBackdropMouseDown}
+        onClick={handleBackdropClick}
       >
         <div
           role="dialog"
           aria-modal="true"
-          onClick={(event) => event.stopPropagation()}
           className={cn(
             "relative w-full bg-neutral-0 rounded-xl shadow-lg border border-neutral-200 overflow-hidden",
             "flex flex-col max-h-[min(92vh,52rem)] animate-in fade-in zoom-in-95 duration-fast",

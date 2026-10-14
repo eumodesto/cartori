@@ -72,7 +72,7 @@ $$\text{PRIMITIVE TOKEN} \longrightarrow \text{SEMANTIC TOKEN} \longrightarrow \
 | **Foundations** | `globals.css` / `fonts.css` / `tailwind.config.ts` | Cores, tipografia (PP Mori + PP Editorial Sans), spacing, radius, borders, shadows, icons, motion |
 | **UI Components** | `src/components/ui/` | Button, GetStartedButton, Input, Select, Badge, StatusBadge, Table, Dialog, Tabs, Stepper, QuickTooltipActions |
 | **Layout Components** | `src/components/layout/` | PageContainer, PageHeader, Section, Card (Surface), AppSidebar, UserMenu |
-| **Domain Components** | `src/components/cartori/` | RequestStatus, RequestTimeline, EarningSummary, ClientSelector |
+| **Domain Components** | `src/components/cartori/` | RequestStatus, RequestTimeline e componentes de domínio implementados |
 | **Patterns** | Rotas e Composições | Operational Dashboard, Request Builder, White-label Request Page |
 
 > **Regra de Dependência:** Componentes de domínio podem depender de componentes UI. Componentes UI não devem depender de conceitos de negócio como `Request`, `Customer` ou `Earning`.
@@ -243,7 +243,7 @@ Padrão oficial do recurso de usuário no chrome da aplicação (Header B2C, hea
 * **Comportamento:** `[ícone User circular] → hover / foco / toque → [atalhos de recursos]`
 * **Primitive:** `QuickTooltipActions` em `src/components/ui/` — trigger + ações genéricas, sem acoplamento a domínio.
 * **Composição:** `UserMenu` em `src/components/layout/` — trigger `User` (`rounded-full`, avatar) e recursos padrão: **Suporte**, **Perfil**, **Equipe**.
-* **Ações padrão:** `MessageCircle` → Suporte (`/contato`); `PersonStanding` → Perfil (`/minha-conta`); `Users` → Equipe (`/dashboard/equipe`).
+* **Ações padrão:** `MessageCircle` → Suporte (`/suporte`); `PersonStanding` → Perfil (`/minha-conta`); `Users` → Equipe (`/painel/equipe`).
 * **Posição do flyout:** `right` (sidebar recolhida), `bottom` (headers), `top` (rodapé expandido).
 * **Tokens:** superfície `neutral-0`, borda `neutral-200`, `radius-lg` (12px) no painel, `radius-md` nos atalhos, `shadow-sm`, hover `neutral-100`. Labels dos atalhos usam o tooltip oficial (`neutral-950` / `11px`).
 * **Acessibilidade:** `aria-label` no trigger, `aria-haspopup` / `aria-expanded`, `role="menu"` / `menuitem`, Escape e clique fora fecham, `focus-visible:ring-brand-500`.

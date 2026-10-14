@@ -1,6 +1,40 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async headers() {
+    const headers = [
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=()",
+      },
+      {
+        key: "Content-Security-Policy",
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com",
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: blob: https:",
+          "font-src 'self' data:",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mercadopago.com https://sdk.mercadopago.com",
+          "frame-src https://www.mercadopago.com https://www.mercadopago.com.br https://sdk.mercadopago.com",
+          "frame-ancestors 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "object-src 'none'",
+        ].join("; "),
+      },
+    ];
+    if (process.env.NODE_ENV === "production") {
+      headers.push({
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains",
+      });
+    }
+    return [{ source: "/:path*", headers }];
+  },
   async redirects() {
     // Rotas antigas /dashboard/* → nova arquitetura por seção (/painel, /operacao, /admin).
     // Renomeadas primeiro; catch-all por último. Todos 308 (permanente).

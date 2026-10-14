@@ -71,10 +71,11 @@ function AIChatWidget({
   const pathname = usePathname();
   const router = useRouter();
   const { profile, loading: authLoading } = useAuth();
-  const enabled = isChatWidgetEnabled(pathname, {
+  const routeEnabled = isChatWidgetEnabled(pathname, {
     platformRole: profile?.role,
     authLoading,
   });
+  const [purchased, setPurchased] = React.useState(false);
   const [phase, setPhase] = React.useState<ChatWidgetPhase>("closed");
   const [heroInView, setHeroInView] = React.useState(false);
   const [parkEl, setParkEl] = React.useState<HTMLDivElement | null>(null);
@@ -86,6 +87,27 @@ function AIChatWidget({
   React.useEffect(() => {
     setLauncherPos(readLauncherPosition());
   }, []);
+
+  React.useEffect(() => {
+    if (!routeEnabled) {
+      setPurchased(false);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/amanda/chat", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!cancelled) setPurchased(Boolean(data?.available));
+      })
+      .catch(() => {
+        if (!cancelled) setPurchased(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [routeEnabled, profile?.id, pathname]);
+
+  const enabled = routeEnabled && purchased;
 
   React.useEffect(() => {
     const el = document.createElement("div");

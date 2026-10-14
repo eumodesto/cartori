@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CaseAttachmentKind } from "@prisma/client";
 import { requireOrderCaseAccess } from "@/lib/case-access";
-import { queueCaseEmail } from "@/lib/case-email";
-import { createCaseAttachment } from "@/lib/case-store";
 import {
   assertCaseFileLimits,
   createCaseUploadUrl,
@@ -55,34 +53,15 @@ export async function POST(
     return NextResponse.json({ success: false, error: message }, { status: 503 });
   }
 
-  const attachment = await createCaseAttachment({
-    orderId: params.id,
-    uploadedByUserId: access.context.userId,
-    kind,
-    originalName,
-    mimeType,
-    sizeBytes,
-    storagePath,
-  });
-
-  if (access.staff) {
-    await queueCaseEmail({
-      orderId: params.id,
-      toEmail: access.order.customerEmail,
-      toUserId: access.order.userId,
-      template: "attachment_uploaded",
-      protocol: access.order.protocol,
-      preview: originalName,
-    });
-  }
-
   return NextResponse.json({
     success: true,
-    attachment: {
-      id: attachment.id,
-      kind: attachment.kind,
-      originalName: attachment.originalName,
-    },
     upload,
+    pending: {
+      id: attachmentId,
+      storagePath,
+      kind,
+      originalName,
+      mimeType,
+    },
   });
 }

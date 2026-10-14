@@ -13,12 +13,12 @@ export function PartnerGate({
   title: string;
   children?: React.ReactNode;
 }) {
-  const { isBusiness, loading } = useAuth();
+  const { isBusiness, canRegisterCompany, loading } = useAuth();
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (!loading && !isBusiness) setOpen(true);
-  }, [isBusiness, loading]);
+    if (!loading && canRegisterCompany) setOpen(true);
+  }, [canRegisterCompany, loading]);
 
   if (loading) {
     return <p className="text-sm text-neutral-500">Carregando...</p>;
@@ -45,13 +45,19 @@ export function PartnerGate({
       <div>
         <h1 className="text-xl font-serif font-bold text-neutral-900">{title}</h1>
         <p className="text-sm text-neutral-600 mt-1">
-          Disponível após cadastrar a empresa com CNPJ verificado na Receita Federal.
+          {canRegisterCompany
+            ? "Disponível após cadastrar a empresa com CNPJ verificado na Receita Federal."
+            : "Disponível só para contas de cliente com empresa cadastrada."}
         </p>
       </div>
-      <Button variant="primary" leftIcon={<Building2 className="w-4 h-4" />} onClick={() => setOpen(true)}>
-        Cadastrar empresa
-      </Button>
-      <PartnerPlanDialog isOpen={open} onClose={() => setOpen(false)} />
+      {canRegisterCompany && (
+        <>
+          <Button variant="primary" leftIcon={<Building2 className="w-4 h-4" />} onClick={() => setOpen(true)}>
+            Cadastrar empresa
+          </Button>
+          <PartnerPlanDialog isOpen={open} onClose={() => setOpen(false)} />
+        </>
+      )}
     </div>
   );
 }

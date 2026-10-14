@@ -1,6 +1,6 @@
 ---
 name: catalog-certificates
-description: Define catálogo de certidões e cartórios Cartori (Product no Prisma com fallback estático). Use ao alterar produtos, preços por UF, campos de formulário, cartórios ou /api/products e /api/notary-offices.
+description: Define catálogo de certidões e cartórios Cartori (Product no Prisma com fallback estático). Use ao alterar produtos, preços por UF, campos de formulário, cartórios ou /api/cartorios.
 ---
 
 # catalog-certificates
@@ -11,7 +11,7 @@ Preço e campos da certidão vêm do catálogo servidor (`product-store` / `pric
 
 ## Quando usar
 
-`Product`, `catalog.ts`, `crc-*-prices`, `notary-offices`, rotas `/api/products`, `/api/notary-offices`, `/api/cartorios`, formulário de certidão.
+`Product`, `catalog.ts`, `crc-*-prices`, `cartorios`, rota `/api/cartorios` e formulário de certidão.
 
 ## Quando NÃO usar
 
@@ -25,10 +25,11 @@ Snapshot já gravado no pedido — `order-access` / `payment-integrity` (não re
 - Se o banco tem produtos suficientes (`>= MVP_CERTIFICATES.length`), source `database`.
 - Senão ou se a query falha: fallback `MVP_CERTIFICATES` em `src/lib/catalog.ts` + preços estáticos UF.
 
-**Em construção:**
+**Estado da busca de cartórios:**
 
-- `src/lib/notary-offices.ts`, `src/app/api/notary-offices/route.ts`, páginas/cartórios: busca híbrida (Prisma `Cartorio` count vs catálogo estático `listOfficialServentias`).
-- `src/services/locations.ts`, rotas IBGE/CEP/CNPJ: apoio a formulário, não ACL.
+- A implementação vigente está em `src/lib/cartorios.ts` e `src/app/api/cartorios/route.ts`.
+- Não existem atualmente `src/lib/notary-offices.ts`, `src/app/api/notary-offices/route.ts` ou `src/services/locations.ts`; referências a esses caminhos são legado documental e não devem ser seguidas.
+- As rotas `src/app/api/locations/*`, `src/app/api/cep/*` e `src/app/api/cnpj/*` apoiam o formulário e não são ACL.
 
 **Não oficial:**
 
@@ -54,9 +55,6 @@ Nova certidão: model `Product` + fields/prices (migration/seed oficial) → `pr
 `src/lib/crc-form-fields.ts`
 `src/lib/field-visibility.ts`
 `src/lib/cartorios.ts`
-`src/lib/notary-offices.ts`
-`src/app/api/products/route.ts`
-`src/app/api/notary-offices/route.ts`
 `src/app/api/cartorios/route.ts`
 
 ## Não faça
@@ -72,4 +70,5 @@ Nova certidão: model `Product` + fields/prices (migration/seed oficial) → `pr
 
 ## Validação
 
-`GET /api/products` devolve `source`. Checkout de slug inexistente falha no `buildStoredOrder`.
+`product-store` expõe `source` internamente para distinguir banco de fallback. Não existe hoje a rota `/api/products`.
+Checkout de slug inexistente falha no `buildStoredOrder`.

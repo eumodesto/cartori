@@ -26,7 +26,8 @@ export function PartnerPlanDialog({
   onClose: () => void;
   onSuccess?: () => void;
 }) {
-  const { refresh } = useAuth();
+  const { profile, refresh } = useAuth();
+  const staffAccount = Boolean(profile) && profile?.role !== "CLIENT";
   const [cnpj, setCnpj] = React.useState("");
   const [company, setCompany] = React.useState<CnpjCompany | null>(null);
   const [oabNumber, setOabNumber] = React.useState("");
@@ -104,21 +105,44 @@ export function PartnerPlanDialog({
     }
   };
 
+  const header = (
+    <DialogHeader onClose={onClose}>
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-brand-950 text-neutral-0 flex items-center justify-center">
+          <Building2 className="w-4 h-4" />
+        </div>
+        <div>
+          <DialogTitle>Cadastrar empresa</DialogTitle>
+          <DialogDescription>
+            Informe um CNPJ ativo na Receita Federal para liberar os recursos empresariais da conta.
+          </DialogDescription>
+        </div>
+      </div>
+    </DialogHeader>
+  );
+
+  if (staffAccount) {
+    return (
+      <Dialog isOpen={isOpen} onClose={onClose} size="md">
+        {header}
+        <DialogContent>
+          <Alert variant="info" title="Conta da equipe Cartori">
+            Contas de operação e administração não podem ter empresa vinculada. Para usar o fluxo
+            empresarial, entre com uma conta de cliente.
+          </Alert>
+        </DialogContent>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Fechar
+          </Button>
+        </DialogFooter>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog isOpen={isOpen} onClose={onClose} size="md">
-      <DialogHeader onClose={onClose}>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-950 text-neutral-0 flex items-center justify-center">
-            <Building2 className="w-4 h-4" />
-          </div>
-          <div>
-            <DialogTitle>Cadastrar empresa</DialogTitle>
-            <DialogDescription>
-              Informe um CNPJ ativo na Receita Federal para liberar os recursos empresariais da conta.
-            </DialogDescription>
-          </div>
-        </div>
-      </DialogHeader>
+      {header}
       <DialogContent className="space-y-4">
         <Input
           label="CNPJ"

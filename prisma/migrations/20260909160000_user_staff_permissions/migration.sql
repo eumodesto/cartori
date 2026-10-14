@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "staffPermissions" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

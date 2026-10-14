@@ -15,6 +15,7 @@ import {
   StoredOrderItem,
   StoredOrderStatus,
   StoredPayment,
+  StoredPaymentMethod,
   StoredPaymentStatus,
 } from "@/lib/order-types";
 
@@ -30,16 +31,53 @@ function toStoredStatus(status: OrderStatus): StoredOrderStatus {
   return status;
 }
 
-function toStoredPaymentStatus(status: PaymentStatus): StoredPaymentStatus {
-  if (
-    status === "PENDING" ||
-    status === "APPROVED" ||
-    status === "REJECTED" ||
-    status === "CANCELLED"
-  ) {
-    return status;
-  }
-  return "PENDING";
+/** Mapas exaustivos: um valor novo no enum do Prisma quebra a compilação aqui. */
+const STORED_PAYMENT_STATUS: Record<PaymentStatus, StoredPaymentStatus> = {
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  IN_PROCESS: "IN_PROCESS",
+  REJECTED: "REJECTED",
+  CANCELLED: "CANCELLED",
+  REFUNDED: "REFUNDED",
+};
+
+const PRISMA_PAYMENT_STATUS: Record<StoredPaymentStatus, PaymentStatus> = {
+  PENDING: PaymentStatus.PENDING,
+  APPROVED: PaymentStatus.APPROVED,
+  IN_PROCESS: PaymentStatus.IN_PROCESS,
+  REJECTED: PaymentStatus.REJECTED,
+  CANCELLED: PaymentStatus.CANCELLED,
+  REFUNDED: PaymentStatus.REFUNDED,
+};
+
+const STORED_PAYMENT_METHOD: Record<PaymentMethod, StoredPaymentMethod> = {
+  PIX: "PIX",
+  CREDIT_CARD: "CREDIT_CARD",
+  BOLETO: "BOLETO",
+  B2B_INVOICE: "B2B_INVOICE",
+};
+
+const PRISMA_PAYMENT_METHOD: Record<StoredPaymentMethod, PaymentMethod> = {
+  PIX: PaymentMethod.PIX,
+  CREDIT_CARD: PaymentMethod.CREDIT_CARD,
+  BOLETO: PaymentMethod.BOLETO,
+  B2B_INVOICE: PaymentMethod.B2B_INVOICE,
+};
+
+export function toStoredPaymentStatus(status: PaymentStatus): StoredPaymentStatus {
+  return STORED_PAYMENT_STATUS[status];
+}
+
+export function toPrismaPaymentStatus(status: StoredPaymentStatus): PaymentStatus {
+  return PRISMA_PAYMENT_STATUS[status];
+}
+
+export function toStoredPaymentMethod(method: PaymentMethod): StoredPaymentMethod {
+  return STORED_PAYMENT_METHOD[method];
+}
+
+export function toPrismaPaymentMethod(method: StoredPaymentMethod): PaymentMethod {
+  return PRISMA_PAYMENT_METHOD[method];
 }
 
 function latestPayment(payments: Payment[]): Payment | null {
@@ -62,8 +100,7 @@ function toStoredPayment(payment: Payment | null): StoredPayment | null {
     id: payment.id,
     provider: "MERCADOPAGO",
     providerPaymentId: payment.providerPaymentId || undefined,
-    paymentMethod:
-      payment.paymentMethod === "CREDIT_CARD" ? "CREDIT_CARD" : "PIX",
+    paymentMethod: toStoredPaymentMethod(payment.paymentMethod),
     status: toStoredPaymentStatus(payment.status),
     amount: money(payment.amount),
     qrCode: payment.qrCode || undefined,
@@ -287,11 +324,8 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
       const paymentData = {
         provider: "MERCADOPAGO",
         providerPaymentId: order.payment.providerPaymentId,
-        paymentMethod:
-          order.payment.paymentMethod === "CREDIT_CARD"
-            ? PaymentMethod.CREDIT_CARD
-            : PaymentMethod.PIX,
-        status: order.payment.status as PaymentStatus,
+        paymentMethod: toPrismaPaymentMethod(order.payment.paymentMethod),
+        status: toPrismaPaymentStatus(order.payment.status),
         amount: order.payment.amount,
         qrCode: order.payment.qrCode,
         qrCodeBase64: order.payment.qrCodeBase64,

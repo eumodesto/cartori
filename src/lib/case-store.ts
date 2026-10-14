@@ -5,6 +5,7 @@ import {
   OrderStatus,
   Prisma,
 } from "@prisma/client";
+import { canStaffTransitionOrderStatus } from "@/lib/authorization-policy";
 import { prisma } from "@/lib/prisma";
 import type { PublicOrderCase } from "@/lib/case-types";
 
@@ -161,9 +162,19 @@ export async function updateOrderOperationalStatus(input: {
 }) {
   const current = await prisma.order.findUnique({
     where: { id: input.orderId },
-    select: { status: true },
+    select: {
+      status: true,
+      payments: { select: { status: true } },
+    },
   });
-  if (!current) return null;
+  if (!current) return { ok: false as const, reason: "missing" as const };
+
+  const hasApprovedPayment = current.payments.some((payment) => payment.status === "APPROVED");
+  if (
+    !canStaffTransitionOrderStatus(current.status, input.nextStatus, { hasApprovedPayment })
+  ) {
+    return { ok: false as const, reason: "transition" as const };
+  }
 
   const order = await prisma.$transaction(async (tx) => {
     const updated = await tx.order.update({
@@ -196,5 +207,5 @@ export async function updateOrderOperationalStatus(input: {
     return updated;
   });
 
-  return { previous: current.status, order };
+  return { ok: true as const, previous: current.status, order };
 }

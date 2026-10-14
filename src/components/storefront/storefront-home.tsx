@@ -8,7 +8,6 @@ import {
   Download,
   Users,
 } from "lucide-react";
-import { AmandaHeroSlot, useAmandaChatDock } from "@/components/cartori/ai-chat-widget";
 import { WhisperText } from "@/components/ui/whisper-text";
 import { GetStartedButton } from "@/components/ui/get-started-button";
 import { Testimonials } from "@/components/ui/testimonials-columns";
@@ -21,7 +20,6 @@ export function StorefrontHome({
 }: {
   initialCertificateSlug?: string;
 }) {
-  const { registerProductHandler } = useAmandaChatDock();
   const { open: openBusinessSignup } = useBusinessSignup();
   const [addedNotice, setAddedNotice] = useState("");
 
@@ -60,9 +58,7 @@ export function StorefrontHome({
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Hero Text */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+          <div className="max-w-3xl space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-semibold text-amber-300">
                 <Building2 className="w-3.5 h-3.5" />
                 <span>Plataforma para Advocacias e imobiliárias</span>
@@ -101,12 +97,6 @@ export function StorefrontHome({
                   <span>Prazo Agilizado</span>
                 </div>
               </div>
-            </div>
-
-            {/* Amanda — Agente Cartori */}
-            <div className="lg:col-span-5">
-              <AmandaHeroSlot className="w-full h-[420px] sm:h-[460px] rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md shadow-2xl overflow-hidden" />
-            </div>
           </div>
         </div>
       </section>
@@ -118,7 +108,6 @@ export function StorefrontHome({
             deepLink
             scrollTargetId="certidoes"
             initialCertificateSlug={initialCertificateSlug}
-            registerOpenHandler={registerProductHandler}
             onAdded={(items) => {
               setAddedNotice(
                 items.length === 1
@@ -139,7 +128,7 @@ export function StorefrontHome({
             </span>
             <h2 className="text-3xl font-extrabold text-slate-900 font-serif">Perguntas frequentes</h2>
             <p className="text-sm text-slate-600">
-              O essencial para pedir, pagar e acompanhar a certidão. Precisa de mais detalhes? Fale com a Amanda ou abra{" "}
+              O essencial para pedir, pagar e acompanhar a certidão. Depois do primeiro pedido, a Amanda responde no painel. Dúvidas de atendimento, abra{" "}
               <a href="/suporte" className="font-semibold text-primary-700 underline underline-offset-2">
                 Suporte
               </a>

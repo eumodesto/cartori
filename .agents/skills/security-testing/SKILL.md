@@ -7,7 +7,7 @@ description: Define como validar regressões de identidade, autorização e tena
 
 ## Objetivo
 
-Provar que a invariante de segurança ainda vale. O Cartori não tem suíte Vitest no `package.json`; a regressão de authz está nos scripts `scripts/etapa*`.
+Provar que a invariante de segurança ainda vale. O Cartori tem suíte Vitest no `package.json`; a regressão de authz crítica continua também coberta pelos scripts `scripts/etapa*`.
 
 ## Quando usar
 
@@ -19,7 +19,7 @@ Docs-only / Skills. Helper de UI sem auth. Catálogo estático sem ACL.
 
 ## Estado atual
 
-Não há `"test"` no `package.json`. Checks existentes:
+Checks existentes:
 
 | Script | Papel |
 |---|---|
@@ -34,7 +34,7 @@ Não há `"test"` no `package.json`. Checks existentes:
 | `scripts/etapa6-db-counts.ts` | Contagens 6B/6C |
 | `scripts/inspect-supabase-rls.ts` | Grants + RLS deny-all (Data API fechada) |
 
-Typecheck/lint/build: `npx tsc --noEmit` (se tsconfig permitir), `npm run lint`, `npm run build`. Não há script `typecheck` nomeado.
+Typecheck/lint/build: `npm run typecheck`, `npm run lint`, `npm run build`.
 
 ## Invariantes
 
@@ -55,8 +55,8 @@ Typecheck/lint/build: `npx tsc --noEmit` (se tsconfig permitir), `npm run lint`,
 
 ## Gaps reais
 
-- Sem runner `npm test`. Scripts são manuais (`npx tsx scripts/...` conforme o ambiente).
-- Cobertura HTTP depende de env (Supabase, DB) — policy pura roda sem HTTP.
+- A suíte `npm test` cobre políticas e regras puras; os scripts `scripts/etapa*` continuam sendo checks manuais de integração.
+- Cobertura HTTP depende de env (Supabase, DB) — policy pura e Vitest unitário rodam sem HTTP.
 
 ## Validação
 

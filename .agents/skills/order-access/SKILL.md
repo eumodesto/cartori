@@ -42,7 +42,7 @@ Leitura:
 - Ownership B2C = `order.userId === context.userId`.
 - Pedido alheio na rota de cliente → 404 (`order_not_owned`).
 - ADMIN/OPERATOR **não** usam `GET /api/orders/[id]` para pedido alheio. Mesa: `canOperateCases` + `/api/ops/orders`.
-- Staff **não** marca `PAID` / `PENDING_PAYMENT` (pagamento continua server-authoritative).
+- Staff **não** marca `PAID` / `PENDING_PAYMENT`. A troca operacional segue `canStaffTransitionOrderStatus`: pedido sem pagamento aprovado não entra em análise, emissão ou conclusão.
 
 ## Fluxo correto
 

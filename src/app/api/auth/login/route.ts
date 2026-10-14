@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
-import { confirmAuthEmail, findAuthUserByEmail } from "@/lib/supabase/admin";
+import { completePendingCompany } from "@/lib/pending-company";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createRouteSupabase } from "@/lib/supabase/route";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { isValidEmail } from "@/lib/validators";
 
 function isUnconfirmedLogin(error: { message?: string; code?: string } | null) {
@@ -12,6 +13,14 @@ function isUnconfirmedLogin(error: { message?: string; code?: string } | null) {
 }
 
 export async function POST(req: NextRequest) {
+  const limit = rateLimit(`login:${clientIp(req)}`, 8, 15 * 60 * 1000);
+  if (!limit.ok) {
+    return Response.json(
+      { success: false, error: "Muitas tentativas de entrada. Espere alguns minutos." },
+      { status: 429 }
+    );
+  }
+
   if (!isSupabaseConfigured()) {
     return Response.json(
       { success: false, error: "Configure as chaves do Supabase para entrar." },
@@ -31,16 +40,17 @@ export async function POST(req: NextRequest) {
   }
 
   const { supabase, json } = createRouteSupabase();
-  let { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if ((!data.user || error) && isUnconfirmedLogin(error)) {
-    const existing = await findAuthUserByEmail(email);
-    if (existing?.id) {
-      await confirmAuthEmail(existing.id);
-      const retry = await supabase.auth.signInWithPassword({ email, password });
-      data = retry.data;
-      error = retry.error;
-    }
+  if (isUnconfirmedLogin(error)) {
+    return json(
+      {
+        success: false,
+        needsConfirmation: true,
+        message: "Confirme o e-mail antes de entrar. O link está na sua caixa de entrada.",
+      },
+      { status: 403 }
+    );
   }
 
   if (error || !data.user) {
@@ -55,6 +65,7 @@ export async function POST(req: NextRequest) {
         ? data.user.user_metadata.name
         : undefined,
     });
+    await completePendingCompany(supabase, data.user);
     return json({ success: true, profile });
   } catch (syncError) {
     if (syncError instanceof IdentityConflictError) {

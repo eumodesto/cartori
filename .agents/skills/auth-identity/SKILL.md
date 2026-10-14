@@ -22,7 +22,9 @@ Pedido e pagamento — skills `order-access` e `payment-integrity`.
 
 - Sessão: `createServerSupabase()` + `supabase.auth.getUser()`.
 - Perfil: `getAuthProfile()` lê `User` por `authId` e anexa a **primeira** membership ACTIVE (ordenada por `createdAt`).
-- Signup: cria Auth user (service role quando necessário) e Prisma `User` com `role: CLIENT`.
+- Signup: `signUp` do Supabase envia o link de confirmação. Prisma `User` nasce no callback (ou na hora, se o projeto Auth já devolve sessão confirmada). Login não confirma e-mail sozinho.
+- Signup exige nome completo, `confirmPassword` igual e `acceptedTerms: true` (grava `terms_version`/`terms_accepted_at` no user_metadata).
+- Signup empresa (`accountType: "company"`): CNPJ ativo na Receita, livre no banco, OAB ou CRECI (UF + número) e telefone. A empresa vai para `user_metadata.pending_company`; `completePendingCompany` (callback, login e signup confirmado) roda o mesmo `onboardBusiness` de `POST /api/org` e limpa a chave. user_metadata é editável pelo usuário: serve só de entrada, nunca de privilégio.
 - `syncAuthUser` liga/atualiza o Prisma user; 409 `IdentityConflictError` se CPF/e-mail já pertencem a outra conta.
 - Pedidos órfãos (`userId` null, mesmo e-mail) podem ser ligados no create — não é takeover por CPF.
 

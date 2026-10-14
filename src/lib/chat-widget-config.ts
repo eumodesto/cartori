@@ -4,8 +4,8 @@ export type ChatWidgetPhase = "closed" | "opening" | "open" | "closing";
 
 export const chatWidgetConfig = {
   enabled: true,
-  includedRoutes: [] as string[],
-  /** Mesa operacional, administração e telas de design — não o painel do cliente. */
+  /** Só a área do cliente. A compra em si é conferida na API. */
+  includedRoutes: ["/painel"],
   excludedRoutes: ["/operacao", "/admin", "/design-system"],
 };
 
@@ -25,6 +25,7 @@ export function isChatWidgetEnabled(
 
   if (excludedRoutes.some(matches)) return false;
   if (isStaffChatAudience(context?.platformRole)) return false;
+  if (!context?.platformRole || context.platformRole !== "CLIENT") return false;
   if (
     context?.authLoading &&
     (pathname.startsWith("/painel") ||

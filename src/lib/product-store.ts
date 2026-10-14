@@ -162,6 +162,7 @@ export async function listProducts(): Promise<CertificateTypeConfig[]> {
 
 export async function listProductsWithSource(): Promise<{
   source: "database" | "fallback";
+  fallbackReason?: "database-incomplete" | "database-unavailable";
   products: CertificateTypeConfig[];
 }> {
   try {
@@ -173,13 +174,23 @@ export async function listProductsWithSource(): Promise<{
     if (rows.length >= MVP_CERTIFICATES.length) {
       return { source: "database", products: rows.map(toCertificateConfig) };
     }
+    console.warn("Catálogo Product incompleto; usando fallback estático.", {
+      expectedMinimum: MVP_CERTIFICATES.length,
+      activeRows: rows.length,
+    });
+    return {
+      source: "fallback",
+      fallbackReason: "database-incomplete",
+      products: MVP_CERTIFICATES.map(attachStaticPrices),
+    };
   } catch (error) {
     console.error("Falha ao ler Product no banco:", error);
+    return {
+      source: "fallback",
+      fallbackReason: "database-unavailable",
+      products: MVP_CERTIFICATES.map(attachStaticPrices),
+    };
   }
-  return {
-    source: "fallback",
-    products: MVP_CERTIFICATES.map(attachStaticPrices),
-  };
 }
 
 export async function getProductBySlug(

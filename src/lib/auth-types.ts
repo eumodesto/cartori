@@ -31,6 +31,14 @@ export function isBusinessAccount(profile: AuthProfile | null | undefined) {
 }
 
 /**
+ * Espelho de UI de `canOnboardBusiness`: só CLIENT sem empresa cadastra CNPJ.
+ * Equipe Cartori (OPERATOR/ADMIN) recebe 403 em POST /api/org.
+ */
+export function canRegisterCompany(profile: AuthProfile | null | undefined) {
+  return profile?.role === "CLIENT" && !profile.organization;
+}
+
+/**
  * Condição comercial Partner.
  * Independente de papel de plataforma. Activation policy: TBD.
  */

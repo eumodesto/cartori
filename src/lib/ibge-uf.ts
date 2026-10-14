@@ -29,6 +29,8 @@ export const IBGE_UF_BY_CODE: Record<string, string> = {
   "53": "DF",
 };
 
+export const BRAZIL_UFS: string[] = Object.values(IBGE_UF_BY_CODE).sort();
+
 export function ibgeCodeToUf(code: string): string | undefined {
   return IBGE_UF_BY_CODE[String(code)];
 }

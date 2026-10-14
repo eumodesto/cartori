@@ -87,13 +87,33 @@ model User {
   avatarUrl      String?
   /// Preferências de notificação por e-mail (JSON de booleans por categoria).
   notificationPrefs Json?
+  /// Legado (20260909160000): existe no banco, sem uso no código atual.
+  staffPermissions String[]     @default([])
   organizationMemberships OrganizationMember[]
   orders         Order[]
   dossiers       Dossier[]
   caseMessages   CaseMessage[]     @relation("CaseMessageAuthor")
   caseAttachments CaseAttachment[] @relation("CaseAttachmentUploader")
+  platformAuditLogs PlatformAuditLog[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+}
+
+/// Legado (20260906180000): auditoria da administração da plataforma, sem uso no código atual.
+/// Não remover sem revisar os dados: a FK impede apagar usuários com registros.
+model PlatformAuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String
+  actor       User     @relation(fields: [actorUserId], references: [id])
+  action      String
+  targetType  String
+  targetId    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([actorUserId, createdAt])
+  @@index([action, createdAt])
+  @@index([targetType, targetId])
 }
 
 model Organization {
@@ -115,6 +135,7 @@ model Organization {
   cep             String?
   memberships     OrganizationMember[]
   orders          Order[]
+  sellerOrders    Order[]           @relation("SellerOrders")
   dossiers        Dossier[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -152,6 +173,7 @@ model Order {
   channel        OrderChannel   @default(CARTORI)
   kind           OrderKind      @default(OWN)
   sellerOrgId    String?
+  sellerOrg      Organization?  @relation("SellerOrders", fields: [sellerOrgId], references: [id], onDelete: SetNull)
 
   // Referência interna para B2B (ex: Número de processo judicial, código do imóvel, nome do cliente)
   internalReference String?
@@ -193,6 +215,8 @@ model Order {
   @@index([status])
   @@index([customerEmail])
   @@index([channel, createdAt])
+  @@index([userId])
+  @@index([organizationId])
 }
 
 model OrderItem {

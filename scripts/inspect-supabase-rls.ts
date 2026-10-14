@@ -53,6 +53,12 @@ const PRISMA_PUBLIC_TABLES = [
   "Dossier",
   "DossierSubject",
   "SubjectIdentifier",
+  "CaseMessage",
+  "CaseAttachment",
+  "CaseEvent",
+  "EmailOutbox",
+  "EmailTemplate",
+  "AppSetting",
   "_prisma_migrations",
 ] as const;
 

@@ -19,6 +19,33 @@ export async function createCaseUploadUrl(storagePath: string) {
   return { signedUrl: data.signedUrl, token: data.token, path: data.path };
 }
 
+export async function statCaseObject(storagePath: string) {
+  const parts = storagePath.split("/").filter(Boolean);
+  const name = parts.pop();
+  if (!name || parts.length === 0) return null;
+  const { data, error } = await storageClient().list(parts.join("/"), {
+    limit: 20,
+    search: name,
+  });
+  if (error || !data) return null;
+  const file = data.find((item) => item.name === name);
+  if (!file) return null;
+  const metadata = (file.metadata || {}) as {
+    size?: number;
+    contentLength?: number;
+    mimetype?: string;
+  };
+  const size = Number(metadata.size ?? metadata.contentLength);
+  return {
+    size: Number.isFinite(size) ? size : 0,
+    mimeType: typeof metadata.mimetype === "string" ? metadata.mimetype.toLowerCase() : "",
+  };
+}
+
+export async function removeCaseObject(storagePath: string) {
+  await storageClient().remove([storagePath]);
+}
+
 export async function createCaseDownloadUrl(storagePath: string, expiresIn = 60) {
   const { data, error } = await storageClient().createSignedUrl(storagePath, expiresIn);
   if (error || !data?.signedUrl) {

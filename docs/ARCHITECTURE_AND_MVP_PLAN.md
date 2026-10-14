@@ -50,24 +50,24 @@ Este documento define a arquitetura técnica, modelo de dados, integrações de 
 ### 1. 📍 API do IBGE (Estados e Municípios)
 * **Endpoint Estados:** `https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome`
 * **Endpoint Municípios:** `https://servicodados.ibge.gov.br/api/v1/localidades/estados/{UF}/municipios?orderBy=nome`
-* **Implementação Local:** [`src/lib/ibge.ts`](file:///I:/Modesto%20Pessoal/cartori/src/lib/ibge.ts) com cache em memória e revalidação de 24h.
+* **Implementação Local:** [`src/lib/ibge.ts`](../src/lib/ibge.ts) com cache em memória e revalidação de 24h.
 * **Rotas de API:**
   * `GET /api/locations/states`
   * `GET /api/locations/cities?uf=SP`
 
 ### 2. 🏢 Base de Cartórios e Serventias (CNJ / Justiça Aberta)
 * Identifica os cartórios da comarca conforme o tipo de certidão (Registro Civil, Imóveis, Notas, Protesto).
-* **Implementação Local:** [`src/lib/cartorios.ts`](file:///I:/Modesto%20Pessoal/cartori/src/lib/cartorios.ts).
+* **Implementação Local:** [`src/lib/cartorios.ts`](../src/lib/cartorios.ts).
 * **Rota de API:** `GET /api/cartorios?uf=SP&city=Campinas&category=registro-civil`
 * Suporta a opção *"Não sei o cartório / Solicitar busca especializada"*.
 
 ### 3. 📬 API ViaCEP (Endereço & Frete)
 * Consulta instantânea de CEP para pedidos com envio de certidões físicas via Correios/Sedex.
-* **Implementação Local:** [`src/lib/viacep.ts`](file:///I:/Modesto%20Pessoal/cartori/src/lib/viacep.ts).
+* **Implementação Local:** [`src/lib/viacep.ts`](../src/lib/viacep.ts).
 * **Rota de API:** `GET /api/cep/01001000`
 
 ### 4. 💳 Mercado Pago (Gateway de Pagamentos)
-* **Implementação Local:** [`src/lib/mercadopago.ts`](file:///I:/Modesto%20Pessoal/cartori/src/lib/mercadopago.ts).
+* **Implementação Local:** [`src/lib/mercadopago.ts`](../src/lib/mercadopago.ts).
 * **Rotas de API:**
   * `POST /api/payments/mercadopago` -> Cria cobrança PIX com QR Code Base64 e Copia e Cola.
   * `POST /api/payments/webhook` -> Recebe notificação em tempo real de aprovação de pagamento.
@@ -90,13 +90,14 @@ Este documento define a arquitetura técnica, modelo de dados, integrações de 
 
 ## 5. 🗄️ Modelo de Dados (Prisma Schema)
 
-O schema está implementado em [`prisma/schema.prisma`](file:///I:/Modesto%20Pessoal/cartori/prisma/schema.prisma):
+O schema vigente está em `prisma/schema.prisma`. A identidade é `User.authId` (Supabase). Empresa é `OrganizationMember` ACTIVE — não existe `User.organizationId`. Pedido B2C pertence a `Order.userId`. `Order.organizationId` é contexto, não lista da empresa.
 
 ```mermaid
 erDiagram
-    ORGANIZATION ||--o{ USER : "possui membros"
-    ORGANIZATION ||--o{ ORDER : "solicita pedidos B2B"
-    USER ||--o{ ORDER : "realiza pedidos"
+    ORGANIZATION ||--o{ ORGANIZATION_MEMBER : "membros ACTIVE"
+    USER ||--o{ ORGANIZATION_MEMBER : "papel na empresa"
+    ORGANIZATION ||--o{ ORDER : "contexto do pedido"
+    USER ||--o{ ORDER : "dono do pedido"
     ORDER ||--|{ ORDER_ITEM : "contém múltiplos itens"
     ORDER ||--o{ PAYMENT : "possui transações"
 
@@ -151,6 +152,6 @@ erDiagram
 - [x] **Fase 1: Setup da Base & Limpeza do Repositório** (Porta 3006, Next.js 14, TypeScript, TailwindCSS).
 - [x] **Fase 2: Serviços & Integrações de APIs** (IBGE Estados/Cidades, Cartórios, ViaCEP, Mercado Pago SDK).
 - [x] **Fase 3: Documento de Arquitetura & Plano Diretor** (`docs/ARCHITECTURE_AND_MVP_PLAN.md`).
-- [ ] **Fase 4: Motor de Checkout Dinâmico Multi-Itens** (Formulários reativos por certidão, carrinho persistente, seletor de adicionais e frete).
-- [ ] **Fase 5: Autenticação & Painel B2B do Advogado/Imobiliária** (Gestão de pedidos por processo, histórico e download de e-certidões).
-- [ ] **Fase 6: Gateway Mercado Pago em Produção & Testes E2E**.
+- [x] **Fase 4: Motor de Checkout Dinâmico Multi-Itens** (catálogo, carrinho e pedido autenticado com preço no servidor).
+- [x] **Fase 5: Autenticação, painel do cliente, mesa operacional e dossiês** (Supabase Auth + Prisma; Amanda só no painel depois do primeiro pedido).
+- [ ] **Fase 6: Mercado Pago em produção** (webhook, estorno e trava de PIX entre instâncias — fora da fila atual).

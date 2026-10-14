@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthProfile } from "@/lib/auth";
 import { requireAuth, requireBusinessOnboarding } from "@/lib/authorization";
-import { lookupCnpj } from "@/lib/cnpj";
+import { lookupCnpj, type CnpjCompany } from "@/lib/cnpj";
 import {
   MembershipInconsistentError,
   MembershipRemovedError,
@@ -25,6 +25,8 @@ import { isValidCnpj } from "@/lib/validators";
  * This flow never grants PARTNER. TBD — PARTNER ACTIVATION POLICY
  */
 export { planAfterBusinessOnboarding } from "@/lib/org-plan";
+
+const CNPJ_TAKEN = "Este CNPJ já está cadastrado em outra conta Cartori.";
 
 export async function postBusinessOnboarding(req: NextRequest) {
   const auth = await requireAuth();
@@ -50,51 +52,70 @@ export async function postBusinessOnboarding(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const cnpj = digitsOnly(String((body as { cnpj?: unknown }).cnpj || ""));
-  const oabNumber = String((body as { oabNumber?: unknown }).oabNumber || "").trim() || null;
-  const creciNumber =
-    String((body as { creciNumber?: unknown }).creciNumber || "").trim() || null;
+  const result = await onboardBusiness({
+    userId: auth.context.userId,
+    currentOrganizationId: auth.context.organizationId,
+    cnpj: String((body as { cnpj?: unknown }).cnpj || ""),
+    oabNumber: String((body as { oabNumber?: unknown }).oabNumber || "").trim() || null,
+    creciNumber: String((body as { creciNumber?: unknown }).creciNumber || "").trim() || null,
+    fallbackPhone: profile.phone,
+    fallbackEmail: profile.email,
+  });
+  if (!result.ok) {
+    return NextResponse.json({ success: false, error: result.error }, { status: result.status });
+  }
 
+  const updated = await getAuthProfile();
+  return NextResponse.json({ success: true, profile: updated, company: result.company });
+}
+
+export type BusinessOnboardingResult =
+  | { ok: true; company: CnpjCompany }
+  | { ok: false; status: number; error: string };
+
+/**
+ * Creates/updates the Organization and the OWNER ACTIVE membership.
+ * Callers must already have checked canOnboardBusiness for this user.
+ */
+export async function onboardBusiness(input: {
+  userId: string;
+  currentOrganizationId: string | null;
+  cnpj: string;
+  oabNumber: string | null;
+  creciNumber: string | null;
+  fallbackPhone?: string | null;
+  fallbackEmail: string;
+}): Promise<BusinessOnboardingResult> {
+  const cnpj = digitsOnly(input.cnpj);
   if (!isValidCnpj(cnpj)) {
-    return NextResponse.json({ success: false, error: "CNPJ inválido." }, { status: 400 });
+    return { ok: false, status: 400, error: "CNPJ inválido." };
   }
 
   const existing = await prisma.organization.findUnique({ where: { cnpj } });
-  if (existing && existing.id !== auth.context.organizationId) {
-    return NextResponse.json(
-      { success: false, error: "Este CNPJ já está cadastrado em outra conta Cartori." },
-      { status: 409 }
-    );
+  if (existing && existing.id !== input.currentOrganizationId) {
+    return { ok: false, status: 409, error: CNPJ_TAKEN };
   }
 
-  const activeMemberships = await getActiveOrganizationMemberships(auth.context.userId);
+  const activeMemberships = await getActiveOrganizationMemberships(input.userId);
   if (
     wouldViolateSingleOrg(
       activeMemberships.map((row) => row.organizationId),
       existing?.id ?? null
     )
   ) {
-    return NextResponse.json(
-      { success: false, error: "Esta conta já está vinculada a outra empresa." },
-      { status: 409 }
-    );
+    return { ok: false, status: 409, error: "Esta conta já está vinculada a outra empresa." };
   }
 
   const company = await lookupCnpj(cnpj);
   if (!company) {
-    return NextResponse.json(
-      { success: false, error: "Não encontramos esse CNPJ na Receita Federal." },
-      { status: 404 }
-    );
+    return { ok: false, status: 404, error: "Não encontramos esse CNPJ na Receita Federal." };
   }
   if (!company.active) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: `CNPJ com situação "${company.status}". Só empresas ativas podem ser cadastradas.`,
-      },
-      { status: 400 }
-    );
+    return {
+      ok: false,
+      status: 400,
+      error: `CNPJ com situação "${company.status}". Só empresas ativas podem ser cadastradas.`,
+    };
   }
 
   const plan = planAfterBusinessOnboarding(existing?.plan);
@@ -105,45 +126,35 @@ export async function postBusinessOnboarding(req: NextRequest) {
     cnpjVerifiedAt: new Date(),
     cnpjStatus: company.status,
     legalNature: company.legalNature,
-    phone: company.phone || profile.phone || "nao-informado",
-    email: company.email || profile.email,
+    phone: company.phone || input.fallbackPhone || "nao-informado",
+    email: company.email || input.fallbackEmail,
     address: company.address,
     city: company.city,
     state: company.state,
     cep: company.cep,
-    oabNumber,
-    creciNumber,
+    oabNumber: input.oabNumber,
+    creciNumber: input.creciNumber,
   };
 
   try {
     await persistCreatorOnboarding({
-      userId: auth.context.userId,
+      userId: input.userId,
       cnpj,
       existingOrganizationId: existing?.id ?? null,
       companyData,
     });
   } catch (error) {
     if (error instanceof MembershipRemovedError) {
-      return NextResponse.json(
-        { success: false, error: "Esta empresa não pode ser reativada neste fluxo." },
-        { status: 409 }
-      );
+      return { ok: false, status: 409, error: "Esta empresa não pode ser reativada neste fluxo." };
     }
     if (error instanceof MembershipInconsistentError) {
-      return NextResponse.json(
-        { success: false, error: "Não foi possível vincular a empresa a esta conta." },
-        { status: 409 }
-      );
+      return { ok: false, status: 409, error: "Não foi possível vincular a empresa a esta conta." };
     }
     if (error instanceof OrganizationCnpjTakenError) {
-      return NextResponse.json(
-        { success: false, error: "Este CNPJ já está cadastrado em outra conta Cartori." },
-        { status: 409 }
-      );
+      return { ok: false, status: 409, error: CNPJ_TAKEN };
     }
     throw error;
   }
 
-  const updated = await getAuthProfile();
-  return NextResponse.json({ success: true, profile: updated, company });
+  return { ok: true, company };
 }

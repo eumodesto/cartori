@@ -145,6 +145,8 @@ export interface CartorioInfo {
   attribution: string;
   state: string;
   city: string;
+  /** Origem operacional do registro; placeholders nunca são serventias persistidas. */
+  source?: "database" | "official-catalog" | "placeholder";
   address?: string;
   phone?: string;
   email?: string;

@@ -159,6 +159,52 @@ export function canStaffSetOrderStatus(status: string): status is StaffSettableO
   return (STAFF_SETTABLE_ORDER_STATUSES as readonly string[]).includes(status);
 }
 
+const POST_PAYMENT_STATUSES = new Set([
+  "PAID",
+  "IN_ANALYSIS",
+  "IN_CARTORIO_SEARCH",
+  "CERTIFICATE_ISSUED",
+  "SHIPPED",
+  "COMPLETED",
+]);
+
+/** Próximos status que a mesa pode gravar. Pagamento não entra aqui. */
+const STAFF_STATUS_TRANSITIONS: Record<string, readonly StaffSettableOrderStatus[]> = {
+  DRAFT: ["WAITING_CUSTOMER", "CANCELLED"],
+  PENDING_PAYMENT: ["WAITING_CUSTOMER", "CANCELLED"],
+  PAID: ["IN_ANALYSIS", "WAITING_CUSTOMER", "CANCELLED"],
+  IN_ANALYSIS: ["IN_CARTORIO_SEARCH", "CERTIFICATE_ISSUED", "WAITING_CUSTOMER", "CANCELLED"],
+  IN_CARTORIO_SEARCH: ["CERTIFICATE_ISSUED", "WAITING_CUSTOMER", "CANCELLED"],
+  WAITING_CUSTOMER: ["IN_ANALYSIS", "IN_CARTORIO_SEARCH", "CANCELLED"],
+  CERTIFICATE_ISSUED: ["SHIPPED", "COMPLETED", "CANCELLED"],
+  SHIPPED: ["COMPLETED", "CANCELLED"],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+export function canStaffTransitionOrderStatus(
+  from: string,
+  to: string,
+  options?: { hasApprovedPayment?: boolean }
+): to is StaffSettableOrderStatus {
+  if (!canStaffSetOrderStatus(to)) return false;
+  const allowed = STAFF_STATUS_TRANSITIONS[from];
+  if (!allowed?.includes(to)) return false;
+  const settled = Boolean(options?.hasApprovedPayment) || POST_PAYMENT_STATUSES.has(from);
+  const fulfillment = to !== "WAITING_CUSTOMER" && to !== "CANCELLED";
+  if (!settled && fulfillment) return false;
+  return true;
+}
+
+export function staffTransitionTargets(
+  from: string,
+  options?: { hasApprovedPayment?: boolean }
+) {
+  return STAFF_SETTABLE_ORDER_STATUSES.filter((status) =>
+    canStaffTransitionOrderStatus(from, status, options)
+  );
+}
+
 export function orderOwnerFromContext(context: AuthContext): {
   userId: string;
   organizationId: string | null;

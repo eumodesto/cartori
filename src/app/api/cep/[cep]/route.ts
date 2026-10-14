@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { fetchAddressByCep } from "@/lib/viacep";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { cep: string } }
 ) {
+  const limit = rateLimit(`cep:${clientIp(req)}`, 30, 60 * 1000);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { success: false, error: "Muitas consultas de CEP. Espere um instante." },
+      { status: 429 }
+    );
+  }
+
   const { cep } = params;
 
   try {

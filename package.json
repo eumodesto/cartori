@@ -7,9 +7,15 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3006",
     "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:db": "vitest run --config vitest.db.config.ts",
+    "db:test:up": "node scripts/test-db.mjs up",
+    "db:test:migrate": "node scripts/test-db.mjs migrate",
+    "db:test:reset": "node scripts/test-db.mjs reset",
+    "db:test:down": "node scripts/test-db.mjs down",
     "postinstall": "prisma generate",
-    "db:migrate": "prisma migrate deploy",
-    "db:push": "prisma db push"
+    "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.21.1",
@@ -37,6 +43,7 @@
     "postcss": "^8.4.47",
     "prisma": "^5.21.1",
     "tailwindcss": "^3.4.14",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.7"
   }
 }

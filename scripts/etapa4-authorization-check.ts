@@ -8,6 +8,7 @@ import {
   canOperateCases,
   canOnboardBusiness,
   canStaffSetOrderStatus,
+  canStaffTransitionOrderStatus,
   hasAllowedRole,
   isInternalRole,
   isTenantRole,
@@ -81,6 +82,19 @@ assert(canAccessOrderCase(admin, "ua") && canAccessOrderCase(operator, "ua"), "s
 assert(canStaffSetOrderStatus("WAITING_CUSTOMER"), "staff can request customer action");
 assert(!canStaffSetOrderStatus("PAID"), "staff cannot mark PAID");
 assert(!canStaffSetOrderStatus("PENDING_PAYMENT"), "staff cannot mark pending payment");
+assert(canStaffTransitionOrderStatus("PENDING_PAYMENT", "CANCELLED"), "unpaid order can be cancelled");
+assert(canStaffTransitionOrderStatus("PENDING_PAYMENT", "WAITING_CUSTOMER"), "unpaid order can wait for the customer");
+assert(!canStaffTransitionOrderStatus("PENDING_PAYMENT", "CERTIFICATE_ISSUED"), "unpaid order cannot be issued");
+assert(!canStaffTransitionOrderStatus("PENDING_PAYMENT", "IN_ANALYSIS"), "unpaid order cannot enter analysis");
+assert(canStaffTransitionOrderStatus("PAID", "IN_ANALYSIS"), "paid order can enter analysis");
+assert(!canStaffTransitionOrderStatus("PAID", "CERTIFICATE_ISSUED"), "paid order cannot skip to issued");
+assert(canStaffTransitionOrderStatus("IN_ANALYSIS", "CERTIFICATE_ISSUED"), "analysis can issue the certificate");
+assert(!canStaffTransitionOrderStatus("WAITING_CUSTOMER", "IN_ANALYSIS"), "waiting without payment cannot enter analysis");
+assert(
+  canStaffTransitionOrderStatus("WAITING_CUSTOMER", "IN_ANALYSIS", { hasApprovedPayment: true }),
+  "waiting after payment can enter analysis"
+);
+assert(!canStaffTransitionOrderStatus("COMPLETED", "CANCELLED"), "completed order is terminal");
 
 assert(canAccessOwnedDossier(clientA, "ua"), "client owns own dossier");
 assert(!canAccessOwnedDossier(clientB, "ua"), "client cannot read someone else's dossier");

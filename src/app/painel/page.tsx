@@ -13,14 +13,14 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 
 function DashboardHome() {
-  const { profile, isBusiness, loading } = useAuth();
+  const { profile, isBusiness, canRegisterCompany, loading } = useAuth();
   const searchParams = useSearchParams();
   const [partnerOpen, setPartnerOpen] = React.useState(false);
   const [benefitsOpen, setBenefitsOpen] = React.useState(false);
   const highlightId = searchParams.get("pedido");
   const wantsCompany = searchParams.get("empresa") === "1";
   const firstName = profile?.name?.split(" ")[0] || "olá";
-  const showBusinessBanner = Boolean(profile) && !loading && !isBusiness;
+  const showBusinessBanner = !loading && canRegisterCompany;
 
   const openCnpjFlow = React.useCallback(() => {
     setBenefitsOpen(false);
@@ -28,9 +28,9 @@ function DashboardHome() {
   }, []);
 
   React.useEffect(() => {
-    if (!wantsCompany || loading || !profile || isBusiness) return;
+    if (!wantsCompany || loading || !canRegisterCompany) return;
     setPartnerOpen(true);
-  }, [wantsCompany, loading, profile, isBusiness]);
+  }, [wantsCompany, loading, canRegisterCompany]);
 
   return (
     <div className="space-y-6">

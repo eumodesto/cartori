@@ -16,7 +16,16 @@ export async function GET(req: NextRequest) {
 
   try {
     const cartorios = await getCartoriosByCityAndCategory(uf, city, category);
-    return NextResponse.json({ success: true, uf, city, category, cartorios });
+    const sources = [...new Set(cartorios.map((item) => item.source ?? "unknown"))];
+    return NextResponse.json({
+      success: true,
+      uf,
+      city,
+      category,
+      source: sources.length === 1 ? sources[0] : "mixed",
+      fallback: sources.some((source) => source !== "database"),
+      cartorios,
+    });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || "Erro ao consultar serventias" },

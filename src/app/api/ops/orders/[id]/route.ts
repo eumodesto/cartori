@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OrderStatus } from "@prisma/client";
-import { canStaffSetOrderStatus } from "@/lib/authorization";
+import { staffTransitionTargets } from "@/lib/authorization";
+import { prisma } from "@/lib/prisma";
 import { requireStaffOps } from "@/lib/case-access";
 import { statusLabelForEmail } from "@/lib/case-email";
 import { queueTemplateEmail } from "@/lib/email";
@@ -18,7 +19,18 @@ export async function GET(
   if (!data) {
     return NextResponse.json({ success: false, error: "Pedido não encontrado." }, { status: 404 });
   }
-  return NextResponse.json({ success: true, ...data, staff: true });
+  const approved = await prisma.payment.findFirst({
+    where: { orderId: params.id, status: "APPROVED" },
+    select: { id: true },
+  });
+  return NextResponse.json({
+    success: true,
+    ...data,
+    staff: true,
+    allowedStatuses: staffTransitionTargets(data.order.status, {
+      hasApprovedPayment: Boolean(approved),
+    }),
+  });
 }
 
 export async function PATCH(
@@ -32,21 +44,23 @@ export async function PATCH(
   const status = String((body as { status?: unknown }).status || "");
   const note = sanitizeCaseBody((body as { note?: unknown }).note);
 
-  if (!canStaffSetOrderStatus(status)) {
-    return NextResponse.json(
-      { success: false, error: "Este status não pode ser definido pela mesa. Pagamento continua no Mercado Pago." },
-      { status: 400 }
-    );
-  }
-
   const updated = await updateOrderOperationalStatus({
     orderId: params.id,
     actorUserId: staff.context.userId,
     nextStatus: status as OrderStatus,
     note: note || undefined,
   });
-  if (!updated) {
-    return NextResponse.json({ success: false, error: "Pedido não encontrado." }, { status: 404 });
+  if (!updated.ok) {
+    if (updated.reason === "missing") {
+      return NextResponse.json({ success: false, error: "Pedido não encontrado." }, { status: 404 });
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Esta mudança de status não é permitida a partir do estado atual. Pagamento continua no servidor.",
+      },
+      { status: 400 }
+    );
   }
 
   const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(/\/$/, "")}/painel/pedidos/${params.id}`;
@@ -64,5 +78,16 @@ export async function PATCH(
   });
 
   const data = await loadOrderCase(params.id);
-  return NextResponse.json({ success: true, ...data, staff: true });
+  const approved = await prisma.payment.findFirst({
+    where: { orderId: params.id, status: "APPROVED" },
+    select: { id: true },
+  });
+  return NextResponse.json({
+    success: true,
+    ...data,
+    staff: true,
+    allowedStatuses: staffTransitionTargets(updated.order.status, {
+      hasApprovedPayment: Boolean(approved),
+    }),
+  });
 }

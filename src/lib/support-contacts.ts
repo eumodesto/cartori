@@ -31,9 +31,9 @@ export const SUPPORT_CHANNELS = [
   {
     id: "amanda",
     title: "Chat Amanda",
-    description: "Tire dúvidas de catálogo e pedido pelo chat da assistente no canto da tela.",
-    href: "#amanda",
-    action: "Abrir o chat na página",
+    description: "Depois do primeiro pedido, a assistente responde no painel da sua conta.",
+    href: "/painel/pedidos",
+    action: "Abrir o painel",
     external: false,
   },
   {

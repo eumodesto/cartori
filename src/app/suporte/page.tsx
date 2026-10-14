@@ -21,7 +21,7 @@ import {
 export const metadata: Metadata = {
   title: "Suporte e contato | Cartori",
   description:
-    "Todos os canais oficiais de atendimento da Cartori: e-mail, DPO, chat Amanda, painel da conta e redes sociais.",
+    "Canais oficiais da Cartori: e-mail, DPO, painel da conta e redes sociais. A Amanda fica no painel depois do primeiro pedido.",
 };
 
 const ICONS = {
@@ -54,8 +54,8 @@ export default function SuportePage() {
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-neutral-600 leading-relaxed">
             Canais oficiais da {SUPPORT_COMPANY.legalName}, operadora do Cartori.com.br.
-            Use o e-mail de atendimento para pedidos e cancelamentos; o DPO para dados pessoais;
-            o chat Amanda para dúvidas rápidas.
+            Use o e-mail de atendimento para pedidos e cancelamentos e o DPO para dados pessoais.
+            A Amanda responde no painel depois do primeiro pedido.
           </p>
 
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -79,14 +79,6 @@ export default function SuportePage() {
               );
               const className =
                 "group rounded-2xl border border-neutral-200 bg-neutral-0 p-5 hover:border-brand-400 hover:shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500";
-
-              if (channel.id === "amanda") {
-                return (
-                  <div key={channel.id} id="amanda" className={className}>
-                    {body}
-                  </div>
-                );
-              }
 
               return (
                 <Link

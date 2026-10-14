@@ -12,7 +12,15 @@ export type StoredOrderStatus =
   | "COMPLETED"
   | "CANCELLED";
 
-export type StoredPaymentStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type StoredPaymentStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "IN_PROCESS"
+  | "REJECTED"
+  | "CANCELLED"
+  | "REFUNDED";
+
+export type StoredPaymentMethod = "PIX" | "CREDIT_CARD" | "BOLETO" | "B2B_INVOICE";
 
 export interface StoredOrderItem {
   id: string;
@@ -42,7 +50,7 @@ export interface StoredPayment {
   id: string;
   provider: "MERCADOPAGO";
   providerPaymentId?: string;
-  paymentMethod: "PIX" | "CREDIT_CARD";
+  paymentMethod: StoredPaymentMethod;
   status: StoredPaymentStatus;
   amount: number;
   qrCode?: string;

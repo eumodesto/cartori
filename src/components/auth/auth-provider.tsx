@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { AuthProfile, isBusinessAccount, isPartnerAccount } from "@/lib/auth-types";
+import {
+  AuthProfile,
+  canRegisterCompany,
+  isBusinessAccount,
+  isPartnerAccount,
+} from "@/lib/auth-types";
 
 type AuthContextValue = {
   profile: AuthProfile | null;
@@ -9,6 +14,7 @@ type AuthContextValue = {
   configured: boolean;
   isBusiness: boolean;
   isPartner: boolean;
+  canRegisterCompany: boolean;
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -45,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       configured,
       isBusiness: isBusinessAccount(profile),
       isPartner: isPartnerAccount(profile),
+      canRegisterCompany: canRegisterCompany(profile),
       refresh,
       logout,
     }),

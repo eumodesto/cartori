@@ -264,7 +264,7 @@ export default function CheckoutPage() {
     <StorefrontShell>
       <AuthDialog
         isOpen={needsAccount}
-        onClose={() => undefined}
+        onClose={() => router.push("/carrinho")}
         nextPath={null}
         required
         initialMode={authMode}

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { clientHasPurchase, isAmandaClient } from "@/lib/amanda-access";
 import { buildAmandaSystemPrompt } from "@/lib/amanda-knowledge";
 import { extractAmandaProducts } from "@/lib/amanda-products";
+import { requireAuth } from "@/lib/authorization";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 const MAX_MESSAGES = 16;
@@ -32,7 +34,52 @@ function sanitizeMessages(input: unknown): ChatTurn[] {
     }));
 }
 
+async function requireAmandaClient() {
+  const auth = await requireAuth();
+  if (!auth.ok) {
+    return NextResponse.json(
+      {
+        available: false,
+        success: false,
+        error: "Entre na conta para falar com a Amanda.",
+      },
+      { status: 401 }
+    );
+  }
+  if (!isAmandaClient(auth.context)) {
+    return NextResponse.json(
+      {
+        available: false,
+        success: false,
+        error: "A Amanda fica no painel do cliente.",
+      },
+      { status: 403 }
+    );
+  }
+  const purchased = await clientHasPurchase(auth.context.userId);
+  if (!purchased) {
+    return NextResponse.json(
+      {
+        available: false,
+        success: false,
+        error: "A Amanda aparece no painel depois do primeiro pedido.",
+      },
+      { status: 403 }
+    );
+  }
+  return null;
+}
+
+export async function GET() {
+  const denied = await requireAmandaClient();
+  if (denied) return NextResponse.json({ available: false });
+  return NextResponse.json({ available: true });
+}
+
 export async function POST(req: NextRequest) {
+  const denied = await requireAmandaClient();
+  if (denied) return denied;
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
