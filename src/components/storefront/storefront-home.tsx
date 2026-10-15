@@ -86,11 +86,6 @@ export function StorefrontHome({
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-semibold text-primary-300">
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Plataforma para Advocacias e imobiliárias</span>
-              </div>
-
               {hero ? (
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-serif">
                   {hero.title}
@@ -124,7 +119,7 @@ export function StorefrontHome({
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-primary-400" />
-                  <span>Integração IBGE & Cartórios</span>
+                  <span>Integração IBGE</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-primary-400" />

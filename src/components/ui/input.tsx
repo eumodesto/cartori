@@ -9,6 +9,8 @@ export interface InputProps
   error?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  /** Controle clicável à direita (ex.: mostrar senha). Tem prioridade sobre rightIcon e o ícone de erro. */
+  endAdornment?: React.ReactNode;
   required?: boolean;
   optional?: boolean;
 }
@@ -23,6 +25,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       error,
       leftIcon,
       rightIcon,
+      endAdornment,
       id,
       disabled,
       required,
@@ -71,7 +74,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               "w-full h-10 px-3.5 text-sm bg-neutral-0 text-neutral-900 placeholder:text-neutral-400 rounded-md border transition-colors duration-fast outline-none",
               leftIcon ? "pl-10" : "",
-              rightIcon || error ? "pr-10" : "",
+              rightIcon || error || endAdornment ? "pr-10" : "",
               error
                 ? "border-semantic-error focus:ring-2 focus:ring-semantic-error/20 focus:border-semantic-error text-semantic-error"
                 : "border-neutral-300 hover:border-neutral-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15",
@@ -81,7 +84,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
 
-          {error ? (
+          {endAdornment ? (
+            <div className="absolute right-1.5 flex items-center">{endAdornment}</div>
+          ) : error ? (
             <div className="absolute right-3 flex items-center pointer-events-none text-semantic-error">
               <AlertCircle className="w-4 h-4" />
             </div>

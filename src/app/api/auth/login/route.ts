@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
   const email = String(body.email || "").trim().toLowerCase();
   const password = String(body.password || "");
 
-  if (!isValidEmail(email) || password.length < 8) {
+  if (!isValidEmail(email) || !password) {
     return Response.json(
-      { success: false, error: "Informe e-mail válido e senha com pelo menos 8 caracteres." },
+      { success: false, error: "Informe e-mail válido e a senha." },
       { status: 400 }
     );
   }

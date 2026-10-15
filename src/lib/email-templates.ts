@@ -9,7 +9,8 @@ export type EmailTemplateGroup =
   | "compra"
   | "status"
   | "cancelamento"
-  | "documentacao";
+  | "documentacao"
+  | "admin";
 
 export interface EmailTemplateVariable {
   name: string;
@@ -65,9 +66,88 @@ const V = {
     description: "Rótulo legível do status",
     sample: "Em análise",
   },
+  customerEmail: {
+    name: "customerEmail",
+    description: "E-mail do cliente/solicitante",
+    sample: "maria@exemplo.com.br",
+  },
+  adminOrderLink: {
+    name: "adminOrderLink",
+    description: "Link para o pedido na mesa operacional",
+    sample: "https://www.interjuri.com.br/operacao/pedidos/abc123",
+  },
+  paymentMethod: {
+    name: "paymentMethod",
+    description: "Forma de pagamento (PIX, cartão…)",
+    sample: "PIX",
+  },
+  messagePreview: {
+    name: "messagePreview",
+    description: "Trecho da mensagem enviada pelo cliente",
+    sample: "Segue em anexo a certidão de óbito solicitada.",
+  },
 } satisfies Record<string, EmailTemplateVariable>;
 
 const SIGN = "\n\nEquipe InterJuri";
+const ADMIN_SIGN = "\n\nAviso automático da InterJuri. Ajuste quais avisos recebe em Perfil › Notificações.";
+
+const ADMIN_ORDER_VARS = [
+  V.customerName,
+  V.customerEmail,
+  V.protocol,
+  V.total,
+  V.itemsList,
+  V.paymentMethod,
+  V.adminOrderLink,
+];
+
+/** Avisos internos para administradores (um template por evento, com opção de receber ou não). */
+const ADMIN_TEMPLATES: EmailTemplateDef[] = [
+  {
+    key: "admin_order_paid",
+    group: "admin",
+    label: "Admin · Cliente comprou",
+    description: "Avisa os administradores quando o pagamento de um pedido é aprovado.",
+    subject: "[InterJuri] Nova compra paga · {{protocol}} · {{total}}",
+    body:
+      "Nova compra confirmada.\n\nPedido: {{protocol}}\nCliente: {{customerName}} ({{customerEmail}})\nTotal: {{total}}\nPagamento: {{paymentMethod}}\n\n{{itemsList}}\n\nAbrir na mesa operacional:\n{{adminOrderLink}}" +
+      ADMIN_SIGN,
+    variables: ADMIN_ORDER_VARS,
+  },
+  {
+    key: "admin_payment_rejected",
+    group: "admin",
+    label: "Admin · Compra rejeitada",
+    description: "Avisa os administradores quando o pagamento de um pedido é recusado.",
+    subject: "[InterJuri] Pagamento recusado · {{protocol}}",
+    body:
+      "O pagamento de um pedido foi recusado.\n\nPedido: {{protocol}}\nCliente: {{customerName}} ({{customerEmail}})\nTotal: {{total}}\nPagamento: {{paymentMethod}}\n\nAbrir na mesa operacional:\n{{adminOrderLink}}" +
+      ADMIN_SIGN,
+    variables: ADMIN_ORDER_VARS,
+  },
+  {
+    key: "admin_customer_message",
+    group: "admin",
+    label: "Admin · Mensagem de cliente",
+    description: "Avisa os administradores quando um cliente envia mensagem interna em um pedido.",
+    subject: "[InterJuri] Mensagem de {{customerName}} · {{protocol}}",
+    body:
+      "Nova mensagem do cliente no pedido {{protocol}}.\n\nCliente: {{customerName}} ({{customerEmail}})\n\n“{{messagePreview}}”\n\nResponder na mesa operacional:\n{{adminOrderLink}}" +
+      ADMIN_SIGN,
+    variables: [V.customerName, V.customerEmail, V.protocol, V.messagePreview, V.adminOrderLink],
+  },
+  {
+    key: "admin_order_pending",
+    group: "admin",
+    label: "Admin · Compra pendente de pagamento",
+    description: "Avisa os administradores quando um pedido é criado e aguarda o pagamento.",
+    subject: "[InterJuri] Pedido aguardando pagamento · {{protocol}} · {{total}}",
+    body:
+      "Um pedido foi criado e aguarda o pagamento.\n\nPedido: {{protocol}}\nCliente: {{customerName}} ({{customerEmail}})\nTotal: {{total}}\n\n{{itemsList}}\n\nAbrir na mesa operacional:\n{{adminOrderLink}}" +
+      ADMIN_SIGN,
+    variables: ADMIN_ORDER_VARS.filter((v) => v.name !== "paymentMethod"),
+  },
+];
 
 /** Corpo default por status de pedido. */
 const STATUS_BODIES: Record<string, string> = {
@@ -180,6 +260,7 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
       SIGN,
     variables: [V.customerName, V.protocol, V.orderLink],
   },
+  ...ADMIN_TEMPLATES,
 ];
 
 export function getEmailTemplateDef(key: string): EmailTemplateDef | undefined {

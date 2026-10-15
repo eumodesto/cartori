@@ -1,5 +1,9 @@
 import { digitsOnly } from "@/lib/utils";
 
+/** Mínimo do Supabase Auth; o site não impõe outra regra de senha. */
+export const PASSWORD_MIN_LENGTH = 6;
+export const PASSWORD_MIN_MESSAGE = `A senha precisa ter pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`;
+
 export function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }

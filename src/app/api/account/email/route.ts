@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { createClient } from "@supabase/supabase-js";
 import { requireAuth } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
   const updated = await supabase.auth.updateUser({ email: newEmail });
   if (updated.error) {
     return json(
-      { success: false, error: updated.error.message || "Não foi possível iniciar a troca de e-mail." },
+      { success: false, error: authErrorMessage(updated.error.message, "Não foi possível iniciar a troca de e-mail.") },
       { status: 400 }
     );
   }

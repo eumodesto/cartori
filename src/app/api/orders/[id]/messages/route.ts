@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CaseAuthorKind } from "@prisma/client";
+import { notifyAdmins } from "@/lib/admin-notifications";
 import { requireOrderCaseAccess } from "@/lib/case-access";
 import { queueCaseEmail } from "@/lib/case-email";
 import { loadOrderCase, postCaseMessage } from "@/lib/case-store";
@@ -48,6 +49,8 @@ export async function POST(
       protocol: access.order.protocol,
       preview: text,
     });
+  } else {
+    await notifyAdmins("admin_customer_message", params.id, { messagePreview: text });
   }
 
   const data = await loadOrderCase(params.id, access.staff ? "staff" : "customer");

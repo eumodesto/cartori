@@ -11,11 +11,20 @@ import {
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { deleteAuthUser } from "@/lib/supabase/admin";
 import { createRouteSupabase } from "@/lib/supabase/route";
+import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { cartoriAuthCallbackUrl } from "@/lib/supabase/site-url";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { TERMS_VERSION } from "@/lib/terms";
 import { digitsOnly } from "@/lib/utils";
-import { isValidCnpj, isValidCpf, isValidEmail, isValidPhone, normalizeCpf } from "@/lib/validators";
+import {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MIN_MESSAGE,
+  isValidCnpj,
+  isValidCpf,
+  isValidEmail,
+  isValidPhone,
+  normalizeCpf,
+} from "@/lib/validators";
 
 const CPF_CONFLICT = "Já existe uma conta associada a este CPF.";
 
@@ -115,8 +124,8 @@ export async function POST(req: NextRequest) {
   if (!isValidEmail(email)) {
     return badRequest("Informe um e-mail válido.");
   }
-  if (password.length < 8) {
-    return badRequest("A senha precisa ter pelo menos 8 caracteres.");
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    return badRequest(PASSWORD_MIN_MESSAGE);
   }
   if (password !== confirmPassword) {
     return badRequest("As senhas não conferem.");
@@ -124,10 +133,10 @@ export async function POST(req: NextRequest) {
   if (body.acceptedTerms !== true) {
     return badRequest("É preciso aceitar os Termos de Uso e a Política de Privacidade.");
   }
-  if (accountType === "company" && !phone) {
-    return badRequest("Informe o telefone da empresa.");
+  if (!phone) {
+    return badRequest(accountType === "company" ? "Informe o telefone da empresa." : "Informe o telefone.");
   }
-  if (phone && !isValidPhone(phone)) {
+  if (!isValidPhone(phone)) {
     return badRequest("Telefone inválido.");
   }
   if (cpfRaw && !isValidCpf(cpfRaw)) {
@@ -173,12 +182,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (created.error || !created.data.user) {
-    const already = /already|registered|exists/i.test(created.error?.message || "");
-    const message = already
-      ? "Este e-mail já tem uma conta. Entre para continuar."
-      : /fetch failed/i.test(created.error?.message || "")
-        ? "Não foi possível criar a conta agora. Tente de novo em alguns segundos."
-        : created.error?.message || "Não foi possível criar a conta.";
+    const message = authErrorMessage(created.error?.message, "Não foi possível criar a conta.");
     return json({ success: false, error: message }, { status: 400 });
   }
 

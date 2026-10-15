@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authErrorMessage } from "@/lib/supabase/auth-errors";
 import { createClient } from "@supabase/supabase-js";
 import { requireAuth } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
 import { isSupabaseConfigured, supabasePublicConfig } from "@/lib/supabase/config";
 import { createRouteSupabase } from "@/lib/supabase/route";
+import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/validators";
 
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -28,9 +30,9 @@ export async function POST(req: NextRequest) {
   const currentPassword = String(body.currentPassword || "");
   const newPassword = String(body.newPassword || "");
 
-  if (newPassword.length < 8) {
+  if (newPassword.length < PASSWORD_MIN_LENGTH) {
     return NextResponse.json(
-      { success: false, error: "A nova senha precisa ter pelo menos 8 caracteres." },
+      { success: false, error: PASSWORD_MIN_MESSAGE },
       { status: 400 }
     );
   }
@@ -66,7 +68,7 @@ export async function POST(req: NextRequest) {
   const updated = await supabase.auth.updateUser({ password: newPassword });
   if (updated.error) {
     return json(
-      { success: false, error: updated.error.message || "Não foi possível alterar a senha." },
+      { success: false, error: authErrorMessage(updated.error.message, "Não foi possível alterar a senha.") },
       { status: 400 }
     );
   }

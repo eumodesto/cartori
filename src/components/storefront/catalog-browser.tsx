@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Clock } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { MVP_CERTIFICATES } from "@/lib/catalog";
 import {
   CERTIFICATE_QUERY_KEY,
@@ -19,6 +20,7 @@ import { CertificateConfigDialog } from "@/components/storefront/certificate-con
 import { useCart } from "@/components/cart/cart-provider";
 
 const CATALOG_PAGE_SIZE = 12;
+const CART_PATH = "/carrinho";
 
 function normalizeSearch(value: string) {
   return value
@@ -68,6 +70,8 @@ export function CatalogBrowser({
   onFocusChange,
 }: CatalogBrowserProps) {
   const { addItem } = useCart();
+  const router = useRouter();
+  const pathname = usePathname();
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
   const [catalogQuery, setCatalogQuery] = useState("");
   const [catalogPage, setCatalogPage] = useState(1);
@@ -213,6 +217,9 @@ export function CatalogBrowser({
             items.forEach(addItem);
             closeCertificate();
             onAdded?.(items);
+            // Formulário concluído: segue direto para o pedido.
+            if (pathname === CART_PATH) window.scrollTo({ top: 0, behavior: "smooth" });
+            else router.push(CART_PATH);
           }}
         />
       )}

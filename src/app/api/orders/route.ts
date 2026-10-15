@@ -8,6 +8,7 @@ import {
   issuePixForOrder,
   prepareCardOrder,
 } from "@/lib/payments";
+import { notifyAdmins } from "@/lib/admin-notifications";
 import { prisma } from "@/lib/prisma";
 import { digitsOnly, formatCurrency } from "@/lib/utils";
 import {
@@ -130,6 +131,7 @@ export async function POST(req: NextRequest) {
         orderLink,
       },
     });
+    void notifyAdmins("admin_order_pending", order.id);
     if (
       order.items.some(
         (item) => item.certificateType === "certidao-negativa-de-testamento"

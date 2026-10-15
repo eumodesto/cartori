@@ -5,6 +5,7 @@ import { Eye, RotateCcw, Save } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,7 @@ type TemplateVariable = { name: string; description: string; sample: string };
 
 type EmailTemplate = {
   key: string;
-  group: "conta" | "compra" | "status" | "cancelamento" | "documentacao";
+  group: "conta" | "compra" | "status" | "cancelamento" | "documentacao" | "admin";
   label: string;
   description: string;
   status: string | null;
@@ -37,6 +38,7 @@ const GROUPS: { id: EmailTemplate["group"]; label: string }[] = [
   { id: "status", label: "Status do pedido" },
   { id: "cancelamento", label: "Cancelamento" },
   { id: "documentacao", label: "Documentação" },
+  { id: "admin", label: "Avisos para administradores" },
 ];
 
 export default function EmailsPage() {
@@ -244,9 +246,8 @@ export default function EmailsPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
+          <PasswordInput
             label="Token de integração (Resend API Key)"
-            type="password"
             value={resendKey}
             onChange={(e) => setResendKey(e.target.value)}
             placeholder={

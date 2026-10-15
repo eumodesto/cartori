@@ -1,4 +1,5 @@
 import { CaseEventType, OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
+import { notifyAdmins } from "@/lib/admin-notifications";
 import { getPaymentById } from "@/lib/mercadopago";
 import { moneyToCents } from "@/lib/money-cents";
 import { prisma } from "@/lib/prisma";
@@ -231,6 +232,9 @@ export async function reconcileFetchedPayment(
         where: { id: local.id },
         data: { status: nextPaymentStatus },
       });
+      if (nextPaymentStatus === PaymentStatus.REJECTED) {
+        await notifyAdmins("admin_payment_rejected", order.id);
+      }
       return {
         applied: true,
         paid: false,
@@ -256,6 +260,7 @@ export async function reconcileFetchedPayment(
       data: { status: OrderStatus.PAID },
     }),
   ]);
+  await notifyAdmins("admin_order_paid", order.id);
 
   return { applied: true, paid: true, reason: "paid", ...resultBase };
 }

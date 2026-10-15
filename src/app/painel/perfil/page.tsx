@@ -4,13 +4,15 @@ import * as React from "react";
 import { Camera } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/components/auth/auth-provider";
 import { maskCpfCnpj } from "@/lib/utils";
-import { isValidCpf } from "@/lib/validators";
+import { PASSWORD_MIN_LENGTH, isValidCpf } from "@/lib/validators";
 import {
+  ADMIN_NOTIFICATION_CATEGORIES,
   NOTIFICATION_CATEGORIES,
   resolveNotificationPrefs,
   type NotificationPrefs,
@@ -334,9 +336,8 @@ export default function PerfilPage() {
               onChange={(e) => setNewEmail(e.target.value)}
               required
             />
-            <Input
+            <PasswordInput
               label="Senha atual"
-              type="password"
               value={emailPassword}
               onChange={(e) => setEmailPassword(e.target.value)}
               required
@@ -351,27 +352,24 @@ export default function PerfilPage() {
       </Card>
 
       {/* Senha */}
-      <Card title="Senha" description="Mínimo de 8 caracteres.">
+      <Card title="Senha" description={`Mínimo de ${PASSWORD_MIN_LENGTH} caracteres.`}>
         <Feedback msg={passwordMsg} />
         <form onSubmit={savePassword} className="space-y-4">
-          <Input
+          <PasswordInput
             label="Senha atual"
-            type="password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
+            <PasswordInput
               label="Nova senha"
-              type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
-            <Input
+            <PasswordInput
               label="Confirmar nova senha"
-              type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -405,6 +403,28 @@ export default function PerfilPage() {
             </div>
           ))}
         </div>
+        {profile.role === "ADMIN" && (
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-semibold text-neutral-900">Avisos para administradores</p>
+              <p className="text-xs text-neutral-500">
+                E-mails internos sobre os pedidos de todos os clientes. Os modelos ficam em Admin › E-mails.
+              </p>
+            </div>
+            {ADMIN_NOTIFICATION_CATEGORIES.map((category) => (
+              <div key={category.id} className="rounded-md border border-neutral-200 p-3">
+                <Checkbox
+                  checked={prefs[category.id] !== false}
+                  onChange={(e) =>
+                    setPrefs((prev) => ({ ...prev, [category.id]: e.target.checked }))
+                  }
+                  label={category.label}
+                  description={category.description}
+                />
+              </div>
+            ))}
+          </div>
+        )}
         <div className="flex justify-end">
           <Button type="button" onClick={savePrefs} isLoading={savingPrefs}>
             Salvar preferências

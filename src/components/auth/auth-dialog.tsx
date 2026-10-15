@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Select } from "@/components/ui/select";
 import { Tabs } from "@/components/ui/tabs";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -28,6 +29,7 @@ import {
 } from "@/lib/professional-registry";
 import { PRIVACY_PATH, TERMS_PATH } from "@/lib/terms";
 import { digitsOnly, maskCpfCnpj, maskPhone } from "@/lib/utils";
+import { PASSWORD_MIN_LENGTH, PASSWORD_MIN_MESSAGE } from "@/lib/validators";
 
 const UF_OPTIONS = BRAZIL_UFS.map((uf) => ({ value: uf, label: uf }));
 
@@ -107,6 +109,9 @@ export function AuthDialog({
   const [error, setError] = React.useState("");
   const [notice, setNotice] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  /** Recuperação de senha: subestado do modo "Entrar". */
+  const [forgot, setForgot] = React.useState(false);
+  const [noticeTitle, setNoticeTitle] = React.useState("Confirme o e-mail");
 
   const signup = mode === "signup";
   const isCompany = signup && (companyIntent || account === "company");
@@ -115,6 +120,8 @@ export function AuthDialog({
   const reset = () => {
     setError("");
     setNotice("");
+    setForgot(false);
+    setNoticeTitle("Confirme o e-mail");
     setPassword("");
     setConfirmPassword("");
     setAcceptedTerms(false);
@@ -165,7 +172,7 @@ export function AuthDialog({
 
   const validateSignup = (): string | null => {
     if (name.trim().split(/\s+/).length < 2) return "Informe o nome completo.";
-    if (password.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
+    if (password.length < PASSWORD_MIN_LENGTH) return PASSWORD_MIN_MESSAGE;
     if (password !== confirmPassword) return "As senhas não conferem.";
     if (!acceptedTerms) return "Aceite os Termos de Uso e a Política de Privacidade.";
     if (isCompany) {
@@ -173,15 +180,43 @@ export function AuthDialog({
       if (!formatProfessionalRegistry(registryType, registryState, registryNumber)) {
         return `Informe a UF e o número do ${registryType}.`;
       }
-      if (!phone) return "Informe o telefone da empresa.";
     }
+    if (!phone) return isCompany ? "Informe o telefone da empresa." : "Informe o telefone.";
     return null;
+  };
+
+  const requestPasswordReset = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/password/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, next: nextPath || "/painel" }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.error || "Não foi possível enviar o link.");
+        return;
+      }
+      setNoticeTitle("Verifique seu e-mail");
+      setNotice(
+        "Se houver uma conta com este e-mail, enviamos um link para criar uma nova senha. Abra o link neste mesmo navegador."
+      );
+    } catch {
+      setError("Falha de conexão. Tente de novo.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
     setNotice("");
+    if (!signup && forgot) {
+      await requestPasswordReset();
+      return;
+    }
     if (signup) {
       const invalid = validateSignup();
       if (invalid) {
@@ -241,12 +276,16 @@ export function AuthDialog({
               (companyIntent
                 ? "Conta para advocacias e imobiliárias"
                 : mode === "login"
-                  ? "Entrar na InterJuri"
+                  ? forgot
+                    ? "Recuperar senha"
+                    : "Entrar na InterJuri"
                   : "Criar sua conta")}
           </DialogTitle>
           <DialogDescription>
             {description ||
-              (companyIntent
+              (forgot && !signup
+                ? "Enviaremos um link para o seu e-mail para você criar uma nova senha."
+                : companyIntent
                 ? "Crie a conta e siga para o dashboard empresarial. Com o CNPJ cadastrado, o escritório passa a operar no painel B2B que a InterJuri já oferece."
                 : required
                   ? "Para concluir o pedido, entre ou crie uma conta. Depois do pagamento você acompanha tudo no Dashboard."
@@ -261,6 +300,7 @@ export function AuthDialog({
               activeTab={mode}
               onChange={(id) => {
                 setMode(id as "login" | "signup");
+                setForgot(false);
                 setError("");
                 setNotice("");
               }}
@@ -391,28 +431,44 @@ export function AuthDialog({
             {signup && (
               <Input
                 label="Telefone"
-                required={isCompany}
-                optional={!isCompany}
+                required
                 autoComplete="tel"
                 value={phone}
                 onChange={(event) => setPhone(maskPhone(event.target.value))}
                 placeholder="(11) 99999-0000"
               />
             )}
+            {!(forgot && !signup) && (
             <div className={signup ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : undefined}>
-              <Input
-                label="Senha"
-                type="password"
-                required
-                autoComplete={signup ? "new-password" : "current-password"}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                helperText={signup ? "Mínimo de 8 caracteres" : undefined}
-              />
+              <div className="space-y-1.5">
+                <PasswordInput
+                  label="Senha"
+                  required
+                  autoComplete={signup ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  helperText={signup ? `Mínimo de ${PASSWORD_MIN_LENGTH} caracteres` : undefined}
+                />
+                {!signup && (
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForgot(true);
+                        setError("");
+                        setNotice("");
+                        setPassword("");
+                      }}
+                      className="text-xs font-semibold text-brand-700 underline-offset-2 hover:underline"
+                    >
+                      Esqueci minha senha
+                    </button>
+                  </div>
+                )}
+              </div>
               {signup && (
-                <Input
+                <PasswordInput
                   label="Confirmar senha"
-                  type="password"
                   required
                   autoComplete="new-password"
                   value={confirmPassword}
@@ -421,6 +477,20 @@ export function AuthDialog({
                 />
               )}
             </div>
+            )}
+            {forgot && !signup && (
+              <button
+                type="button"
+                onClick={() => {
+                  setForgot(false);
+                  setError("");
+                  setNotice("");
+                }}
+                className="text-xs font-semibold text-brand-700 underline-offset-2 hover:underline"
+              >
+                Voltar para entrar
+              </button>
+            )}
 
             {signup && (
               <div className="flex items-start gap-2.5 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2.5">
@@ -458,7 +528,7 @@ export function AuthDialog({
                 Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY no ambiente para ativar o login.
               </Alert>
             )}
-            {notice && <Alert variant="info" title="Confirme o e-mail">{notice}</Alert>}
+            {notice && <Alert variant="info" title={noticeTitle}>{notice}</Alert>}
             {error && <Alert variant="error" title="Não foi possível continuar">{error}</Alert>}
           </DialogContent>
           <DialogFooter>
@@ -472,7 +542,9 @@ export function AuthDialog({
               disabled={!configured || (signup && !acceptedTerms)}
             >
               {mode === "login"
-                ? "Entrar"
+                ? forgot
+                  ? "Enviar link"
+                  : "Entrar"
                 : isCompany
                   ? "Criar conta e ir ao painel"
                   : "Criar conta"}
