@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/ui/tooltip";
-import { UserMenu } from "@/components/layout/user-menu";
+import { SidebarUserMenu } from "@/components/layout/sidebar-user-menu";
 import { ChevronLeft, ChevronRight, HelpCircle, Lock } from "lucide-react";
 
 export interface NavItem {
@@ -230,14 +230,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               isCollapsed ? "flex-col gap-2 justify-center" : "justify-between px-1 gap-2"
             )}
           >
-            <UserMenu side={isCollapsed ? "right" : "top"} size="sm" />
+            <SidebarUserMenu collapsed={isCollapsed} />
 
             {!isCollapsed ? (
               <>
-                <span className="text-[11px] font-medium truncate">Cartori v1.0</span>
                 <Link
                   href="/ajuda"
-                  className="p-1.5 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-200/50 hover:text-neutral-800 dark:hover:text-neutral-100 transition-colors"
+                  className="p-1.5 shrink-0 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-200/50 hover:text-neutral-800 dark:hover:text-neutral-100 transition-colors"
                   title="Ajuda e Suporte"
                 >
                   <HelpCircle className="w-4 h-4" />

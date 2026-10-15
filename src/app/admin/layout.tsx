@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { type NavGroup } from "@/components/layout/app-sidebar";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useAuth } from "@/components/auth/auth-provider";
-import { Inbox, Layers, Mail, UserCog } from "lucide-react";
+import { Inbox, Layers, Mail, Settings, UserCog } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -44,6 +44,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           href: "/admin/emails",
           icon: <Mail className="w-4 h-4" />,
           isActive: pathname.startsWith("/admin/emails"),
+        },
+        {
+          id: "settings",
+          label: "Configurações",
+          href: "/admin/configuracoes",
+          icon: <Settings className="w-4 h-4" />,
+          isActive: pathname.startsWith("/admin/configuracoes"),
         },
       ],
     },
