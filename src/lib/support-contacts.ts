@@ -8,7 +8,7 @@ export const SUPPORT_COMPANY = {
   brand: "InterJuri",
   cnpj: "57.448.583/0001-35",
   city: "São Paulo - SP",
-  hours: "Atendimento notarial 24h",
+  hours: "Atendimento 24h",
 } as const;
 
 export const SUPPORT_CHANNELS = [
