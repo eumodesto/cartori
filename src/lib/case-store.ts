@@ -20,6 +20,11 @@ const caseOrderSelect = {
   items: {
     select: { certificateName: true, city: true, state: true },
   },
+  payments: {
+    select: { status: true },
+    orderBy: { createdAt: "desc" },
+    take: 1,
+  },
 } satisfies Prisma.OrderSelect;
 
 export async function getCaseOrder(orderId: string) {
@@ -40,13 +45,28 @@ export async function listOpsOrders(take = 80) {
       customerEmail: true,
       createdAt: true,
       items: { select: { certificateName: true } },
+      payments: {
+        select: { status: true },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
     },
     orderBy: { createdAt: "desc" },
     take,
   });
 }
 
-export async function loadOrderCase(orderId: string): Promise<PublicOrderCase | null> {
+/** Cliente vê só a transição; motivo, autor e origem ficam para a equipe. */
+function customerEventPayload(payload: Prisma.JsonValue | null) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  const { from, to, display } = payload as Record<string, unknown>;
+  return { from: from ?? null, to: to ?? null, display: display ?? null };
+}
+
+export async function loadOrderCase(
+  orderId: string,
+  audience: "staff" | "customer" = "customer"
+): Promise<PublicOrderCase | null> {
   const order = await getCaseOrder(orderId);
   if (!order) return null;
 
@@ -70,6 +90,7 @@ export async function loadOrderCase(orderId: string): Promise<PublicOrderCase | 
       id: order.id,
       protocol: order.protocol,
       status: order.status,
+      paymentStatus: order.payments[0]?.status ?? null,
       customerName: order.customerName,
       customerEmail: order.customerEmail,
       createdAt: order.createdAt.toISOString(),
@@ -92,7 +113,7 @@ export async function loadOrderCase(orderId: string): Promise<PublicOrderCase | 
     events: events.map((row) => ({
       id: row.id,
       type: row.type,
-      payload: row.payload,
+      payload: audience === "staff" ? row.payload : customerEventPayload(row.payload),
       createdAt: row.createdAt.toISOString(),
     })),
   };

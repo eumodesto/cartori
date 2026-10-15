@@ -12,7 +12,7 @@ import {
   CASE_ATTACHMENT_KINDS,
   type PublicOrderCase,
 } from "@/lib/case-types";
-import { orderStatusMeta } from "@/lib/order-status";
+import { displayStatusMeta, orderStepLabel, staffStatusLabel } from "@/lib/order-status";
 
 function authorLabel(kind: string) {
   if (kind === "STAFF") return "Cartori";
@@ -182,7 +182,8 @@ export function OrderCasePanel({
     );
   }
 
-  const meta = orderStatusMeta(data.order.status);
+  const meta = displayStatusMeta(data.order.status, data.order.paymentStatus);
+  const step = orderStepLabel(data.order.status);
 
   return (
     <div className="space-y-6">
@@ -201,7 +202,12 @@ export function OrderCasePanel({
               </p>
             )}
           </div>
-          <StatusBadge status={meta.semantic} label={meta.label} />
+          <div className="text-right">
+            <StatusBadge status={meta.semantic} label={meta.label} />
+            {staff && step !== meta.label && (
+              <p className="mt-1 text-[11px] text-neutral-500">Etapa: {step}</p>
+            )}
+          </div>
         </div>
         {staff && (
           <div className="flex flex-col sm:flex-row gap-3 items-end">
@@ -211,7 +217,7 @@ export function OrderCasePanel({
               onChange={(event) => setStatus(event.target.value)}
               options={(data.allowedStatuses || []).map((value) => ({
                 value,
-                label: orderStatusMeta(value).label,
+                label: staffStatusLabel(value),
               }))}
             />
             <Button variant="primary" onClick={saveStatus} disabled={sending}>

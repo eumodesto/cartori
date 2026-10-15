@@ -1,6 +1,10 @@
 import { CaseAuthorKind, CaseEventType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { orderStatusMeta } from "@/lib/order-status";
+import {
+  DISPLAY_STATUS_META,
+  type DisplayOrderStatus,
+  orderStatusMeta,
+} from "@/lib/order-status";
 
 export type AccountAlertType = "status" | "message";
 
@@ -89,7 +93,11 @@ export async function listAccountAlerts(userId: string): Promise<AccountAlert[]>
     const payload = asRecord(event.payload);
     const nextStatus = String(payload.to || "");
     const note = typeof payload.note === "string" ? payload.note.trim() : "";
-    const statusLabel = orderStatusMeta(nextStatus).label;
+    const display = String(payload.display || "");
+    const statusLabel =
+      display in DISPLAY_STATUS_META
+        ? DISPLAY_STATUS_META[display as DisplayOrderStatus].label
+        : orderStatusMeta(nextStatus).label;
     alerts.push({
       id: `status:${event.id}`,
       type: "status",

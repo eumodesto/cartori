@@ -47,6 +47,13 @@ describe("matriz de autorização documentada", () => {
     expect(ops.ADMIN).toBe("ALLOW");
   });
 
+  it("ninguém marca pago pelo fluxo normal; pagamento manual é só do ADMIN", () => {
+    const normal = row("marcar pedido como pago pelo fluxo normal");
+    expect([normal.CLIENT, normal.OPERATOR, normal.ADMIN]).toEqual(["DENY", "DENY", "DENY"]);
+    const manual = row("pagamento manual");
+    expect([manual.CLIENT, manual.OPERATOR, manual.ADMIN]).toEqual(["DENY", "DENY", "ALLOW"]);
+  });
+
   it("caso de pedido alheio: cliente negado, equipe permitida", () => {
     const foreignCase = row("caso de pedido alheio");
     expect(foreignCase.CLIENT).toBe("DENY");

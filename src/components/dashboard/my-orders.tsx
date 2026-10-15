@@ -27,9 +27,9 @@ import {
 } from "@/components/ui/table";
 import {
   PublicOrder,
+  displayStatusMeta,
   isOrderPaid,
   livePixCode,
-  orderStatusMeta,
 } from "@/lib/order-status";
 import { formatCurrency } from "@/lib/utils";
 
@@ -199,7 +199,7 @@ export function MyOrders({
           </TableHeader>
           <TableBody>
             {orders.map((order) => {
-              const meta = orderStatusMeta(order.status);
+              const meta = displayStatusMeta(order.status, order.payment?.status);
               const names = order.items.map((item) => item.certificateName).join(", ");
               const isPending = order.status === "PENDING_PAYMENT";
               return (

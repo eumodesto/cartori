@@ -13,6 +13,7 @@ export async function GET() {
       id: order.id,
       protocol: order.protocol,
       status: order.status,
+      paymentStatus: order.payments[0]?.status ?? null,
       customerName: order.customerName,
       customerEmail: order.customerEmail,
       createdAt: order.createdAt.toISOString(),

@@ -95,6 +95,20 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     notes: "ADMIN e OPERATOR leem/atualizam qualquer pedido via /api/ops. Assignment por operador TBD. Não é lista da Organization do cliente.",
   },
   {
+    resource: "marcar pedido como pago pelo fluxo normal",
+    CLIENT: "DENY",
+    OPERATOR: "DENY",
+    ADMIN: "DENY",
+    notes: "Só a reconciliação do Mercado Pago (webhook assinado + fetch). /api/ops não define PAID.",
+  },
+  {
+    resource: "pagamento manual (PATCH /api/admin/orders/[id]/status)",
+    CLIENT: "DENY",
+    OPERATOR: "DENY",
+    ADMIN: "ALLOW",
+    notes: "Exceção administrativa: aprovar, recusar ou estornar fora do site. Motivo obrigatório, valor do pedido, CaseEvent. Não movimenta dinheiro.",
+  },
+  {
     resource: "caso do próprio pedido (mensagens e arquivos)",
     CLIENT: "ALLOW",
     OPERATOR: "ALLOW",

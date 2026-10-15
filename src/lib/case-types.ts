@@ -1,4 +1,4 @@
-import type { CaseAttachmentKind, CaseAuthorKind, OrderStatus } from "@prisma/client";
+import type { CaseAttachmentKind, CaseAuthorKind, OrderStatus, PaymentStatus } from "@prisma/client";
 
 export const CASE_ATTACHMENT_KINDS: { value: CaseAttachmentKind; label: string }[] = [
   { value: "RG", label: "RG" },
@@ -47,6 +47,7 @@ export type PublicOrderCase = {
     id: string;
     protocol: string;
     status: OrderStatus;
+    paymentStatus: PaymentStatus | null;
     customerName: string;
     customerEmail: string;
     createdAt: string;

@@ -7,7 +7,7 @@ description: Define cobrança Cartori server-authoritative via Mercado Pago (val
 
 ## Objetivo
 
-Só o servidor define o valor cobrado. Só o Mercado Pago (consultado de novo) marca pedido como pago. Webhook sem assinatura válida não altera nada.
+Só o servidor define o valor cobrado. Só o Mercado Pago (consultado de novo) marca pedido como pago, salvo a exceção administrativa abaixo. Webhook sem assinatura válida não altera nada.
 
 ## Quando usar
 
@@ -26,6 +26,17 @@ Criar o pedido / ownership — `order-access`.
 - Webhook `POST /api/payments/webhook`: `assertMercadoPagoWebhookSignature` (secret obrigatório). GET → 405.
 - Reconcile: busca o payment **no MP**, casa `external_reference` e metadata `order_id` com `Order.id`, moeda BRL, centavos iguais a `order.totalAmount` e `payment.amount`, status do pedido pagável. Aí marca APPROVED + PAID na mesma transação. Idempotente se já pago.
 - `POST /api/orders/[id]/simulate-pay` → 403 desativado.
+- Estorno/chargeback no MP (`refunded`, `charged_back`): Payment → REFUNDED e, sem outro APPROVED, Order → CANCELLED com `CaseEvent` (`display: "REFUNDED"`), em qualquer etapa.
+
+## Exceção administrativa (pagamento manual)
+
+`PATCH /api/admin/orders/[id]/status` com `target` em `PAYMENT_APPROVED | PAYMENT_REJECTED | REFUNDED` (`src/lib/manual-payment.ts`).
+
+- Só `requirePlatformAdmin` (UserRole.ADMIN). OPERATOR e `/api/ops` continuam sem poder definir PAID.
+- Motivo obrigatório (10–500 caracteres). Autor vem do contexto, nunca do body.
+- Valor = `order.totalAmount`; cria `Payment` com `provider: "MANUAL"`. Não movimenta dinheiro: estorno real é feito no MP/banco antes.
+- Transação com `FOR UPDATE` no pedido; ações válidas vêm de `manualPaymentActions` (aprovar/recusar só aguardando pagamento sem APPROVED; estornar só com APPROVED).
+- Toda ação grava `CaseEvent` com motivo e `manual: true`; o cliente vê só a transição (`loadOrderCase(..., "customer")`).
 
 ## Invariantes
 
@@ -57,6 +68,7 @@ Criar o pedido / ownership — `order-access`.
 
 - Confiar no body `amount` / `status: PAID`.
 - Marcar pago só porque o webhook chegou, sem fetch MP.
+- Abrir pagamento manual para OPERATOR, aceitar valor no body ou pular o motivo.
 - Logar access token / webhook secret.
 
 ## Gaps reais

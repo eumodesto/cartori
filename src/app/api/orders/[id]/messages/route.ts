@@ -11,7 +11,7 @@ export async function GET(
 ) {
   const access = await requireOrderCaseAccess(params.id);
   if (!access.ok) return access.response;
-  const data = await loadOrderCase(params.id);
+  const data = await loadOrderCase(params.id, access.staff ? "staff" : "customer");
   if (!data) {
     return NextResponse.json({ success: false, error: "Pedido não encontrado." }, { status: 404 });
   }
@@ -50,6 +50,6 @@ export async function POST(
     });
   }
 
-  const data = await loadOrderCase(params.id);
+  const data = await loadOrderCase(params.id, access.staff ? "staff" : "customer");
   return NextResponse.json({ success: true, ...data, staff: access.staff }, { status: 201 });
 }

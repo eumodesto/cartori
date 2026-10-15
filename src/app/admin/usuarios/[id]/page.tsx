@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { UserOrders } from "@/components/admin/user-orders";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -173,6 +174,8 @@ export default function UsuarioDetailPage({
               </Button>
             </div>
           </form>
+
+          <UserOrders userId={user.id} />
         </>
       )}
     </div>

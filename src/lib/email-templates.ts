@@ -101,15 +101,15 @@ const STATUS_BODIES: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING_PAYMENT: "Aguardando pagamento",
-  PAID: "Pago",
-  IN_ANALYSIS: "Em análise",
-  IN_CARTORIO_SEARCH: "Busca no cartório",
-  WAITING_CUSTOMER: "Ação do cliente",
-  CERTIFICATE_ISSUED: "Certidão emitida",
-  SHIPPED: "Enviada",
-  COMPLETED: "Concluída",
-  CANCELLED: "Cancelada",
+  PENDING_PAYMENT: "Pagamento Pendente",
+  PAID: "Pagamento Realizado",
+  IN_ANALYSIS: "Documento em Emissão · Em análise",
+  IN_CARTORIO_SEARCH: "Documento em Emissão · Busca no cartório",
+  WAITING_CUSTOMER: "Aguardando Cliente",
+  CERTIFICATE_ISSUED: "Documento Entregue · Certidão emitida",
+  SHIPPED: "Documento Entregue · Enviada",
+  COMPLETED: "Documento Entregue · Concluída",
+  CANCELLED: "Pedido Cancelado",
 };
 
 export const ORDER_STATUS_TEMPLATE_STATUSES = [

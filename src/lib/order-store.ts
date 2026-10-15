@@ -9,6 +9,7 @@ import {
   Prisma,
 } from "@prisma/client";
 import { findExistingCartorioIds } from "@/lib/cartorios";
+import { MANUAL_PAYMENT_PROVIDER } from "@/lib/manual-payment-policy";
 import { prisma } from "@/lib/prisma";
 import { createId } from "@/lib/utils";
 import {
@@ -423,9 +424,10 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
       // Linha com cobrança no provedor é histórico financeiro: outra cobrança
       // (ou outro método) vira linha nova, para o webhook antigo continuar vinculado.
       const keepsExistingCharge =
-        Boolean(existing?.providerPaymentId) &&
-        (existing!.providerPaymentId !== paymentData.providerPaymentId ||
-          existing!.paymentMethod !== paymentData.paymentMethod);
+        existing?.provider === MANUAL_PAYMENT_PROVIDER ||
+        (Boolean(existing?.providerPaymentId) &&
+          (existing!.providerPaymentId !== paymentData.providerPaymentId ||
+            existing!.paymentMethod !== paymentData.paymentMethod));
 
       if (existing && !keepsExistingCharge) {
         await tx.payment.update({

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { deliverEmail } from "@/lib/email";
+import { deliverEmail, queueTemplateEmail } from "@/lib/email";
+import { orderStatusTemplateKey } from "@/lib/email-templates";
 import { orderStatusMeta } from "@/lib/order-status";
 
 type CaseMailTemplate = "status_changed" | "new_message" | "attachment_uploaded";
@@ -16,7 +17,7 @@ type QueueInput = {
 
 function appUrl(path: string) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-  return `${base || "https://cartori.vercel.app"}${path}`;
+  return `${base || "https://www.cartori.com.br"}${path}`;
 }
 
 function renderEmail(input: QueueInput) {
@@ -84,4 +85,28 @@ export async function queueCaseEmail(input: QueueInput) {
 
 export function statusLabelForEmail(status: string) {
   return orderStatusMeta(status).label;
+}
+
+export async function queueOrderStatusEmail(
+  order: {
+    id: string;
+    protocol: string;
+    customerName: string;
+    customerEmail: string;
+    userId: string | null;
+  },
+  status: string
+) {
+  return queueTemplateEmail({
+    key: orderStatusTemplateKey(status),
+    to: order.customerEmail,
+    toUserId: order.userId,
+    orderId: order.id,
+    vars: {
+      customerName: order.customerName,
+      protocol: order.protocol,
+      statusLabel: statusLabelForEmail(status),
+      orderLink: appUrl(`/painel/pedidos/${order.id}`),
+    },
+  });
 }

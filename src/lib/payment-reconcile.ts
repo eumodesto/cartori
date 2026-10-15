@@ -1,4 +1,4 @@
-import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
+import { CaseEventType, OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { getPaymentById } from "@/lib/mercadopago";
 import { moneyToCents } from "@/lib/money-cents";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +17,8 @@ export type ReconcileReason =
   | "already_paid"
   | "not_approved"
   | "payment_status_updated"
+  | "refunded"
+  | "already_refunded"
   | "unlinked"
   | "empty_reference"
   | "reference_mismatch"
@@ -86,7 +88,7 @@ function mapPaymentStatus(status?: string): PaymentStatus {
   if (status === "approved") return PaymentStatus.APPROVED;
   if (status === "rejected") return PaymentStatus.REJECTED;
   if (status === "cancelled") return PaymentStatus.CANCELLED;
-  if (status === "refunded") return PaymentStatus.REFUNDED;
+  if (status === "refunded" || status === "charged_back") return PaymentStatus.REFUNDED;
   if (status === "in_process" || status === "in_mediation") {
     return PaymentStatus.IN_PROCESS;
   }
@@ -170,6 +172,50 @@ export async function reconcileFetchedPayment(
     return { applied: false, paid: false, reason: "amount_mismatch", ...resultBase };
   }
 
+  const nextPaymentStatus = mapPaymentStatus(snapshot.status);
+
+  // Estorno/chargeback vale em qualquer etapa: o dinheiro saiu, a operação para.
+  if (nextPaymentStatus === PaymentStatus.REFUNDED) {
+    if (local.status === PaymentStatus.REFUNDED && order.status === OrderStatus.CANCELLED) {
+      return { applied: false, paid: false, reason: "already_refunded", ...resultBase };
+    }
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.update({
+        where: { id: local.id },
+        data: { status: PaymentStatus.REFUNDED },
+      });
+      const otherApproved = await tx.payment.count({
+        where: { orderId: order.id, status: PaymentStatus.APPROVED, id: { not: local.id } },
+      });
+      if (order.status !== OrderStatus.CANCELLED && otherApproved === 0) {
+        await tx.order.update({
+          where: { id: order.id },
+          data: { status: OrderStatus.CANCELLED },
+        });
+        await tx.caseEvent.create({
+          data: {
+            orderId: order.id,
+            type: CaseEventType.STATUS_CHANGED,
+            payload: {
+              from: order.status,
+              to: OrderStatus.CANCELLED,
+              display: "REFUNDED",
+              source: "mercadopago",
+              mpStatus: snapshot.status || null,
+            },
+          },
+        });
+      }
+    });
+    logPaymentEvent("refunded", {
+      providerPaymentId,
+      orderId: order.id,
+      mpStatus: snapshot.status,
+      from: order.status,
+    });
+    return { applied: true, paid: false, reason: "refunded", ...resultBase };
+  }
+
   if (!PAYABLE_ORDER_STATUSES.includes(order.status)) {
     logPaymentEvent("order_not_payable", {
       providerPaymentId,
@@ -178,8 +224,6 @@ export async function reconcileFetchedPayment(
     });
     return { applied: false, paid: false, reason: "order_not_payable", ...resultBase };
   }
-
-  const nextPaymentStatus = mapPaymentStatus(snapshot.status);
 
   if (snapshot.status !== "approved") {
     if (local.status !== nextPaymentStatus) {

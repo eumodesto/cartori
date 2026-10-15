@@ -13,12 +13,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { orderStatusMeta } from "@/lib/order-status";
+import { displayStatusMeta, orderStepLabel } from "@/lib/order-status";
 
 type OpsOrder = {
   id: string;
   protocol: string;
   status: string;
+  paymentStatus: string | null;
   customerName: string;
   customerEmail: string;
   createdAt: string;
@@ -63,7 +64,8 @@ export default function OperacaoPage() {
           </TableHeader>
           <TableBody>
             {orders.map((order) => {
-              const meta = orderStatusMeta(order.status);
+              const meta = displayStatusMeta(order.status, order.paymentStatus);
+              const step = orderStepLabel(order.status);
               return (
                 <TableRow key={order.id}>
                   <TableCell>
@@ -81,6 +83,9 @@ export default function OperacaoPage() {
                   <TableCell>{order.certificates.join(", ")}</TableCell>
                   <TableCell>
                     <StatusBadge status={meta.semantic} label={meta.label} size="sm" />
+                    {step !== meta.label && (
+                      <p className="mt-1 text-[11px] text-neutral-500">{step}</p>
+                    )}
                   </TableCell>
                 </TableRow>
               );
