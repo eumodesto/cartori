@@ -80,8 +80,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-100/50 transition-colors group cursor-pointer"
           >
             <img
-              src="/favicon.svg"
-              alt="Cartori Símbolo"
+              src="/brand/interjuri-symbol.png"
+              alt="InterJuri"
               className="w-7 h-7 object-contain group-hover:scale-105 transition-transform"
             />
           </button>
@@ -90,8 +90,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             {headerContent || (
               <div className="flex items-center gap-2.5 truncate">
                 <img
-                  src="/logo-horizontal.svg"
-                  alt="Cartori B2B"
+                  src="/brand/interjuri-logo.png"
+                  alt="InterJuri"
                   className="h-7 w-auto object-contain dark:brightness-0 dark:invert"
                 />
               </div>

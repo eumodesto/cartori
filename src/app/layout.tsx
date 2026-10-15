@@ -34,11 +34,14 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [OG_IMAGE.url] },
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16.png", type: "image/png", sizes: "16x16" },
       { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-48.png", type: "image/png", sizes: "48x48" },
       { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
-    shortcut: "/favicon-32.png",
+    shortcut: "/favicon.ico",
     apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
 };

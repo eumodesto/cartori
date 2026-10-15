@@ -90,8 +90,8 @@ export function Footer() {
               <AnimatedContainer className="w-full space-y-4">
                 <Link href="/" className="inline-flex items-center">
                   <img
-                    src="/logo-horizontal.svg"
-                    alt="Cartori"
+                    src="/brand/interjuri-logo.png"
+                    alt="InterJuri"
                     className="h-8 w-auto object-contain brightness-0 invert"
                   />
                 </Link>

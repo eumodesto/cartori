@@ -29,14 +29,14 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
         <Link href="/" className="flex items-center group py-1">
           {/* Mobile Icon */}
           <img
-            src="/favicon.svg"
-            alt="Cartori"
+            src="/brand/interjuri-symbol.png"
+            alt="InterJuri"
             className="h-9 w-9 object-contain sm:hidden group-hover:scale-105 transition-transform"
           />
           {/* Desktop Horizontal Logo */}
           <img
-            src="/logo-horizontal.svg"
-            alt="Cartori - Hub de Serviços Notariais"
+            src="/brand/interjuri-logo.png"
+            alt="InterJuri"
             className="h-10 sm:h-11 w-auto object-contain hidden sm:block group-hover:scale-[1.02] transition-transform dark:brightness-0 dark:invert"
           />
         </Link>

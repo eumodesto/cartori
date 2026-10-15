@@ -56,8 +56,8 @@ export function DashboardShell({
   const logo = (
     <div className="flex items-center overflow-hidden py-1">
       <img
-        src="/logo-horizontal.svg"
-        alt="Cartori"
+        src="/brand/interjuri-logo.png"
+        alt="InterJuri"
         className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
       />
     </div>
@@ -116,8 +116,8 @@ export function DashboardShell({
               />
             </div>
             <img
-              src="/logo-horizontal.svg"
-              alt="Cartori"
+              src="/brand/interjuri-logo.png"
+              alt="InterJuri"
               className="h-7 w-auto object-contain sm:hidden dark:brightness-0 dark:invert"
             />
           </div>

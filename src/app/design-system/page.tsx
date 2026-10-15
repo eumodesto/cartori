@@ -117,15 +117,15 @@ export default function DesignSystemShowcasePage() {
         <div className="flex items-center gap-3">
           {/* Mobile Icon */}
           <img
-            src="/favicon.svg"
-            alt="Cartori Símbolo"
+            src="/brand/interjuri-symbol.png"
+            alt="InterJuri"
             className="w-7 h-7 object-contain shrink-0 sm:hidden"
           />
           {/* Desktop Horizontal Logo */}
           <div className="hidden sm:flex items-center gap-2">
             <img
-              src="/logo-horizontal.svg"
-              alt="Cartori"
+              src="/brand/interjuri-logo.png"
+              alt="InterJuri"
               className="h-6 w-auto object-contain brightness-0 invert"
             />
             <span className="text-[11px] text-brand-300 ml-1 font-mono">

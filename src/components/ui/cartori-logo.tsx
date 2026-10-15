@@ -35,16 +35,16 @@ export const CartoriLogo: React.FC<CartoriLogoProps> = ({
     <div className={cn("inline-flex items-center select-none group", className)}>
       {variant === "icon" && (
         <img
-          src="/favicon.svg"
-          alt="Cartori Símbolo"
+          src="/brand/interjuri-symbol.png"
+          alt="InterJuri"
           className={cn("object-contain shrink-0 transition-transform group-hover:scale-105", sizeConfig.icon[size])}
         />
       )}
 
       {variant === "horizontal" && (
         <img
-          src="/logo-horizontal.svg"
-          alt="Cartori - Hub de Serviços Notariais"
+          src="/brand/interjuri-logo.png"
+          alt="InterJuri"
           className={cn(
             "object-contain shrink-0 transition-transform group-hover:scale-[1.02]",
             "dark:brightness-0 dark:invert",
@@ -57,8 +57,8 @@ export const CartoriLogo: React.FC<CartoriLogoProps> = ({
         <>
           {/* Mobile/Collapsed icon */}
           <img
-            src="/favicon.svg"
-            alt="Cartori Símbolo"
+            src="/brand/interjuri-symbol.png"
+            alt="InterJuri"
             className={cn(
               "object-contain shrink-0 md:hidden transition-transform group-hover:scale-105",
               sizeConfig.icon[size]
@@ -66,8 +66,8 @@ export const CartoriLogo: React.FC<CartoriLogoProps> = ({
           />
           {/* Desktop/Expanded horizontal logo */}
           <img
-            src="/logo-horizontal.svg"
-            alt="Cartori - Hub de Serviços Notariais"
+            src="/brand/interjuri-logo.png"
+            alt="InterJuri"
             className={cn(
               "object-contain shrink-0 hidden md:block transition-transform group-hover:scale-[1.02]",
               "dark:brightness-0 dark:invert",
