@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { orderOwnerFromContext, requireAuth } from "@/lib/authorization";
 import { queueTemplateEmail } from "@/lib/email";
-import { saveOrder, listOrdersByUser } from "@/lib/order-store";
-import { buildStoredOrder, toClientOrder } from "@/lib/orders";
+import { createOrder, listOrdersByUser } from "@/lib/order-store";
+import { buildOrderDraft, toClientOrder } from "@/lib/orders";
 import {
   chargeCardForOrder,
   issuePixForOrder,
@@ -106,11 +106,11 @@ export async function POST(req: NextRequest) {
       // CPF duplicado não transfere identidade e não deve impedir o pedido.
     }
 
-    const order = await buildStoredOrder(
+    const draft = await buildOrderDraft(
       { customer, items },
       orderOwnerFromContext(auth.context)
     );
-    await saveOrder(order);
+    const order = await createOrder(draft);
 
     // Notificações do pedido (não bloqueiam o checkout).
     const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(/\/$/, "")}/painel/pedidos/${order.id}`;

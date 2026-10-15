@@ -81,7 +81,9 @@ describe("papéis de plataforma", () => {
   it("só ADMIN de plataforma gerencia usuários", () => {
     expect(canManageUsers(admin)).toBe(true);
     expect(canManageUsers(operator)).toBe(false);
+    expect(canManageUsers(clientA)).toBe(false);
     expect(canManageUsers(orgAdminA)).toBe(false);
+    expect(canManageUsers(ownerA)).toBe(false);
   });
 });
 

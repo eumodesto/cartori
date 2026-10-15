@@ -5,8 +5,8 @@ import type { StoredOrder } from "@/lib/order-types";
 
 const createdOrderIds = new Set<string>();
 
-/** Passo 10 evita colisão com `nextOrderNumber()` (máximo + 1). */
-let orderNumberCursor = 1_500_000_000 + (Date.now() % 50_000_000) * 10;
+/** Passo 1000 deixa espaço para `createOrder` (máximo + 1) sem colidir com a fixture. */
+let orderNumberCursor = 1_000_000_000 + (Date.now() % 1_000_000) * 1000;
 
 export async function cleanupOrders() {
   if (createdOrderIds.size) {
@@ -17,7 +17,7 @@ export async function cleanupOrders() {
 
 export function makeStoredOrder(overrides: Partial<StoredOrder> = {}): StoredOrder {
   const id = overrides.id ?? randomUUID();
-  orderNumberCursor += 10;
+  orderNumberCursor += 1000;
   createdOrderIds.add(id);
   const now = new Date().toISOString();
   return {

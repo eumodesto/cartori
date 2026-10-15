@@ -65,4 +65,4 @@ Pedido e pagamento — skills `order-access` e `payment-integrity`.
 
 - Signup com CPF já usado → 409.
 - `GET /api/auth/me` sem sessão → `profile: null`.
-- Script: `scripts/etapa4-authorization-check.ts` (identidade vs papel).
+- Testes: `tests/unit/auth-types.test.ts`, `tests/unit/authorization-policy.test.ts` (identidade vs papel).

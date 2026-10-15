@@ -71,4 +71,4 @@ Nova certidão: model `Product` + fields/prices (migration/seed oficial) → `pr
 ## Validação
 
 `product-store` expõe `source` internamente para distinguir banco de fallback. Não existe hoje a rota `/api/products`.
-Checkout de slug inexistente falha no `buildStoredOrder`.
+Checkout de slug inexistente falha no `buildOrderDraft`.

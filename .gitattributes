@@ -1,0 +1,2 @@
+# Checksum do Prisma = sha256 dos bytes; migrations sempre em LF em qualquer SO.
+prisma/migrations/**/*.sql text eol=lf

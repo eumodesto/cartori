@@ -1,13 +1,13 @@
 ---
 name: security-testing
-description: Define como validar regressões de identidade, autorização e tenant no Cartori (scripts etapa 4–6). Use ao fechar mudança de auth, org, membership, pedidos ou papéis — não em todo tweak de UI.
+description: Define como validar regressões de identidade, autorização e tenant no Cartori (Vitest + scripts HTTP etapa 4–6). Use ao fechar mudança de auth, org, membership, pedidos ou papéis — não em todo tweak de UI.
 ---
 
 # security-testing
 
 ## Objetivo
 
-Provar que a invariante de segurança ainda vale. O Cartori tem suíte Vitest no `package.json`; a regressão de authz crítica continua também coberta pelos scripts `scripts/etapa*`.
+Provar que a invariante de segurança ainda vale. Policy, regras de org e membership estão na suíte Vitest (roda no CI); os scripts `scripts/etapa*-http-check.ts` são o único check ponta a ponta das rotas.
 
 ## Quando usar
 
@@ -21,20 +21,20 @@ Docs-only / Skills. Helper de UI sem auth. Catálogo estático sem ACL.
 
 Checks existentes:
 
-| Script | Papel |
+| Check | Papel |
 |---|---|
-| `scripts/etapa4-authorization-check.ts` | Policy pura / papéis |
+| `tests/unit/authorization-policy.test.ts`, `authorization-matrix.test.ts`, `auth-types.test.ts` | Policy pura / papéis / matriz |
+| `tests/unit/org-rules.test.ts` | Organization ≠ Partner, uma org ACTIVE |
+| `tests/db/org-membership.test.ts` | Membership no Postgres |
+| `tests/db/order-store.test.ts`, `payment-reconcile.test.ts` | Pedidos, numeração, conciliação |
 | `scripts/etapa4-http-check.ts` | HTTP authz etapa 4 |
-| `scripts/etapa5-org-check.ts` | Organization ≠ Partner |
 | `scripts/etapa5-http-check.ts` | HTTP onboarding |
-| `scripts/etapa5-db-counts.ts` | Contagens DB etapa 5 |
-| `scripts/etapa6-org-member-check.ts` | Membership |
-| `scripts/etapa6b-authorization-check.ts` | Policy 6B (ACTIVE) |
 | `scripts/etapa6-http-check.ts` | HTTP membership |
-| `scripts/etapa6-db-counts.ts` | Contagens 6B/6C |
 | `scripts/inspect-supabase-rls.ts` | Grants + RLS deny-all (Data API fechada) |
 
-Typecheck/lint/build: `npm run typecheck`, `npm run lint`, `npm run build`.
+`npm test`, `npm run test:db`, `npm run typecheck`, `npm run lint`, `npm run build`.
+
+Os `etapa*-http-check` criam usuários no Supabase Auth e gravam no banco do `.env.local`. Só rodar contra ambiente de teste/preview, nunca com `.env.local` apontando para produção.
 
 ## Invariantes
 
@@ -44,7 +44,7 @@ Typecheck/lint/build: `npm run typecheck`, `npm run lint`, `npm run build`.
 ## Fluxo correto
 
 1. Identificar a etapa tocada (identidade / org / membership / pedidos).
-2. Rodar o script de policy correspondente **e** o HTTP se a rota mudou.
+2. Rodar `npm test` / `npm run test:db` **e** o HTTP check se a rota mudou.
 3. Não inventar Vitest paralelo que contradiz a matriz.
 
 ## Não faça
@@ -55,10 +55,10 @@ Typecheck/lint/build: `npm run typecheck`, `npm run lint`, `npm run build`.
 
 ## Gaps reais
 
-- A suíte `npm test` cobre políticas e regras puras; os scripts `scripts/etapa*` continuam sendo checks manuais de integração.
+- Rotas HTTP não têm teste automatizado no CI; os `etapa*-http-check` são manuais.
 - Cobertura HTTP depende de env (Supabase, DB) — policy pura e Vitest unitário rodam sem HTTP.
 
 ## Validação
 
-Policy scripts exit 0. Mudança de matriz → atualizar `authorization-matrix.ts` **e** o script que a espelha, na mesma onda.
+Suítes verdes. Mudança de matriz → atualizar `authorization-matrix.ts` **e** `tests/unit/authorization-matrix.test.ts`, na mesma onda.
 Nova tabela Prisma → `inspect-supabase-rls.ts --schema-only` verde; live inspect quando houver `DATABASE_URL`.

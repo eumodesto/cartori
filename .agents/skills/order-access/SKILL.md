@@ -11,7 +11,7 @@ Pedido autenticado nasce e é lido pelo `userId` do contexto. Membership não ab
 
 ## Quando usar
 
-`GET/POST /api/orders`, `GET /api/orders/[id]`, card, checkout, `order-store`, `buildStoredOrder`, caso do pedido (`/messages`, `/attachments`), mesa `/api/ops`.
+`GET/POST /api/orders`, `GET /api/orders/[id]`, card, checkout, `order-store`, `buildOrderDraft`, `createOrder`, caso do pedido (`/messages`, `/attachments`), mesa `/api/ops`.
 
 ## Quando NÃO usar
 
@@ -25,7 +25,9 @@ Criação (`POST /api/orders`):
 - Exige `requireAuth`.
 - Dono: `orderOwnerFromContext(auth.context)` → `{ userId, organizationId }`.
 - Body `role` / `userId` / `organizationId` / `sellerOrgId` **não** definem dono.
-- Itens: `buildStoredOrder` → `getProductBySlug` + `priceCertificate` (snapshot no pedido).
+- Itens: `buildOrderDraft` → `getProductBySlug` + `priceCertificate` (snapshot no pedido), sem número nem protocolo.
+- `createOrder(draft)` grava pedido + itens numa transação curta, sem cobrança. Número = máximo + 1 sob `pg_advisory_xact_lock` (serializa entre instâncias); P2002 → até 3 tentativas. Protocolo = `protocolFromNumber`.
+- Cobrança (PIX/cartão) vem depois, fora da transação de criação.
 - Canal default `CARTORI`, `kind` OWN, `sellerOrgId` null.
 
 Leitura:
@@ -52,8 +54,8 @@ Checkout autenticado → POST `/api/orders` com customer + items → servidor mo
 
 `src/lib/order-access.ts`
 `src/lib/case-access.ts` / `case-store.ts` / `case-storage.ts` / `case-email.ts`
-`src/lib/order-store.ts` (`getOwnedOrder`, `listOrdersByUser`, `saveOrder`)
-`src/lib/orders.ts` (`buildStoredOrder`, `toClientOrder`)
+`src/lib/order-store.ts` (`createOrder`, `getOwnedOrder`, `listOrdersByUser`, `saveOrder`)
+`src/lib/orders.ts` (`buildOrderDraft`, `toClientOrder`)
 `src/lib/pricing.ts`
 `src/app/api/orders/route.ts`
 `src/app/api/orders/[id]/route.ts`
@@ -64,6 +66,8 @@ Checkout autenticado → POST `/api/orders` com customer + items → servidor mo
 - `findUnique({ where: { id } })` em rota de cliente.
 - `where: { OR: [{ userId }, { organizationId }] }`.
 - Confiar no total enviado pelo browser.
+- Calcular número de pedido fora do `createOrder` (máximo + 1 sem lock colide entre instâncias).
+- Apagar/recriar `OrderItem` de pedido existente: itens carregam status, rastreio e arquivo emitido da mesa.
 - Implementar lista org-wide (DENY / TBD na matriz).
 
 ## Gaps reais

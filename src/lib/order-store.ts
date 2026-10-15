@@ -11,6 +11,7 @@ import {
 import { findExistingCartorioIds } from "@/lib/cartorios";
 import { prisma } from "@/lib/prisma";
 import {
+  OrderDraft,
   StoredOrder,
   StoredOrderItem,
   StoredOrderStatus,
@@ -210,11 +211,117 @@ export async function getOrderById(id: string): Promise<StoredOrder | null> {
   return order ? toStoredOrder(order) : null;
 }
 
-export async function nextOrderNumber(): Promise<number> {
-  const aggregate = await prisma.order.aggregate({
-    _max: { orderNumber: true },
-  });
-  return Math.max(1000, aggregate._max.orderNumber ?? 1000) + 1;
+export function protocolFromNumber(orderNumber: number): string {
+  return `CTR-${String(orderNumber).padStart(6, "0")}`;
+}
+
+/** Chave do advisory lock que serializa a numeração entre instâncias. */
+const ORDER_NUMBER_LOCK_KEY = 7_412_001;
+const CREATE_ORDER_ATTEMPTS = 3;
+
+async function orderItemRows(orderId: string, items: StoredOrderItem[]) {
+  const knownCartorioIds = await findExistingCartorioIds(
+    items.map((item) => item.cartorioId)
+  );
+  return items.map((item) => ({
+    id: item.id,
+    orderId,
+    category: item.category,
+    certificateType: item.certificateType,
+    certificateName: item.certificateName,
+    state: item.state,
+    city: item.city,
+    cartorioId:
+      item.cartorioId && knownCartorioIds.has(item.cartorioId)
+        ? item.cartorioId
+        : null,
+    cartorioName: item.cartorioName,
+    isUnknownCartorio: item.isUnknownCartorio,
+    documentData: item.documentData,
+    format: item.format as CertificateFormat,
+    hasApostille: item.hasApostille,
+    hasShipping: item.hasShipping,
+    listPrice: item.listPrice,
+    itemPrice: item.itemPrice,
+    searchFee: item.searchFee,
+    apostilleFee: item.apostilleFee,
+    shippingPrice: item.shippingPrice,
+    totalPrice: item.totalPrice,
+    referenceTag: item.referenceTag,
+    estimatedDays: item.estimatedDays,
+  }));
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
+  );
+}
+
+/**
+ * Grava um pedido novo com itens, sem cobrança. Número = máximo + 1 sob
+ * `pg_advisory_xact_lock`; P2002 só ocorre se algum escritor ignorar o lock
+ * (ex.: instância com código antigo durante o deploy), e então tenta de novo.
+ */
+export async function createOrder(draft: OrderDraft): Promise<StoredOrder> {
+  const items = await orderItemRows(draft.id, draft.items);
+
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(${ORDER_NUMBER_LOCK_KEY})`;
+          const aggregate = await tx.order.aggregate({ _max: { orderNumber: true } });
+          const orderNumber = Math.max(1000, aggregate._max.orderNumber ?? 1000) + 1;
+
+          await tx.order.create({
+            data: {
+              id: draft.id,
+              orderNumber,
+              protocol: protocolFromNumber(orderNumber),
+              channel: (draft.channel as OrderChannel) || OrderChannel.CARTORI,
+              kind: (draft.kind as OrderKind) || OrderKind.OWN,
+              sellerOrgId: draft.sellerOrgId,
+              userId: draft.userId || undefined,
+              organizationId: draft.organizationId || undefined,
+              status: draft.status as OrderStatus,
+              totalAmount: draft.totalAmount,
+              itemsTotal: draft.itemsTotal,
+              shippingTotal: draft.shippingTotal,
+              discountTotal: draft.discountTotal,
+              customerName: draft.customerName,
+              customerEmail: draft.customerEmail,
+              customerPhone: draft.customerPhone,
+              customerCpfCnpj: draft.customerCpfCnpj,
+              isCompany: draft.isCompany,
+              companyName: draft.companyName,
+              oabOrCreci: draft.oabOrCreci,
+              shippingCep: draft.shippingCep,
+              shippingStreet: draft.shippingStreet,
+              shippingNumber: draft.shippingNumber,
+              shippingComplement: draft.shippingComplement,
+              shippingDistrict: draft.shippingDistrict,
+              shippingCity: draft.shippingCity,
+              shippingState: draft.shippingState,
+            },
+          });
+          if (items.length) {
+            await tx.orderItem.createMany({ data: items });
+          }
+        },
+        { maxWait: 10_000, timeout: 10_000 }
+      );
+      break;
+    } catch (error) {
+      if (!isUniqueViolation(error) || attempt >= CREATE_ORDER_ATTEMPTS) throw error;
+    }
+  }
+
+  const saved = await getOrderById(draft.id);
+  if (!saved) {
+    throw new Error("Pedido não foi persistido.");
+  }
+  return saved;
 }
 
 export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
@@ -279,39 +386,12 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
       },
     });
 
-    await tx.orderItem.deleteMany({ where: { orderId: order.id } });
+    // Itens são snapshot da venda e carregam estado operacional da mesa
+    // (status, rastreio, arquivo emitido): nunca recriar, só inserir os ausentes.
     if (order.items.length) {
-      const knownCartorioIds = await findExistingCartorioIds(
-        order.items.map((item) => item.cartorioId)
-      );
       await tx.orderItem.createMany({
-        data: order.items.map((item) => ({
-          id: item.id,
-          orderId: order.id,
-          category: item.category,
-          certificateType: item.certificateType,
-          certificateName: item.certificateName,
-          state: item.state,
-          city: item.city,
-          cartorioId:
-            item.cartorioId && knownCartorioIds.has(item.cartorioId)
-              ? item.cartorioId
-              : null,
-          cartorioName: item.cartorioName,
-          isUnknownCartorio: item.isUnknownCartorio,
-          documentData: item.documentData,
-          format: item.format as CertificateFormat,
-          hasApostille: item.hasApostille,
-          hasShipping: item.hasShipping,
-          listPrice: item.listPrice,
-          itemPrice: item.itemPrice,
-          searchFee: item.searchFee,
-          apostilleFee: item.apostilleFee,
-          shippingPrice: item.shippingPrice,
-          totalPrice: item.totalPrice,
-          referenceTag: item.referenceTag,
-          estimatedDays: item.estimatedDays,
-        })),
+        data: await orderItemRows(order.id, order.items),
+        skipDuplicates: true,
       });
     }
 

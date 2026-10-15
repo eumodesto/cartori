@@ -92,6 +92,6 @@ UI dashboard: `isBusinessLockedHref` / `B2B_LOCKED_HREFS` trava dossiês, organi
 
 ## Validação
 
-`scripts/etapa4-authorization-check.ts`
-`scripts/etapa5-org-check.ts` / `etapa5-http-check.ts`
-`scripts/etapa6-org-member-check.ts` / `etapa6b-authorization-check.ts` / `etapa6-http-check.ts`
+`tests/unit/authorization-policy.test.ts` / `authorization-matrix.test.ts` / `org-rules.test.ts`
+`tests/db/org-membership.test.ts`
+`scripts/etapa4-http-check.ts` / `etapa5-http-check.ts` / `etapa6-http-check.ts` (HTTP, manuais)

@@ -1,7 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { getOrderById, nextOrderNumber, saveOrder } from "@/lib/order-store";
+import {
+  createOrder,
+  getOrderById,
+  protocolFromNumber,
+  saveOrder,
+} from "@/lib/order-store";
+import type { OrderDraft } from "@/lib/order-types";
 import { reconcileFetchedPayment } from "@/lib/payment-reconcile";
 import {
   approvedSnapshot,
@@ -102,43 +108,126 @@ describe("saveOrder: comportamento atual de defeitos conhecidos", () => {
     expect((await readOrderState(input.id)).status).toBe("PENDING_PAYMENT");
   });
 
-  it("[F6] nextOrderNumber devolve o mesmo número a dois checkouts; o segundo falha", async () => {
-    const first = await nextOrderNumber();
-    const second = await nextOrderNumber();
-    expect(second).toBe(first);
+});
 
-    const a = makeStoredOrder({ orderNumber: first });
-    await saveOrder(a);
-
-    const b = makeStoredOrder({ orderNumber: second });
-    await expect(saveOrder(b)).rejects.toThrow();
-    expect(await prisma.order.count({ where: { id: b.id } })).toBe(0);
-  });
-
-  it("[F10] salvar recria os itens e zera status, rastreio e arquivo emitido", async () => {
+describe("saveOrder: itens não são recriados (F10)", () => {
+  it("preserva status, rastreio, arquivo emitido e observações da mesa", async () => {
     const input = makeStoredOrder();
     await saveOrder(input);
-    await prisma.orderItem.update({
-      where: { id: input.items[0].id },
-      data: {
-        status: "SHIPPED",
-        trackingCode: "BR000000000BR",
-        issuedFileUrl: "https://example.invalid/certidao.pdf",
-        notes: "observação da mesa",
-      },
-    });
+    const operational = {
+      status: "SHIPPED",
+      trackingCode: "BR000000000BR",
+      issuedFileUrl: "https://example.invalid/certidao.pdf",
+      notes: "observação da mesa",
+    } as const;
+    await prisma.orderItem.update({ where: { id: input.items[0].id }, data: operational });
+    const before = (await readOrderState(input.id)).items[0];
 
     const loaded = await getOrderById(input.id);
     await saveOrder(loaded!);
 
     const [item] = (await readOrderState(input.id)).items;
-    expect(item.id).toBe(input.items[0].id);
-    expect(item.status).toBe("PENDING_PAYMENT");
-    expect(item.trackingCode).toBeNull();
-    expect(item.issuedFileUrl).toBeNull();
-    expect(item.notes).toBeNull();
+    expect(item).toMatchObject({ id: input.items[0].id, ...operational });
+    expect(item.createdAt).toEqual(before.createdAt);
   });
 
+  it("insere um item ausente sem tocar nos existentes", async () => {
+    const input = makeStoredOrder();
+    await saveOrder(input);
+    await prisma.orderItem.update({
+      where: { id: input.items[0].id },
+      data: { trackingCode: "BR111111111BR" },
+    });
+
+    const extra = { ...input.items[0], id: randomUUID() };
+    await saveOrder({ ...input, items: [...input.items, extra] });
+
+    const items = (await readOrderState(input.id)).items;
+    expect(items).toHaveLength(2);
+    expect(items.find((i) => i.id === input.items[0].id)?.trackingCode).toBe("BR111111111BR");
+  });
+});
+
+function makeDraft(): OrderDraft {
+  return makeStoredOrder();
+}
+
+async function maxOrderNumber() {
+  const { _max } = await prisma.order.aggregate({ _max: { orderNumber: true } });
+  return _max.orderNumber ?? 1000;
+}
+
+describe("createOrder (F6)", () => {
+  it("grava pedido e itens sem cobrança, com número = máximo + 1 e protocolo derivado", async () => {
+    const max = await maxOrderNumber();
+    const draft = makeDraft();
+
+    const order = await createOrder(draft);
+
+    expect(order.id).toBe(draft.id);
+    expect(order.orderNumber).toBe(max + 1);
+    expect(order.protocol).toBe(protocolFromNumber(max + 1));
+    expect(order.status).toBe("PENDING_PAYMENT");
+    expect(order.payment).toBeNull();
+    expect(order.items.map((i) => i.id)).toEqual(draft.items.map((i) => i.id));
+    expect((await readOrderState(order.id)).payments).toHaveLength(0);
+  });
+
+  it("20 criações simultâneas recebem números distintos e contíguos", async () => {
+    const max = await maxOrderNumber();
+    const orders = await Promise.all(
+      Array.from({ length: 20 }, () => createOrder(makeDraft()))
+    );
+
+    const numbers = orders.map((o) => o.orderNumber).sort((a, b) => a - b);
+    expect(numbers).toEqual(Array.from({ length: 20 }, (_, i) => max + 1 + i));
+    expect(new Set(orders.map((o) => o.protocol)).size).toBe(20);
+  });
+
+  it("controle: sem o advisory lock, a mesma carga colide (o teste detecta a corrida)", async () => {
+    const results = await Promise.allSettled(
+      Array.from({ length: 8 }, () =>
+        prisma.$transaction(
+          async (tx) => {
+            const { _max } = await tx.order.aggregate({ _max: { orderNumber: true } });
+            await tx.$executeRaw`SELECT pg_sleep(0.1)`;
+            const order = makeStoredOrder({ orderNumber: (_max.orderNumber ?? 1000) + 1 });
+            await tx.order.create({
+              data: {
+                id: order.id,
+                orderNumber: order.orderNumber,
+                protocol: order.protocol,
+                totalAmount: order.totalAmount,
+                itemsTotal: order.itemsTotal,
+                customerName: order.customerName,
+                customerEmail: order.customerEmail,
+                customerPhone: order.customerPhone,
+                customerCpfCnpj: order.customerCpfCnpj,
+              },
+            });
+          },
+          { maxWait: 10_000, timeout: 10_000 }
+        )
+      )
+    );
+
+    expect(results.some((r) => r.status === "rejected")).toBe(true);
+  });
+
+  it("esgotadas as tentativas por conflito, falha sem gravar nada", async () => {
+    const blockerNumber = (await maxOrderNumber()) + 100;
+    await saveOrder(
+      makeStoredOrder({
+        orderNumber: blockerNumber,
+        protocol: protocolFromNumber(blockerNumber + 1),
+      })
+    );
+    const draft = makeDraft();
+
+    await expect(createOrder(draft)).rejects.toMatchObject({ code: "P2002" });
+    expect(await prisma.order.count({ where: { id: draft.id } })).toBe(0);
+    expect(await prisma.orderItem.count({ where: { orderId: draft.id } })).toBe(0);
+  });
 });
 
 describe("saveOrder: status e método de pagamento (F11)", () => {

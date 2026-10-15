@@ -26,7 +26,7 @@ Valor de pagamento — `payment-integrity`.
 - Produção aplica migrations no build da Vercel (`scripts/vercel-build.mjs` → `prisma migrate deploy`).
 - `prisma migrate dev` e `migrate diff --from-migrations` **não funcionam**: a shadow DB quebra em `20260902230000` (REVOKE em `_prisma_migrations`). Ver fluxo abaixo.
 - Legado recuperado: `PlatformAuditLog` (`20260906180000`) e `User.staffPermissions` (`20260909160000`) existem em produção sem uso no código; estão no schema para o diff não gerar DROP.
-- Transações reais: onboarding (`persistCreatorOnboarding`), `saveOrder`, mark PAID no reconcile.
+- Transações reais: onboarding (`persistCreatorOnboarding`), `createOrder` (advisory lock na numeração), `saveOrder`, mark PAID no reconcile.
 - Etapa 0: `prisma/migrations/20260902230000_revoke_data_api_anon_authenticated/` revoga ALL nas tabelas Prisma de então para `anon` e `authenticated`. Não revoga `service_role`. Não ligava RLS. Rollback no mesmo diretório.
 - Lock Data API: `prisma/migrations/20260918010000_lock_public_rls_deny_data_api/` revoga ALL em **todas** as tabelas Prisma atuais (inclui `OrganizationMember`, `Dossier*`) **e** liga RLS sem policies (deny-all para `anon`/`authenticated`). `postgres` tem `rolbypassrls`; Prisma segue. Não é ACL de tenant.
 - Inventário: `npx tsx scripts/inspect-supabase-rls.ts` (live) ou `--schema-only`.
@@ -78,6 +78,5 @@ Antes de deploy, conferir produção só leitura: `npx prisma migrate status` e 
 ## Validação
 
 `npm run test:db` (Postgres 17 em Docker com todas as migrations; CI repete em `.github/workflows/ci.yml`).
-`scripts/etapa5-db-counts.ts`, `scripts/etapa6-db-counts.ts` (contagens, não substituem migrate).
 `scripts/inspect-supabase-rls.ts` após migration de tabela/grants/RLS.
 Após migration: generate + typecheck do app se o schema mudou (fora desta skill docs-only).

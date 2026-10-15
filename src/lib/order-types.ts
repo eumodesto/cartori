@@ -93,6 +93,12 @@ export interface StoredOrder {
   updatedAt: string;
 }
 
+/** Pedido montado e precificado, antes de receber número e protocolo no banco. */
+export type OrderDraft = Omit<
+  StoredOrder,
+  "orderNumber" | "protocol" | "payment" | "createdAt" | "updatedAt"
+>;
+
 export interface CreateOrderPayload {
   customer: CustomerData;
   items: CartItem[];

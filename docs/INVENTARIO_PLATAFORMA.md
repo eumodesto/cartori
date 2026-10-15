@@ -32,8 +32,8 @@ O pedido é pago via Mercado Pago e vira um caso operacional com mensagens, anex
 | IA | OpenAI (`gpt-4o-mini` por padrão) para a assistente Amanda | `src/app/api/amanda/chat` |
 | E-mail | Resend, com `EmailOutbox` e templates editáveis | `src/lib/email.ts` |
 | Arquivos | Supabase Storage: `case-files` (privado, URL assinada) e `avatars` (público) | `src/lib/case-storage.ts` |
-| Deploy | Vercel (`eumodesto/cartori`), build via `scripts/vercel-build.mjs` | `vercel.json` |
-| Dados externos | BrasilAPI / ReceitaWS (CNPJ), ViaCEP, IBGE | `src/lib/cnpj.ts`, `viacep.ts`, `ibge.ts` |
+| Deploy | Vercel (time `cartori`, projeto `cartori`), build via `scripts/vercel-build.mjs` | `vercel.json` |
+| Dados externos | BrasilAPI / ReceitaWS (CNPJ), ViaCEP; IBGE como snapshot estático (a API ao vivo falha no Node por cadeia TLS incompleta) | `src/lib/cnpj.ts`, `viacep.ts`, `ibge.ts`, `ibge-localidades.json` |
 
 ### Estrutura do repositório
 
@@ -45,7 +45,7 @@ O pedido é pago via Mercado Pago e vira um caso operacional com mensagens, anex
 | `src/components` | ui (design system), storefront, dashboard, auth, cartori (Amanda) |
 | `src/middleware.ts` | Renova a sessão Supabase; redireciona anônimo em `/painel`, `/operacao`, `/admin` |
 | `prisma` | schema + 14 migrations (revoke da Data API e RLS deny-all) |
-| `scripts` | 13 scripts de verificação (etapa4 a etapa8, RLS, contagens), rodados à mão com `tsx` |
+| `scripts` | Build da Vercel, banco de teste, inspeção de RLS e 3 checks HTTP manuais (etapa 4 a 6, rodados com `tsx`) |
 | `.agents/skills` | 8 skills de procedimento (auth, tenant, pedidos, pagamento, banco, Amanda, catálogo, testes) |
 | `docs` | `ARCHITECTURE_AND_MVP_PLAN.md` (ER, roadmap) e este inventário |
 
@@ -283,9 +283,8 @@ A mesa nunca define PAID; esse status vem só da reconciliação do Mercado Pago
 
 Scripts de validação:
 
-- `scripts/etapa4-authorization-check.ts`: testa a policy pura e passa.
+- Policy, matriz, regras de org, membership, templates de e-mail, pedidos e conciliação: suíte Vitest (`tests/unit`, `tests/db`), executada no CI.
 - `etapa4/5/6-http-check.ts`: testam via HTTP com usuários reais e exigem o servidor rodando.
-- `etapa6-org-member-check.ts`, `etapa7-admin-users-check.ts`, `etapa8-email-templates-check.ts`.
 - `inspect-supabase-rls.ts`: confere o RLS no banco real e passa.
 
 Nenhum desses scripts roda em CI.

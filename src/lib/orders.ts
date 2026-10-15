@@ -4,22 +4,18 @@ import { certificateNameWithInteiroTeor } from "@/lib/inteiro-teor";
 import { expandInteiroTeorCartItems, priceCertificate, roundMoney } from "@/lib/pricing";
 import {
   CreateOrderPayload,
+  OrderDraft,
   StoredOrder,
   StoredOrderItem,
 } from "@/lib/order-types";
 import { CartItem, CertificateFormat, CertificateTypeConfig } from "@/lib/types";
 import { createId, digitsOnly } from "@/lib/utils";
-import { nextOrderNumber } from "@/lib/order-store";
 
 const FORMATS: CertificateFormat[] = [
   "DIGITAL_ECERTIDAO",
   "PHYSICAL_PAPER",
   "BOTH",
 ];
-
-export function protocolFromNumber(orderNumber: number): string {
-  return `CTR-${String(orderNumber).padStart(6, "0")}`;
-}
 
 export async function buildOrderItemFromCart(item: CartItem): Promise<StoredOrderItem> {
   const cert = await getProductBySlug(item.certificateTypeSlug);
@@ -110,10 +106,10 @@ function buildOrderItemFromCert(
   };
 }
 
-export async function buildStoredOrder(
+export async function buildOrderDraft(
   payload: CreateOrderPayload,
   owner?: { userId?: string | null; organizationId?: string | null }
-): Promise<StoredOrder> {
+): Promise<OrderDraft> {
   if (!payload.items?.length) {
     throw new Error("O pedido precisa de ao menos uma certidão.");
   }
@@ -135,8 +131,6 @@ export async function buildStoredOrder(
     items.reduce((sum, item) => sum + item.shippingPrice, 0)
   );
   const totalAmount = roundMoney(itemsTotal + shippingTotal);
-  const orderNumber = await nextOrderNumber();
-  const now = new Date().toISOString();
   const customer = payload.customer;
   const needsShipping = shippingTotal > 0;
 
@@ -156,8 +150,6 @@ export async function buildStoredOrder(
 
   return {
     id: createId(),
-    orderNumber,
-    protocol: protocolFromNumber(orderNumber),
     channel: "CARTORI",
     kind: "OWN",
     sellerOrgId: null,
@@ -185,9 +177,6 @@ export async function buildStoredOrder(
     shippingCity: customer.shipping?.city,
     shippingState: customer.shipping?.state,
     items,
-    payment: null,
-    createdAt: now,
-    updatedAt: now,
   };
 }
 
