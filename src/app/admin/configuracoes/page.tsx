@@ -11,7 +11,9 @@ import { TrackingTester } from "@/components/analytics/tracking-tester";
 import {
   EMPTY_TRACKING_CONFIG,
   TRACKING_FIELDS,
+  isValidAdsLabel,
   isValidTrackingId,
+  normalizeAdsLabel,
   normalizeTrackingId,
   type TrackingConfig,
   type TrackingField,
@@ -75,9 +77,16 @@ export default function ConfiguracoesPage() {
       .finally(() => setFetching(false));
   }, []);
 
-  const invalidField = FIELD_ORDER.find(
-    (field) => form[field] && !isValidTrackingId(field, form[field])
-  );
+  const labelError = !form.adsPurchaseLabel
+    ? undefined
+    : !isValidAdsLabel(form.adsPurchaseLabel)
+      ? "Use só o trecho depois da barra (letras, números, - e _)."
+      : !form.adsId
+        ? "Informe o ID do Google Ads."
+        : undefined;
+  const invalidField =
+    FIELD_ORDER.find((field) => form[field] && !isValidTrackingId(field, form[field])) ||
+    (labelError ? "adsPurchaseLabel" : undefined);
   const dirty = JSON.stringify(form) !== JSON.stringify(saved);
   const nothingConfigured = FIELD_ORDER.every((field) => !form[field]);
 
@@ -177,10 +186,34 @@ export default function ConfiguracoesPage() {
                 <p className="text-[11px] leading-relaxed text-neutral-500">
                   {FIELD_HELP[field].where}
                 </p>
+                {field === "adsId" && (
+                  <div className="space-y-1.5 rounded-lg border border-neutral-200 bg-neutral-0 p-3">
+                    <Input
+                      label="Rótulo da conversão de compra"
+                      value={form.adsPurchaseLabel}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          adsPurchaseLabel: normalizeAdsLabel(e.target.value),
+                        }))
+                      }
+                      placeholder="AbC1dEfGhIj"
+                      disabled={fetching || !form.adsId}
+                      error={labelError}
+                      className="font-mono"
+                    />
+                    <p className="text-[11px] leading-relaxed text-neutral-500">
+                      Metas → Conversões → Compras → Configuração da tag → Instalar a tag por conta
+                      própria. Em <span className="font-mono">send_to: &apos;AW-…/rótulo&apos;</span>,
+                      copie só o trecho depois da barra. Dispara na página de obrigado, só com
+                      pagamento aprovado.
+                    </p>
+                  </div>
+                )}
                 <TrackingTester
                   field={field}
                   savedId={saved[field]}
-                  unsaved={form[field] !== saved[field] || form.enabled !== saved.enabled}
+                  unsaved={dirty}
                 />
               </div>
             );

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Copy, FileText, Plus, QrCode } from "lucide-react";
 import { MetricCard } from "@/components/cartori/metric-card";
 import { PixQr } from "@/components/storefront/pix-qr";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import {
   PublicOrder,
+  isOrderPaid,
   livePixCode,
   orderStatusMeta,
 } from "@/lib/order-status";
@@ -50,6 +51,7 @@ export function MyOrders({
   enablePayment?: boolean;
 }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [orders, setOrders] = React.useState<PublicOrder[]>([]);
   const [error, setError] = React.useState("");
   const [copied, setCopied] = React.useState(false);
@@ -121,6 +123,12 @@ export function MyOrders({
 
   const payPixCode = livePixCode(payOrder?.payment?.qrCode);
 
+  // Pagamento confirmado com o modal aberto: segue para a página de obrigado.
+  const paidOrderId = isOrderPaid(payOrder) ? payOrder?.id : undefined;
+  React.useEffect(() => {
+    if (paidOrderId) router.push(`/pedido/${paidOrderId}/confirmado`);
+  }, [paidOrderId, router]);
+
   const paidCount = orders.filter(
     (order) => order.status !== "PENDING_PAYMENT" && order.status !== "CANCELLED"
   ).length;
@@ -142,7 +150,7 @@ export function MyOrders({
     return <p className="text-sm text-neutral-500">Carregando seus pedidos...</p>;
   }
 
-  const payIsPaid = payOrder && payOrder.status !== "PENDING_PAYMENT";
+  const payIsPaid = isOrderPaid(payOrder);
 
   return (
     <div className="space-y-6">

@@ -43,6 +43,22 @@ export function orderStatusMeta(status: string) {
   return STATUS_MAP[status] || { label: status, semantic: "neutral" as StatusType };
 }
 
+// Mesmo conjunto de POST_PAYMENT_STATUSES (authorization-policy): status que só existem após pagamento.
+const SETTLED_STATUSES = new Set([
+  "PAID",
+  "IN_ANALYSIS",
+  "IN_CARTORIO_SEARCH",
+  "CERTIFICATE_ISSUED",
+  "SHIPPED",
+  "COMPLETED",
+]);
+
+/** Pedido com pagamento confirmado pelo servidor. Cancelado nunca conta como compra. */
+export function isOrderPaid(order: Pick<PublicOrder, "status" | "payment"> | null | undefined) {
+  if (!order || order.status === "CANCELLED") return false;
+  return SETTLED_STATUSES.has(order.status) || order.payment?.status === "APPROVED";
+}
+
 export function livePixCode(qrCode?: string) {
   if (!qrCode) return "";
   if (/^CARTORI-.+-DEMO$/i.test(qrCode)) return "";

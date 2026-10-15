@@ -4,6 +4,7 @@ import {
   checkPublishedTags,
   parseStoredTracking,
   parseTrackingInput,
+  purchaseConversionTarget,
 } from "@/lib/tracking";
 
 describe("parseTrackingInput", () => {
@@ -16,7 +17,13 @@ describe("parseTrackingInput", () => {
     });
     expect(result).toEqual({
       ok: true,
-      config: { enabled: true, gtmId: "GTM-ABC1234", ga4Id: "G-ABC123DEF4", adsId: "AW-123456789" },
+      config: {
+        enabled: true,
+        gtmId: "GTM-ABC1234",
+        ga4Id: "G-ABC123DEF4",
+        adsId: "AW-123456789",
+        adsPurchaseLabel: "",
+      },
     });
   });
 
@@ -27,7 +34,25 @@ describe("parseTrackingInput", () => {
       gtmId: "",
       ga4Id: "G-ABC123DEF4",
       adsId: "",
+      adsPurchaseLabel: "",
     });
+  });
+
+  it("rótulo de conversão mantém maiúsculas e exige ID do Ads", () => {
+    const ok = parseTrackingInput({
+      enabled: true,
+      adsId: "AW-123456789",
+      adsPurchaseLabel: " AbC1d-EfG_h ",
+    });
+    expect(ok.ok && ok.config.adsPurchaseLabel).toBe("AbC1d-EfG_h");
+
+    expect(parseTrackingInput({ enabled: true, adsPurchaseLabel: "AbC1dEfGh" })).toMatchObject({
+      ok: false,
+      field: "adsPurchaseLabel",
+    });
+    expect(
+      parseTrackingInput({ enabled: true, adsId: "AW-123456789", adsPurchaseLabel: "AW-1/x'y" })
+    ).toMatchObject({ ok: false, field: "adsPurchaseLabel" });
   });
 
   it.each([
@@ -49,6 +74,7 @@ describe("parseTrackingInput", () => {
     const result = parseTrackingInput({ enabled: true, extra: "x", role: "ADMIN" });
     expect(result.ok && Object.keys(result.config).sort()).toEqual([
       "adsId",
+      "adsPurchaseLabel",
       "enabled",
       "ga4Id",
       "gtmId",
@@ -66,12 +92,24 @@ describe("parseStoredTracking", () => {
     const config = parseStoredTracking(
       JSON.stringify({ enabled: true, gtmId: "GTM-X');alert(1);//", ga4Id: "G-ABC123DEF4" })
     );
-    expect(config).toEqual({ enabled: true, gtmId: "", ga4Id: "G-ABC123DEF4", adsId: "" });
+    expect(config).toEqual({
+      enabled: true,
+      gtmId: "",
+      ga4Id: "G-ABC123DEF4",
+      adsId: "",
+      adsPurchaseLabel: "",
+    });
   });
 });
 
 describe("checkPublishedTags", () => {
-  const config = { enabled: true, gtmId: "GTM-ABC1234", ga4Id: "G-ABC123DEF4", adsId: "AW-123456789" };
+  const config = {
+    enabled: true,
+    gtmId: "GTM-ABC1234",
+    ga4Id: "G-ABC123DEF4",
+    adsId: "AW-123456789",
+    adsPurchaseLabel: "",
+  };
   const fullCsp = [
     "default-src 'self'",
     "script-src 'self' https://*.googletagmanager.com https://www.googleadservices.com",
@@ -112,7 +150,25 @@ describe("checkPublishedTags", () => {
 });
 
 describe("activeTrackingTags", () => {
-  const full = { enabled: true, gtmId: "GTM-ABC1234", ga4Id: "G-ABC123DEF4", adsId: "AW-123456789" };
+  const full = {
+    enabled: true,
+    gtmId: "GTM-ABC1234",
+    ga4Id: "G-ABC123DEF4",
+    adsId: "AW-123456789",
+    adsPurchaseLabel: "AbC1dEfGhIj",
+  };
+
+  it("destino da conversão de compra só com Ads, rótulo e tags ativas", () => {
+    expect(purchaseConversionTarget(full)).toBe("AW-123456789/AbC1dEfGhIj");
+    expect(purchaseConversionTarget({ ...full, enabled: false })).toBeNull();
+    expect(purchaseConversionTarget({ ...full, adsPurchaseLabel: "" })).toBeNull();
+    expect(purchaseConversionTarget({ ...full, adsId: "" })).toBeNull();
+  });
+
+  it("rótulo salvo sem ID do Ads é descartado na leitura", () => {
+    const stored = parseStoredTracking(JSON.stringify({ ...full, adsId: "" }));
+    expect(stored.adsPurchaseLabel).toBe("");
+  });
 
   it("pausado não carrega nada", () => {
     expect(activeTrackingTags({ ...full, enabled: false })).toEqual({ gtmId: null, gtagIds: [] });

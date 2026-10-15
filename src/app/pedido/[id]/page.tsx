@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { CheckCircle2, Copy } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Stepper } from "@/components/ui/stepper";
 import { PixQr } from "@/components/storefront/pix-qr";
 import { formatCurrency } from "@/lib/utils";
-import { livePixCode, type PublicOrder } from "@/lib/order-status";
+import { isOrderPaid, livePixCode, type PublicOrder } from "@/lib/order-status";
 
 function loginHref(orderId: string) {
   return `/?entrar=1&next=${encodeURIComponent(`/pedido/${orderId}`)}`;
@@ -20,6 +20,7 @@ function loginHref(orderId: string) {
 
 export default function PedidoPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { profile, loading: authLoading } = useAuth();
   const [order, setOrder] = useState<PublicOrder | null>(null);
   const [error, setError] = useState("");
@@ -106,7 +107,11 @@ export default function PedidoPage() {
     setError("");
   };
 
-  const paid = order?.status === "PAID" || order?.payment?.status === "APPROVED";
+  const paid = isOrderPaid(order);
+
+  useEffect(() => {
+    if (paid && order) router.replace(`/pedido/${order.id}/confirmado`);
+  }, [paid, order, router]);
 
   return (
     <StorefrontShell>
@@ -157,19 +162,13 @@ export default function PedidoPage() {
                     Pagamento confirmado
                   </h1>
                   <p className="text-sm text-neutral-700 mt-1">
-                    Protocolo <strong>{order.protocol}</strong>. A emissão entra na fila operacional.
-                    O acompanhamento detalhado será no painel.
+                    Protocolo <strong>{order.protocol}</strong>. Abrindo a confirmação do pedido...
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Link href="/painel">
-                  <Button>Abrir painel</Button>
-                </Link>
-                <Link href="/">
-                  <Button variant="outline">Nova solicitação</Button>
-                </Link>
-              </div>
+              <Link href={`/pedido/${order.id}/confirmado`}>
+                <Button>Ver confirmação</Button>
+              </Link>
             </div>
           )}
 

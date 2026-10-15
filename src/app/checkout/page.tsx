@@ -17,6 +17,7 @@ import { RadioGroup } from "@/components/ui/radio-group";
 import { Stepper } from "@/components/ui/stepper";
 import { MercadoPagoCardBrick } from "@/components/storefront/mercadopago-card-brick";
 import { CustomerData } from "@/lib/types";
+import { isOrderPaid, type PublicOrder } from "@/lib/order-status";
 import { maskCep, maskCpfCnpj, maskPhone } from "@/lib/utils";
 import {
   isValidCpfCnpj,
@@ -152,9 +153,11 @@ export default function CheckoutPage() {
     return "";
   };
 
-  const goToDashboard = (orderId: string) => {
+  const goToOrder = (order: PublicOrder) => {
     clearCart();
-    router.push(`/painel/pedidos?pay=${orderId}`);
+    router.push(
+      isOrderPaid(order) ? `/pedido/${order.id}/confirmado` : `/painel/pedidos?pay=${order.id}`
+    );
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -188,7 +191,7 @@ export default function CheckoutPage() {
         setError(data.error || "Não foi possível criar o pedido.");
         return;
       }
-      goToDashboard(data.order.id);
+      goToOrder(data.order);
     } catch {
       setError("Falha de conexão ao criar o pedido.");
     } finally {
@@ -219,7 +222,7 @@ export default function CheckoutPage() {
         throw new Error(fail);
       }
       if (data.order?.id && data.success) {
-        goToDashboard(data.order.id);
+        goToOrder(data.order);
         return;
       }
       if (!data.success) {

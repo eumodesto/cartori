@@ -11,6 +11,8 @@ export type TrackingConfig = {
   gtmId: string;
   ga4Id: string;
   adsId: string;
+  /** Rótulo da ação de conversão "Compra" do Google Ads (parte após a barra em send_to). */
+  adsPurchaseLabel: string;
 };
 
 export const EMPTY_TRACKING_CONFIG: TrackingConfig = {
@@ -18,7 +20,25 @@ export const EMPTY_TRACKING_CONFIG: TrackingConfig = {
   gtmId: "",
   ga4Id: "",
   adsId: "",
+  adsPurchaseLabel: "",
 };
+
+// Rótulo diferencia maiúsculas: não normalizar caixa.
+const ADS_LABEL_PATTERN = /^[A-Za-z0-9_-]{4,64}$/;
+
+export function normalizeAdsLabel(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+export function isValidAdsLabel(value: string): boolean {
+  return ADS_LABEL_PATTERN.test(value);
+}
+
+/** Destino da conversão de compra (`AW-…/rótulo`), ou null se não houver como medir. */
+export function purchaseConversionTarget(config: TrackingConfig): string | null {
+  if (!config.enabled || !config.adsId || !config.adsPurchaseLabel) return null;
+  return `${config.adsId}/${config.adsPurchaseLabel}`;
+}
 
 export const TRACKING_FIELDS: Record<
   TrackingField,
@@ -42,7 +62,9 @@ export function isValidTrackingId(field: TrackingField, value: string): boolean 
 /** Valida o corpo vindo do painel. Campo vazio desativa aquela tag. */
 export function parseTrackingInput(
   body: unknown
-): { ok: true; config: TrackingConfig } | { ok: false; field: TrackingField; error: string } {
+):
+  | { ok: true; config: TrackingConfig }
+  | { ok: false; field: TrackingField | "adsPurchaseLabel"; error: string } {
   const input = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
   const config: TrackingConfig = { ...EMPTY_TRACKING_CONFIG, enabled: input.enabled === true };
 
@@ -54,6 +76,23 @@ export function parseTrackingInput(
     }
     config[field] = value;
   }
+
+  const purchaseLabel = normalizeAdsLabel(input.adsPurchaseLabel);
+  if (purchaseLabel && !isValidAdsLabel(purchaseLabel)) {
+    return {
+      ok: false,
+      field: "adsPurchaseLabel",
+      error: "Rótulo de conversão inválido. Use só o trecho depois da barra (ex.: AbC1dEfGhIj).",
+    };
+  }
+  if (purchaseLabel && !config.adsId) {
+    return {
+      ok: false,
+      field: "adsPurchaseLabel",
+      error: "Informe o ID do Google Ads para usar o rótulo de conversão.",
+    };
+  }
+  config.adsPurchaseLabel = purchaseLabel;
   return { ok: true, config };
 }
 
@@ -72,6 +111,9 @@ export function parseStoredTracking(raw: string | null | undefined): TrackingCon
     const value = normalizeTrackingId(input[field]);
     config[field] = isValidTrackingId(field, value) ? value : "";
   }
+  const purchaseLabel = normalizeAdsLabel(input.adsPurchaseLabel);
+  config.adsPurchaseLabel =
+    config.adsId && isValidAdsLabel(purchaseLabel) ? purchaseLabel : "";
   return config;
 }
 
