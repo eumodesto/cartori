@@ -71,6 +71,8 @@ export function CatalogBrowser({
   const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(
     () => certificateFromParam(initialCertificateSlug)
   );
+  /** Certidão aberta por último: ao fechar o diálogo, a listagem mostra só ela. */
+  const [focusedSlug, setFocusedSlug] = useState<string | null>(null);
 
   const openCertificate = useCallback(
     (raw: string) => {
@@ -88,6 +90,7 @@ export function CatalogBrowser({
   );
 
   const closeCertificate = useCallback(() => {
+    if (selectedCert) setFocusedSlug(selectedCert.slug);
     setSelectedCert(null);
     if (
       deepLink &&
@@ -97,7 +100,7 @@ export function CatalogBrowser({
     ) {
       window.history.replaceState(null, "", "/");
     }
-  }, [deepLink]);
+  }, [deepLink, selectedCert]);
 
   useEffect(() => {
     if (!registerOpenHandler) return;
@@ -148,10 +151,18 @@ export function CatalogBrowser({
         : searchedCertificates.filter((cert) => cert.category === filter.id).length,
   }));
 
-  const filteredCertificates = searchedCertificates.filter((cert) => {
-    if (activeCategories.size === 0) return true;
-    return activeCategories.has(cert.category);
-  });
+  const focusedCert = focusedSlug
+    ? MVP_CERTIFICATES.find((cert) => cert.slug === focusedSlug) ?? null
+    : null;
+
+  const filteredCertificates = focusedCert
+    ? [focusedCert]
+    : searchedCertificates.filter((cert) => {
+        if (activeCategories.size === 0) return true;
+        return activeCategories.has(cert.category);
+      });
+
+  const showAllCertificates = () => setFocusedSlug(null);
 
   const catalogPageCount = Math.max(
     1,
@@ -165,6 +176,7 @@ export function CatalogBrowser({
 
   useEffect(() => {
     setCatalogPage(1);
+    setFocusedSlug(null);
   }, [catalogQuery, activeCategories]);
 
   const goToCatalogPage = (page: number) => {
@@ -210,6 +222,21 @@ export function CatalogBrowser({
           searchPlaceholder="Buscar por nome, tipo ou cartório..."
         />
       </div>
+
+      {focusedCert && (
+        <div className="mb-6 flex flex-col items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-neutral-0 px-5 py-3 sm:flex-row">
+          <p className="text-sm text-neutral-700">
+            Mostrando apenas <span className="font-semibold text-neutral-900">{focusedCert.name}</span>
+          </p>
+          <button
+            type="button"
+            onClick={showAllCertificates}
+            className="text-sm font-semibold text-brand-800 hover:underline"
+          >
+            Ver todas as certidões
+          </button>
+        </div>
+      )}
 
       {filteredCertificates.length === 0 ? (
         <div className="rounded-2xl border border-neutral-200 bg-neutral-0 px-6 py-12 text-center">
