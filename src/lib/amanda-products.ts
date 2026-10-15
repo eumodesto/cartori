@@ -28,8 +28,6 @@ function extraAliases(slug: string): string[] {
       return ["matrícula de imóvel", "matricula de imovel", "matrícula", "matricula"];
     case "certidao-de-protesto":
       return ["certidão de protesto", "certidao de protesto", "protesto"];
-    case "ccir-certificado-cadastro-imovel-rural-incra":
-      return ["ccir", "incra", "imóvel rural", "imovel rural"];
     case "certidao-de-procuracao":
       return ["procuração", "procuracao", "certidão de procuração"];
     case "busca-da-matricula-do-imovel":

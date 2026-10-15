@@ -1520,4 +1520,848 @@ export const PRIVATE_FORM_FIELDS: Record<string, FormFieldDefinition[]> = {
       "required": true
     }
   ],
+  "trf-certidao-de-distribuicao-da-justica-federal": [
+    {
+      "id": "pessoa_fisica_juridica",
+      "label": "Pessoa Física ou Jurídica",
+      "type": "radio",
+      "required": true,
+      "options": [
+        {
+          "label": "Pessoa Jurídica",
+          "value": "pessoa-juridica"
+        },
+        {
+          "label": "Pessoa Física",
+          "value": "pessoa-fisica"
+        }
+      ]
+    },
+    {
+      "id": "nome_da_mae",
+      "label": "Nome da Mãe",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "cnpj",
+      "label": "CNPJ",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-juridica"
+        ]
+      }
+    },
+    {
+      "id": "tipo_certidao",
+      "label": "Tipo de Certidão",
+      "type": "select",
+      "required": true,
+      "options": [
+        {
+          "label": "Cível",
+          "value": "civel"
+        },
+        {
+          "label": "Eleitoral",
+          "value": "eleitoral"
+        },
+        {
+          "label": "Cível e Criminal",
+          "value": "civel-criminal"
+        },
+        {
+          "label": "Criminal",
+          "value": "criminal"
+        }
+      ]
+    },
+    {
+      "id": "rg",
+      "label": "RG",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "cpf",
+      "label": "CPF",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "nome_pai",
+      "label": "Nome do Pai",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "razao_social",
+      "label": "Razão Social",
+      "type": "text",
+      "required": false,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-juridica"
+        ]
+      }
+    },
+    {
+      "id": "nome_completo",
+      "label": "Nome Completo",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "orgao_expedidor",
+      "label": "Orgão Expedidor",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "regime_tribunal",
+      "label": "Regime do Tribunal Federal",
+      "type": "select",
+      "required": true,
+      "options": [
+        {
+          "label": "3ª Região",
+          "value": "teceira-regiao"
+        },
+        {
+          "label": "4ª Região",
+          "value": "quarta-regiao"
+        },
+        {
+          "label": "1ª Região",
+          "value": "primeira-regiao"
+        },
+        {
+          "label": "5ª Região",
+          "value": "quinta-regiao"
+        },
+        {
+          "label": "2ª Região",
+          "value": "segunda-regiao"
+        },
+        {
+          "label": "6ª Região",
+          "value": "sexta-regiao"
+        }
+      ]
+    },
+    {
+      "id": "orgao",
+      "label": "Órgão",
+      "type": "select",
+      "required": true,
+      "options": [
+        {
+          "label": "Fins Eleitorais (Lei da Ficha Limpa)",
+          "value": "fins-eleitorais"
+        },
+        {
+          "label": "Fins Gerais 2º Grau (TRF)",
+          "value": "fins-gerais-segundo-grau-trf"
+        },
+        {
+          "label": "Fins Gerais 1º Grau",
+          "value": "fins-gerais-primeiro-grau"
+        }
+      ]
+    },
+    {
+      "id": "estado_civil",
+      "label": "Estado Civil",
+      "type": "select",
+      "required": true,
+      "options": [
+        {
+          "label": "Divorciado(a)",
+          "value": "divorciado"
+        },
+        {
+          "label": "Casado(a)",
+          "value": "casado"
+        },
+        {
+          "label": "Solteiro(a)",
+          "value": "solteiro"
+        },
+        {
+          "label": "Viúvo(a)",
+          "value": "viuvo"
+        },
+        {
+          "label": "Separado(a)",
+          "value": "separado"
+        }
+      ],
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    }
+  ],
+  "trt-certidao-de-acoes-trabalhistas-ceat": [
+    {
+      "id": "pessoa_fisica_juridica",
+      "label": "Pessoa Física ou Jurídica?",
+      "type": "radio",
+      "required": true,
+      "options": [
+        {
+          "label": "Pessoa Física",
+          "value": "pessoa-fisica"
+        },
+        {
+          "label": "Pessoa Jurídica",
+          "value": "pessoa-juridica"
+        }
+      ]
+    },
+    {
+      "id": "regiao_tribunal",
+      "label": "Região do Tribunal Federal",
+      "type": "select",
+      "required": true,
+      "options": [
+        {
+          "label": "21ª - Jurisdição no Estado do Rio Grande do Norte",
+          "value": "vigesima-primeira"
+        },
+        {
+          "label": "22ª - Jurisdição no Estado do Piauí",
+          "value": "vigesima-segunda"
+        },
+        {
+          "label": "15ª - Jurisdição no Estado de São Paulo (Interior)",
+          "value": "decima-quinta-jurisdicao-sp"
+        },
+        {
+          "label": "3ª - Jurisdição no Estado de Minas Gerais",
+          "value": "terceira-jurisdicao-minas"
+        },
+        {
+          "label": "19ª - Jurisdição no Estado de Alagoas",
+          "value": "decima-nona"
+        },
+        {
+          "label": "18ª - Jurisdição no Estado de Goiás",
+          "value": "decima-oitava"
+        },
+        {
+          "label": "11ª - Jurisdição no Estado de Roraima e Amazonas",
+          "value": "decima-primeira-jurisdicao-roraima-amazonas"
+        },
+        {
+          "label": "7ª - Jurisdição no Estado do Ceará",
+          "value": "setima-jurisdicao-ceara"
+        },
+        {
+          "label": "12ª - Jurisdição no Estado de Santa Catarina",
+          "value": "decima-segunda-jurisdicao-santa-catarina"
+        },
+        {
+          "label": "23ª - Jurisdição no Estado do Mato Grosso",
+          "value": "vigesima-terceira"
+        },
+        {
+          "label": "2ª - Jurisdição no Estado de São Paulo (capital)",
+          "value": "segunda-jurisdição-de-sao-paulo"
+        },
+        {
+          "label": "13ª - Jurisdição no Estado da Paraíba",
+          "value": "decima-terceira-jurisdicao-paraiba"
+        },
+        {
+          "label": "8ª - Jurisdição nos Estados do Pará e Amapá",
+          "value": "oitava-jurisdicao-para-amapa"
+        },
+        {
+          "label": "14ª - Jurisdição nos Estados do Acre e Rondônia",
+          "value": "decima-quarta-jurisdicao-acre-rondonia"
+        },
+        {
+          "label": "20ª - Jurisdição no Estado de Sergipe",
+          "value": "vigesima"
+        },
+        {
+          "label": "5ª - Jurisdição no Estado da Bahia",
+          "value": "quinta-jurisdicao-bahia"
+        },
+        {
+          "label": "16ª - Jurisdição no Estado do Maranhão",
+          "value": "decima-sexta-ma"
+        },
+        {
+          "label": "1ª -Jurisdição no Estado do Rio de Janeiro",
+          "value": "primeira-jurisdicao-do-rio-de-janeiro"
+        },
+        {
+          "label": "9ª - Jurisdição no Estado do Paraná",
+          "value": "nona-juridicao-parana"
+        },
+        {
+          "label": "10ª - Jurisdição no Distrito Federal e Tocantins",
+          "value": "decima-jurisdicao-tocantins"
+        },
+        {
+          "label": "24ª - Jurisdição no Estado do Mato Grosso do Sul",
+          "value": "vigesima-quarta"
+        },
+        {
+          "label": "17ª - Jurisdição no Estado do Espírito Santo",
+          "value": "decima-setima"
+        },
+        {
+          "label": "4ª - Jurisdição no Estado do Rio Grande do Sul",
+          "value": "quarta-jurisdicao-rio-grande-do-sul"
+        },
+        {
+          "label": "6ª - Jurisdição no Estado de Pernambuco",
+          "value": "sexta-juridicao-pernambuco"
+        }
+      ]
+    },
+    {
+      "id": "razao_social",
+      "label": "Razão Social",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-juridica"
+        ]
+      }
+    },
+    {
+      "id": "nome_completo",
+      "label": "Nome Completo",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "cnpj",
+      "label": "CNPJ",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-juridica"
+        ]
+      }
+    },
+    {
+      "id": "cpf",
+      "label": "CPF",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    }
+  ],
+  "pesquisa-de-protesto": [
+    {
+      "id": "pessoa_fisica_juridica",
+      "label": "Pessoa Física ou Jurídica?",
+      "type": "radio",
+      "required": false,
+      "options": [
+        {
+          "label": "Pessoa Física (CPF)",
+          "value": "pessoa-fisica"
+        },
+        {
+          "label": "Pessoa Jurídica (CNPJ)",
+          "value": "pessoa-juridica"
+        }
+      ]
+    },
+    {
+      "id": "cpf",
+      "label": "CPF",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "cnpj",
+      "label": "CNPJ",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-juridica"
+        ]
+      }
+    }
+  ],
+  "ccir-certificado-cadastro-imovel-rural-incra": [
+    {
+      "id": "state",
+      "label": "Estado",
+      "type": "select",
+      "required": true,
+      "dataSource": "ibge-uf"
+    },
+    {
+      "id": "pessoa_fisica_juridica",
+      "label": "Pessoa Física ou Jurídica",
+      "type": "radio",
+      "required": true,
+      "options": [
+        {
+          "label": "Pessoa Jurídica (CNPJ)",
+          "value": "pessoa-juridica"
+        },
+        {
+          "label": "Pessoa Física (CPF)",
+          "value": "pessoa-fisica"
+        }
+      ]
+    },
+    {
+      "id": "codigo_imovel",
+      "label": "Código do Imóvel Rural (contém 13 dígitos)",
+      "type": "text",
+      "required": false
+    },
+    {
+      "id": "city",
+      "label": "Município",
+      "type": "select",
+      "required": true,
+      "dataSource": "ibge-city"
+    },
+    {
+      "id": "cnpj",
+      "label": "CNPJ",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-juridica"
+        ]
+      }
+    },
+    {
+      "id": "cpf",
+      "label": "CPF",
+      "type": "text",
+      "required": true,
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-fisica"
+        ]
+      }
+    },
+    {
+      "id": "natureza_juridica",
+      "label": "Natureza Jurídica",
+      "type": "select",
+      "required": false,
+      "options": [
+        {
+          "label": "Órgão Público do Poder Executivo Federal",
+          "value": "orgao-publico-do-poder-executivo-federal"
+        },
+        {
+          "label": "Órgão Público do Poder Executivo Estadual ou do Distrito Federal",
+          "value": "orgao-publico-do-poder-executivo-estadual-ou-do-distrito-federal"
+        },
+        {
+          "label": "Sociedade Empresária em Comandita por Ações",
+          "value": "sociedade-empresaria-em-comandita-por-acoes"
+        },
+        {
+          "label": "Grupo de Sociedades",
+          "value": "grupo-de-sociedades"
+        },
+        {
+          "label": "Fundo Público da Administração Direta Estadual ou do Distrito Federal",
+          "value": "fundo-publico-da-administracao-direta-estadual-ou-do-distrito-federal"
+        },
+        {
+          "label": "Empresa Individual de Responsabilidade Limitada (de Natureza Simples)",
+          "value": "empresa-individual-de-responsabilidade-limitada-de-natureza-simples"
+        },
+        {
+          "label": "Órgão de Direção Nacional de Partido Político",
+          "value": "orgao-de-direcao-nacional-de-partido-politico"
+        },
+        {
+          "label": "Demais Condomínios",
+          "value": "demais-condominios"
+        },
+        {
+          "label": "Empresa Pública",
+          "value": "empresa-publica"
+        },
+        {
+          "label": "Sociedade Unipessoal de Advogados",
+          "value": "sociedade-unipessoal-de-advogados"
+        },
+        {
+          "label": "Administração Direta",
+          "value": "administração_direta"
+        },
+        {
+          "label": "Sociedade Empresária em Nome Coletivo",
+          "value": "sociedade-empresaria-em-nome-coletivo"
+        },
+        {
+          "label": "Sociedade De Capital E Indústria",
+          "value": "sociedade-de-capital-e-industria"
+        },
+        {
+          "label": "Sociedade Empresária Limitada",
+          "value": "sociedade-empresaria-limitada"
+        },
+        {
+          "label": "Autarquia Federal",
+          "value": "autarquia_federal"
+        },
+        {
+          "label": "Fundação Pública de Direito Público Estadual ou do Distrito Federal",
+          "value": "fundacao-publica-de-direito-publico-estadual-ou-do-distrito-federal"
+        },
+        {
+          "label": "Sociedade Civil Com Fins Lucrativos",
+          "value": "sociedade-civil-com-fins-lucrativos"
+        },
+        {
+          "label": "Candidato a Cargo Político Eletivo",
+          "value": "candidato-cargo-político-eletivo"
+        },
+        {
+          "label": "Órgão Público Autônomo Federal",
+          "value": "orgao-publico-autonomo-federal"
+        },
+        {
+          "label": "Sociedade Simples Limitada",
+          "value": "sociedade-simples-limitada"
+        },
+        {
+          "label": "Outras Instituições Extraterritoriais",
+          "value": "outras-instituicoes-extraterritoriais"
+        },
+        {
+          "label": "Órgão Público do Poder Legislativo Estadual ou do Distrito Federal",
+          "value": "orgao-publico-do-poder-legislativo-estadual-ou-do-distrito-federal"
+        },
+        {
+          "label": "Município",
+          "value": "municipio"
+        },
+        {
+          "label": "Sociedade Anônima Aberta",
+          "value": "sociedade-anonima-aberta"
+        },
+        {
+          "label": "Associação Privada",
+          "value": "associacao_privada"
+        },
+        {
+          "label": "Sociedade Anônima Fechada",
+          "value": "sociedade-anonima-fechada"
+        },
+        {
+          "label": "Serviço Social Autônomo",
+          "value": "servico-social-autonomo"
+        },
+        {
+          "label": "Cooperativas de Consumo",
+          "value": "cooperativas-consumo"
+        },
+        {
+          "label": "Segurado Especial",
+          "value": "segurado-especial"
+        },
+        {
+          "label": "Órgão Público Autônomo Estadual ou do Distrito Federal",
+          "value": "Órgão publico-autonomo-estadual-ou-do-distrito-federal"
+        },
+        {
+          "label": "Órgão Público do Poder Judiciário Federal",
+          "value": "orgao-publico-do-poder-judiciario-federal"
+        },
+        {
+          "label": "Órgão Público do Poder Executivo Municipal",
+          "value": "orgao-publico-do-poder-executivo-municipal"
+        },
+        {
+          "label": "Órgão Público do Poder Legislativo Municipal",
+          "value": "orgao-publico-do-poder-legislativo-municipal"
+        },
+        {
+          "label": "Fundação Pública de Direito Privado Federal",
+          "value": "fundacao-publica-de-direito-privado-federal"
+        },
+        {
+          "label": "Empresa Binacional",
+          "value": "empresa-binacional"
+        },
+        {
+          "label": "Fundo Público da Administração Indireta Federal",
+          "value": "fundo-publico-da-administracao-indireta-federal"
+        },
+        {
+          "label": "Fundo Público da Administração Indireta Estadual ou do Distrito Federal",
+          "value": "fundo-publico-da-administracao-indireta-estadual-ou-do-distrito-federal"
+        },
+        {
+          "label": "Fundação Pública de Direito Público Federal",
+          "value": "fundacao-publica-de-direito-publico-federal"
+        },
+        {
+          "label": "Sociedade Empresária",
+          "value": "sociedade-empresaria"
+        },
+        {
+          "label": "Órgão de Direção Local de Partido Político",
+          "value": "orgao-de-direcao-local-de-partido-politico"
+        },
+        {
+          "label": "Produtor Rural (Pessoa Física)",
+          "value": "produtor-rural-pessoa-fisica"
+        },
+        {
+          "label": "Consórcio de Empregadores",
+          "value": "consorcio-empregadores"
+        },
+        {
+          "label": "Serviço Notarial e Registral (Cartório)",
+          "value": "servico-notarial-e-registral-cartorio"
+        },
+        {
+          "label": "Empresa Individual Imobiliária",
+          "value": "empresa-individual-imobiliaria"
+        },
+        {
+          "label": "Clube/Fundo de Investimento",
+          "value": "clube-fundo-investimento"
+        },
+        {
+          "label": "Consórcio de Sociedades",
+          "value": "consorcio-sociedades"
+        },
+        {
+          "label": "Representação Diplomática Estrangeira",
+          "value": "representacao-diplomatica-estrangeira"
+        },
+        {
+          "label": "Consórcio Público de Direito Privado",
+          "value": "consorcio-publico-direito-privado"
+        },
+        {
+          "label": "Comitê Financeiro de Partido Político",
+          "value": "comite-financeiro-partido-politico"
+        },
+        {
+          "label": "Sociedade Simples Pura",
+          "value": "sociedade-simples-pura"
+        },
+        {
+          "label": "Organização Internacional",
+          "value": "organizacao-internacional"
+        },
+        {
+          "label": "Condomínio Edilício",
+          "value": "condomínio-edilicio"
+        },
+        {
+          "label": "Comissão Polinacional",
+          "value": "comissão_polinacional"
+        },
+        {
+          "label": "Fundo Público da Administração Indireta Municipal",
+          "value": "fundo-publico-da-administracao-indireta-municipal"
+        },
+        {
+          "label": "Comissão de Conciliação Prévia",
+          "value": "comissao-conciliação-previa"
+        },
+        {
+          "label": "Consórcio Público de Direito Público (Associação Pública)",
+          "value": "consorcio-publico-de-direito-publico-associacao-publica"
+        },
+        {
+          "label": "Órgão Público do Poder Legislativo Federal",
+          "value": "orgao-publico-do-poder-legislativo-federal"
+        },
+        {
+          "label": "Empresa Individual de Responsabilidade Limitada (de Natureza Empresária)",
+          "value": "empresa-individual-de-responsabilidade-limitada-natureza-empresaria"
+        },
+        {
+          "label": "Fundo Privado",
+          "value": "fundo-privado"
+        },
+        {
+          "label": "Autarquia Estadual ou do Distrito Federal",
+          "value": "autarquia_estadual_ou_do_distrito_federal"
+        },
+        {
+          "label": "Organização Social (OS)",
+          "value": "organizacao-social-os"
+        },
+        {
+          "label": "Órgão de Direção Regional de Partido Político",
+          "value": "orgao-de-direcao-regional-de-partido-politico"
+        },
+        {
+          "label": "Comunidade Indígena",
+          "value": "comunidade-indigena"
+        },
+        {
+          "label": "União",
+          "value": "uniao"
+        },
+        {
+          "label": "Sociedade Simples em Nome Coletivo",
+          "value": "sociedade-simples-em-nome-coletivo"
+        },
+        {
+          "label": "Sociedade Simples em Comandita Simples",
+          "value": "sociedade-simples-em-comandita-simples"
+        },
+        {
+          "label": "Contribuinte individual",
+          "value": "contribuinte-individual"
+        },
+        {
+          "label": "Cooperativa",
+          "value": "cooperativa"
+        },
+        {
+          "label": "Fundo Público da Administração Direta Municipal",
+          "value": "fundo-publico-da-administracao-direta-municipal"
+        },
+        {
+          "label": "Fundo Público da Administração Direta Federal",
+          "value": "fundo-publico-da-administracao-direta-federal"
+        },
+        {
+          "label": "Sociedade em Conta de Participação",
+          "value": "sociedade-em-conta-de-participacao"
+        },
+        {
+          "label": "Órgão Público do Poder Judiciário Estadual",
+          "value": "orgao-publico-do-poder-judiciario-estadual"
+        },
+        {
+          "label": "Organização Religiosa",
+          "value": "organizacao-religiosa"
+        },
+        {
+          "label": "Leiloeiro",
+          "value": "leiloeiro"
+        },
+        {
+          "label": "Empresa Domiciliada no Exterior",
+          "value": "empresa-domiciliada-exterior"
+        },
+        {
+          "label": "Fundação Pública de Direito Privado Estadual ou do Distrito Federal",
+          "value": "fundacao-publica-de-direito-privado-estadual-ou-do-distrito-federal"
+        },
+        {
+          "label": "Autarquia",
+          "value": "autarquia"
+        },
+        {
+          "label": "Consórcio Simples",
+          "value": "consorcio-simples"
+        },
+        {
+          "label": "Sociedade De Economia Mista",
+          "value": "sociedade-de-economia-mista"
+        },
+        {
+          "label": "Fundação Pública de Direito Público Municipal",
+          "value": "fundacao-publica-de-direito-publico-municipal"
+        },
+        {
+          "label": "Autarquia Municipal",
+          "value": "autarquia-municipal"
+        },
+        {
+          "label": "Fundação Pública de Direito Privado Municipal",
+          "value": "fundacao-publica-de-direito-privado-municipal"
+        },
+        {
+          "label": "Sociedade Empresária em Comandita Simples",
+          "value": "sociedade-empresaria-em-comandita-simples"
+        }
+      ],
+      "visibleWhen": {
+        "field": "pessoa_fisica_juridica",
+        "in": [
+          "pessoa-juridica"
+        ]
+      }
+    }
+  ],
 };

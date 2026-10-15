@@ -178,7 +178,6 @@ export function CatalogBrowser({
     { id: "notas", label: "Tabelionato de Notas" },
     { id: "imoveis", label: "Registro de Imóveis" },
     { id: "protesto", label: "Protesto de Títulos" },
-    { id: "rural", label: "Cadastro rural (INCRA)" },
   ];
   // Categorias que só existem na lista recebida (ex.: privadas da área logada) usam o nome do dado.
   const extraFilters = Array.from(

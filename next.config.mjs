@@ -90,7 +90,7 @@ const nextConfig = {
       // Certidões retiradas da venda (Registro Civil e as gratuitas nos órgãos oficiais).
       {
         source:
-          "/certidao/:slug(certidao-de-nascimento|certidao-de-casamento|certidao-de-obito|certidao-de-divorcio|certidao-de-interdicao|trf-certidao-de-distribuicao-da-justica-federal|trt-certidao-de-acoes-trabalhistas-ceat|pesquisa-de-protesto|nascimento|casamento|obito|divorcio|interdicao)",
+          "/certidao/:slug(certidao-de-nascimento|certidao-de-casamento|certidao-de-obito|certidao-de-divorcio|certidao-de-interdicao|trf-certidao-de-distribuicao-da-justica-federal|trt-certidao-de-acoes-trabalhistas-ceat|pesquisa-de-protesto|ccir-certificado-cadastro-imovel-rural-incra|nascimento|casamento|obito|divorcio|interdicao)",
         destination: "/",
         permanent: true,
       },

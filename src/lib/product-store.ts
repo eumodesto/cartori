@@ -1,11 +1,6 @@
 import { Prisma } from "@prisma/client";
-import {
-  MVP_CERTIFICATES,
-  getCertificateBySlug,
-  isPrivateCertificate,
-  isRetiredCertificate,
-} from "@/lib/catalog";
-import { getPrivateCertificateBySlug } from "@/lib/private-catalog";
+import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
+import { getPrivateCertificateBySlug, isPrivateCertificateSlug } from "@/lib/private-catalog";
 import {
   CRC_UF_APOSTILLE_PRICES,
   CRC_UF_FLAT_PRICES,
@@ -178,7 +173,7 @@ export async function listProductsWithSource(): Promise<{
         include: productInclude,
         orderBy: { sortOrder: "asc" },
       })
-    ).filter((row) => !isRetiredCertificate(row) && !isPrivateCertificate(row));
+    ).filter((row) => !isPrivateCertificateSlug(row.slug));
     if (rows.length >= MVP_CERTIFICATES.length) {
       return { source: "database", products: rows.map(toCertificateConfig) };
     }
@@ -205,14 +200,12 @@ export async function getProductBySlug(
   slug: string
 ): Promise<CertificateTypeConfig | undefined> {
   const resolved = resolveSlug(slug);
-  // Retirada da venda: some do checkout e dos dossiês mesmo se ainda ativa no banco.
-  if (isRetiredCertificate({ slug }) || isRetiredCertificate({ slug: resolved })) return undefined;
   try {
     const row = await prisma.product.findUnique({
       where: { slug: resolved },
       include: productInclude,
     });
-    if (row?.active && !isRetiredCertificate(row)) return toCertificateConfig(row);
+    if (row?.active) return toCertificateConfig(row);
   } catch (error) {
     console.error("Falha ao ler Product por slug:", error);
   }

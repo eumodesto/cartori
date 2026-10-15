@@ -5,8 +5,10 @@ import { CertificateTypeConfig } from "./types";
 /**
  * Catálogo privado: certidões vendidas só para usuários logados (área do cliente).
  *
- * Registro Civil está na lista restrita da política de documentos do governo do Google Ads,
- * por isso não aparece em nenhuma página pública, sitemap, rodapé, Amanda ou anúncio.
+ * Fora do site público por causa da política de documentos do governo do Google Ads:
+ * Registro Civil (categoria restrita) e as que os órgãos oferecem gratuitamente ou direto no
+ * gov.br (TRF, TRT, Pesquisa de Protesto, CCIR). Não aparecem em página pública, sitemap,
+ * rodapé, Amanda ou anúncio.
  * Importe este módulo SOMENTE em código de servidor (página server do painel, product-store,
  * pedidos): importado por um componente "use client", estes dados iriam para o JS público.
  */
@@ -105,6 +107,78 @@ const BASE_CERTIFICATES: CertificateTypeConfig[] = [
     shippingPrice: 32.00,
     fields: PRIVATE_FORM_FIELDS["certidao-de-interdicao"],
   },
+  {
+    id: "trf-distribuicao",
+    slug: "trf-certidao-de-distribuicao-da-justica-federal",
+    name: "TRF – Certidão de Distribuição da Justiça Federal",
+    shortDescription: "Informa se há processos distribuídos na Justiça Federal em nome da pessoa ou empresa. Usada em concursos, imigração, passaporte e diligências.",
+    category: "distribuidores-judiciais",
+    categoryName: "Distribuidores Judiciais",
+    basePrice: 99.90,
+    estimatedDays: "1 a 3 dias úteis",
+    requiresCartorio: false,
+    hasSearchFee: false,
+    searchFee: 0,
+    hasApostilleOption: false,
+    apostillePrice: 0,
+    hasShippingOption: true,
+    shippingPrice: 32.00,
+    fields: PRIVATE_FORM_FIELDS["trf-certidao-de-distribuicao-da-justica-federal"],
+  },
+  {
+    id: "trt-ceat",
+    slug: "trt-certidao-de-acoes-trabalhistas-ceat",
+    name: "TRT – Certidão de Ações Trabalhistas (CEAT)",
+    shortDescription: "Informa se há ações trabalhistas registradas no TRT contra pessoa ou empresa. Usada em contratações, licitações e due diligence.",
+    category: "distribuidores-judiciais",
+    categoryName: "Distribuidores Judiciais",
+    basePrice: 99.90,
+    estimatedDays: "1 a 3 dias úteis",
+    requiresCartorio: false,
+    hasSearchFee: false,
+    searchFee: 0,
+    hasApostilleOption: false,
+    apostillePrice: 0,
+    hasShippingOption: true,
+    shippingPrice: 32.00,
+    fields: PRIVATE_FORM_FIELDS["trt-certidao-de-acoes-trabalhistas-ceat"],
+  },
+  {
+    id: "pesquisa-protesto",
+    slug: "pesquisa-de-protesto",
+    name: "Pesquisa de Protesto",
+    shortDescription: "Verifica se existem protestos e em quais cartórios estão registrados, para análise de risco em crédito e transações.",
+    category: "protesto",
+    categoryName: "Tabelionato de Protesto",
+    basePrice: 99.90,
+    estimatedDays: "1 a 3 dias úteis",
+    requiresCartorio: false,
+    hasSearchFee: false,
+    searchFee: 0,
+    hasApostilleOption: false,
+    apostillePrice: 0,
+    hasShippingOption: true,
+    shippingPrice: 32.00,
+    fields: PRIVATE_FORM_FIELDS["pesquisa-de-protesto"],
+  },
+  {
+    id: "ccir-incra",
+    slug: "ccir-certificado-cadastro-imovel-rural-incra",
+    name: "CCIR – Certificado de Cadastro de Imóvel Rural (INCRA)",
+    shortDescription: "Documento do INCRA com dados cadastrais do imóvel rural (titularidade e localização). Exigido em compra e venda, financiamento e regularização fundiária.",
+    category: "rural",
+    categoryName: "Cadastro rural (INCRA)",
+    basePrice: 99.90,
+    estimatedDays: "1 a 3 dias úteis",
+    requiresCartorio: false,
+    hasSearchFee: false,
+    searchFee: 0,
+    hasApostilleOption: false,
+    apostillePrice: 0,
+    hasShippingOption: true,
+    shippingPrice: 32.00,
+    fields: PRIVATE_FORM_FIELDS["ccir-certificado-cadastro-imovel-rural-incra"],
+  },
 ];
 
 /** Preços por UF já anexados: o navegador não precisa (nem recebe) as tabelas privadas. */
@@ -116,4 +190,11 @@ export const PRIVATE_CERTIFICATES: CertificateTypeConfig[] = BASE_CERTIFICATES.m
 
 export function getPrivateCertificateBySlug(slug: string): CertificateTypeConfig | undefined {
   return PRIVATE_CERTIFICATES.find((item) => item.slug === slug || item.id === slug);
+}
+
+const PRIVATE_SLUGS = new Set(PRIVATE_CERTIFICATES.map((cert) => cert.slug));
+
+/** Certidão vendida só na área logada (nunca em listagens públicas). */
+export function isPrivateCertificateSlug(slug: string) {
+  return PRIVATE_SLUGS.has(slug);
 }

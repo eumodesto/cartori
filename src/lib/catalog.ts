@@ -115,29 +115,9 @@ const ESCRITURAS_PUBLICAS: CertificateTypeConfig[] = [
 ];
 
 /**
- * Certidões retiradas da venda: as gratuitas nos órgãos oficiais (TRF, TRT, pesquisa de protesto).
- * Bloqueadas também quando ainda existem no banco.
- * Registro Civil não está aqui: é vendido só na área logada (ver private-catalog.ts).
+ * Catálogo público (site, sitemap, anúncios). Certidões vendidas só na área logada ficam em
+ * private-catalog.ts, que não pode ser importado por componentes de navegador.
  */
-export const RETIRED_CERTIFICATE_SLUGS: ReadonlySet<string> = new Set([
-  "trf-certidao-de-distribuicao-da-justica-federal",
-  "trt-certidao-de-acoes-trabalhistas-ceat",
-  "pesquisa-de-protesto",
-]);
-
-export const RETIRED_CATEGORIES: ReadonlySet<string> = new Set(["distribuidores-judiciais"]);
-
-/** Categorias vendidas só para usuários logados; nunca em listagens públicas. */
-export const PRIVATE_CATEGORIES: ReadonlySet<string> = new Set(["registro-civil"]);
-
-export function isPrivateCertificate(cert: { category?: string }) {
-  return PRIVATE_CATEGORIES.has(cert.category ?? "");
-}
-
-export function isRetiredCertificate(cert: { slug: string; category?: string }) {
-  return RETIRED_CERTIFICATE_SLUGS.has(cert.slug) || RETIRED_CATEGORIES.has(cert.category ?? "");
-}
-
 export const MVP_CERTIFICATES: CertificateTypeConfig[] = [
 
   // --- TABELIONATO DE NOTAS ---
@@ -331,25 +311,7 @@ export const MVP_CERTIFICATES: CertificateTypeConfig[] = [
   },
 
 
-  // CCIR: approved SKU; category `rural` is new (not RI and not distribuidores).
-  {
-    id: "ccir-incra",
-    slug: "ccir-certificado-cadastro-imovel-rural-incra",
-    name: "CCIR – Certificado de Cadastro de Imóvel Rural (INCRA)",
-    shortDescription: "Documento do INCRA com dados cadastrais do imóvel rural (titularidade e localização). Exigido em compra e venda, financiamento e regularização fundiária.",
-    category: "rural",
-    categoryName: "Cadastro rural (INCRA)",
-    basePrice: 99.90,
-    estimatedDays: "1 a 3 dias úteis",
-    requiresCartorio: false,
-    hasSearchFee: false,
-    searchFee: 0,
-    hasApostilleOption: false,
-    apostillePrice: 0,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    fields: CRC_FORM_FIELDS["ccir-certificado-cadastro-imovel-rural-incra"],
-  },
+
 ];
 
 export function getCertificateBySlug(slug: string): CertificateTypeConfig | undefined {
