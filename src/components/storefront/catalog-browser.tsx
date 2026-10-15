@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Clock } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { MVP_CERTIFICATES } from "@/lib/catalog";
+import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
 import {
   CERTIFICATE_QUERY_KEY,
   certificateFromParam,
@@ -58,6 +58,16 @@ interface CatalogBrowserProps {
   heading?: Partial<CatalogHeading>;
   /** Avisa qual certidão ficou em foco ao fechar o diálogo (null = catálogo completo). */
   onFocusChange?: (slug: string | null) => void;
+  /**
+   * Página de uma certidão: mostra só ela, sem busca, filtros nem outras certidões
+   * (página de destino de anúncio, ver política de documentos do governo do Google Ads).
+   */
+  lockedSlug?: string;
+  /**
+   * Lista exibida (padrão: catálogo público). A área logada passa o catálogo completo,
+   * vindo do servidor, para que as certidões privadas nunca entrem no JS público.
+   */
+  certificates?: CertificateTypeConfig[];
 }
 
 export function CatalogBrowser({
@@ -68,6 +78,8 @@ export function CatalogBrowser({
   scrollTargetId = "certidoes",
   heading,
   onFocusChange,
+  lockedSlug,
+  certificates = MVP_CERTIFICATES,
 }: CatalogBrowserProps) {
   const { addItem } = useCart();
   const router = useRouter();
@@ -75,15 +87,25 @@ export function CatalogBrowser({
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
   const [catalogQuery, setCatalogQuery] = useState("");
   const [catalogPage, setCatalogPage] = useState(1);
+  const findCertificate = useCallback(
+    (raw: string | null | undefined) => {
+      if (!raw) return null;
+      return (
+        certificates.find((cert) => cert.slug === raw || cert.id === raw) ??
+        certificateFromParam(raw)
+      );
+    },
+    [certificates]
+  );
   const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(
-    () => certificateFromParam(initialCertificateSlug)
+    () => findCertificate(initialCertificateSlug)
   );
   /** Certidão aberta por último: ao fechar o diálogo, a listagem mostra só ela. */
   const [focusedSlug, setFocusedSlug] = useState<string | null>(null);
 
   const openCertificate = useCallback(
     (raw: string) => {
-      const cert = certificateFromParam(raw);
+      const cert = findCertificate(raw);
       if (!cert) return;
       setSelectedCert(cert);
       if (deepLink) {
@@ -93,7 +115,7 @@ export function CatalogBrowser({
         }
       }
     },
-    [deepLink]
+    [deepLink, findCertificate]
   );
 
   /** Em foco, a URL fica na página da certidão; sem foco, volta para a home. */
@@ -143,23 +165,33 @@ export function CatalogBrowser({
 
   const searchedCertificates = useMemo(() => {
     const needle = normalizeSearch(catalogQuery);
-    if (!needle) return MVP_CERTIFICATES;
-    return MVP_CERTIFICATES.filter((cert) => {
+    if (!needle) return certificates;
+    return certificates.filter((cert) => {
       const haystack = normalizeSearch(
         [cert.name, cert.shortDescription, cert.categoryName, cert.slug].join(" ")
       );
       return haystack.includes(needle);
     });
-  }, [catalogQuery]);
+  }, [catalogQuery, certificates]);
 
-  const categoryFilters = [
-    { id: "all", label: "Todas as Certidões" },
-    { id: "registro-civil", label: "Registro Civil" },
+  const baseFilters = [
     { id: "notas", label: "Tabelionato de Notas" },
     { id: "imoveis", label: "Registro de Imóveis" },
     { id: "protesto", label: "Protesto de Títulos" },
-    { id: "distribuidores-judiciais", label: "Distribuidores Judiciais" },
     { id: "rural", label: "Cadastro rural (INCRA)" },
+  ];
+  // Categorias que só existem na lista recebida (ex.: privadas da área logada) usam o nome do dado.
+  const extraFilters = Array.from(
+    new Map(
+      certificates
+        .filter((cert) => !baseFilters.some((filter) => filter.id === cert.category))
+        .map((cert) => [cert.category, { id: cert.category, label: cert.categoryName }])
+    ).values()
+  );
+  const categoryFilters = [
+    { id: "all", label: "Todas as Certidões" },
+    ...extraFilters,
+    ...baseFilters,
   ].map((filter) => ({
     ...filter,
     count:
@@ -169,10 +201,14 @@ export function CatalogBrowser({
   }));
 
   const focusedCert = focusedSlug
-    ? MVP_CERTIFICATES.find((cert) => cert.slug === focusedSlug) ?? null
+    ? certificates.find((cert) => cert.slug === focusedSlug) ?? null
     : null;
 
-  const filteredCertificates = focusedCert
+  const lockedCert = lockedSlug ? getCertificateBySlug(lockedSlug) ?? null : null;
+
+  const filteredCertificates = lockedCert
+    ? [lockedCert]
+    : focusedCert
     ? [focusedCert]
     : searchedCertificates.filter((cert) => {
         if (activeCategories.size === 0) return true;
@@ -205,7 +241,13 @@ export function CatalogBrowser({
     });
   };
 
-  const resolvedHeading = { ...DEFAULT_HEADING, ...heading };
+  const resolvedHeading = lockedCert
+    ? {
+        eyebrow: "Pedido online",
+        title: lockedCert.name,
+        subtitle: "Clique em Solicitar para informar o local e os dados do documento.",
+      }
+    : { ...DEFAULT_HEADING, ...heading };
 
   return (
     <>
@@ -233,6 +275,7 @@ export function CatalogBrowser({
         </h2>
         <p className="text-sm text-slate-600">{resolvedHeading.subtitle}</p>
 
+        {!lockedCert && (
         <FilterTags
           className="pt-4"
           items={categoryFilters}
@@ -248,9 +291,10 @@ export function CatalogBrowser({
           }}
           searchPlaceholder="Buscar por nome, tipo ou cartório..."
         />
+        )}
       </div>
 
-      {focusedCert && (
+      {focusedCert && !lockedCert && (
         <div className="mb-6 flex flex-col items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-neutral-0 px-5 py-3 sm:flex-row">
           <p className="text-sm text-neutral-700">
             Mostrando apenas <span className="font-semibold text-neutral-900">{focusedCert.name}</span>
@@ -336,7 +380,7 @@ export function CatalogBrowser({
             ))}
           </div>
 
-          {catalogPageCount > 1 && (
+          {catalogPageCount > 1 && !lockedCert && (
             <Pagination
               className="mt-8"
               currentPage={currentCatalogPage}

@@ -108,7 +108,7 @@ export function StorefrontHome({
 
               <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
                 {hero?.summary ??
-                  "Centralize suas solicitações de Registro Civil, Imóveis, Notas e Protesto. Selecione o estado, cidade e cartório com preenchimento automático."}
+                  "Centralize suas solicitações de Imóveis, Notas e Protesto. Selecione o estado, cidade e cartório com preenchimento automático."}
               </p>
 
               {/* Feature Pills */}
@@ -136,6 +136,7 @@ export function StorefrontHome({
           <CatalogBrowser
             deepLink
             onFocusChange={setFocusedSlug}
+            lockedSlug={landingContent ? initialCertificateSlug : undefined}
             scrollTargetId="certidoes"
             initialCertificateSlug={initialCertificateSlug}
             onAdded={(items) => {

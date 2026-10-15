@@ -4,7 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { HomeHashLink } from "@/components/storefront/home-hash-link";
 import { BusinessSignupLink } from "@/components/auth/business-signup-link";
-import { FOOTER_CERTIFICATE_LINKS, certificatePath } from "@/lib/certificate-links";
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Facebook, Instagram } from "lucide-react";
@@ -22,13 +21,6 @@ interface FooterSectionData {
 }
 
 const footerLinks: FooterSectionData[] = [
-  {
-    label: "Certidões",
-    links: FOOTER_CERTIFICATE_LINKS.map((item) => ({
-      title: item.title,
-      href: certificatePath(item.slug),
-    })),
-  },
   {
     label: "Empresa",
     links: [
@@ -115,7 +107,7 @@ export function Footer() {
 
               <div aria-hidden className="h-px bg-white/10" />
 
-              <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3">
                 {footerLinks.map((section, index) => (
                   <AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
                     <div>

@@ -14,7 +14,7 @@ export default function SolicitacoesPage() {
         title="Solicitações"
         description="Pedidos da sua conta. Depois do pagamento, o andamento e os downloads ficam aqui."
         actions={
-          <Link href="/#certidoes">
+          <Link href="/painel/solicitar">
             <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
               Nova solicitação
             </Button>

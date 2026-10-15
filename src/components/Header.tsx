@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ShoppingBag, ShieldCheck, Menu, X } from "lucide-react";
+import { ShoppingBag, Info, Menu, X } from "lucide-react";
 import { AccountAlerts } from "@/components/layout/account-alerts";
 import { UserMenu } from "@/components/layout/user-menu";
 import { HomeHashLink } from "@/components/storefront/home-hash-link";
@@ -11,15 +11,15 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-neutral-0/95 backdrop-blur border-b border-slate-200 dark:border-neutral-200 shadow-sm">
-      {/* Top Banner Oficial */}
+      {/* Aviso de empresa privada (política de documentos do governo do Google Ads) */}
       <div className="bg-primary-900 text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-primary-400" />
-            <span>A InterJuri é uma Empresa privada, que faz a intermediação com órgãos competentes pelas emissões.</span>
+            <Info className="w-3.5 h-3.5 shrink-0 text-primary-300" />
+            <span>A InterJuri é uma empresa privada, sem vínculo com cartórios, tribunais ou órgãos do governo.</span>
           </div>
           <div className="hidden sm:flex items-center gap-4 text-slate-300">
-            <span>Atendimento Notarial 24h</span>
+            <span>Atendimento 24h</span>
           </div>
         </div>
       </div>

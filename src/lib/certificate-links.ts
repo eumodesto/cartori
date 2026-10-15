@@ -2,13 +2,8 @@ import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
 
 export const CERTIFICATE_QUERY_KEY = "certidao";
 
-/** Atalhos estáveis para anúncios e rodapé. Só apontam a slugs já existentes no catálogo. */
+/** Atalhos estáveis para anúncios. Só apontam a slugs já existentes no catálogo. */
 const CERTIFICATE_ALIASES: Record<string, string> = {
-  nascimento: "certidao-de-nascimento",
-  casamento: "certidao-de-casamento",
-  obito: "certidao-de-obito",
-  divorcio: "certidao-de-divorcio",
-  interdicao: "certidao-de-interdicao",
   testamento: "certidao-negativa-de-testamento",
   censec: "certidao-negativa-de-testamento",
   "negativa-de-testamento": "certidao-negativa-de-testamento",
@@ -16,15 +11,6 @@ const CERTIFICATE_ALIASES: Record<string, string> = {
   "matricula-de-imovel": "certidao-de-matricula-de-imovel",
   protesto: "certidao-de-protesto",
 };
-
-export const FOOTER_CERTIFICATE_LINKS = [
-  { title: "Nascimento", slug: "certidao-de-nascimento" },
-  { title: "Casamento", slug: "certidao-de-casamento" },
-  { title: "Óbito", slug: "certidao-de-obito" },
-  { title: "Negativa de Testamento", slug: "certidao-negativa-de-testamento" },
-  { title: "Matrícula de Imóvel", slug: "certidao-de-matricula-de-imovel" },
-  { title: "Protesto", slug: "certidao-de-protesto" },
-] as const;
 
 function normalizeToken(raw: string) {
   return raw

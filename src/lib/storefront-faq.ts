@@ -4,8 +4,8 @@ export const STOREFRONT_FAQ = [
     a: "Escolha o tipo no catálogo, informe estado, cidade e cartório (quando souber) e os dados do documento. Depois confirme o pedido e pague com PIX ou cartão.",
   },
   {
-    q: "A certidão tem validade oficial?",
-    a: "Sim. São documentos oficiais com validade em todo o território nacional. A via digital sai como e-certidão com assinatura ICP-Brasil; a via em papel é enviada pelos Correios.",
+    q: "Quem emite a certidão?",
+    a: "O próprio cartório responsável. A InterJuri é uma empresa privada, sem vínculo com cartórios ou governo: fazemos o pedido em seu nome e acompanhamos até a entrega. Você também pode pedir diretamente no cartório. A via digital tem assinatura ICP-Brasil; a via em papel é enviada pelos Correios.",
   },
   {
     q: "Como acompanho o status e as mensagens?",

@@ -1,25 +1,10 @@
-import Link from "next/link";
-import { MVP_CERTIFICATES } from "@/lib/catalog";
-import { certificatePath } from "@/lib/certificate-links";
 import { startingPriceFor } from "@/lib/pricing";
 import { certificateShortName } from "@/lib/seo";
 import type { CertificateTypeConfig } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
 
-const RELATED_LIMIT = 6;
-
 export function certificateLandingTitle(cert: CertificateTypeConfig) {
   return `${certificateShortName(cert)} online`;
-}
-
-function relatedCertificates(cert: CertificateTypeConfig) {
-  const sameCategory = MVP_CERTIFICATES.filter(
-    (other) => other.category === cert.category && other.slug !== cert.slug
-  );
-  const others = MVP_CERTIFICATES.filter(
-    (other) => other.category !== cert.category && other.slug !== cert.slug
-  );
-  return [...sameCategory, ...others].slice(0, RELATED_LIMIT);
 }
 
 function formatsText(cert: CertificateTypeConfig) {
@@ -32,7 +17,6 @@ export function CertificateLanding({ cert }: { cert: CertificateTypeConfig }) {
   const name = certificateShortName(cert);
   const price = formatCurrency(startingPriceFor(cert));
   const priceVaries = cert.priceMode === "uf-format" || cert.priceMode === "uf-flat";
-  const related = relatedCertificates(cert);
 
   const steps = [
     {
@@ -126,28 +110,6 @@ export function CertificateLanding({ cert }: { cert: CertificateTypeConfig }) {
           </aside>
         </div>
 
-        {related.length > 0 && (
-          <nav aria-labelledby="outras-certidoes" className="space-y-4">
-            <h2 id="outras-certidoes" className="text-xl font-bold text-slate-900 font-serif">
-              Outras certidões
-            </h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {related.map((other) => (
-                <li key={other.slug}>
-                  <Link
-                    href={certificatePath(other.slug)}
-                    className="block rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-primary-800 hover:border-primary-300 hover:bg-primary-50"
-                  >
-                    {certificateShortName(other)}
-                    <span className="block text-xs font-normal text-slate-500">
-                      {other.categoryName} · {other.estimatedDays}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
       </div>
     </section>
   );

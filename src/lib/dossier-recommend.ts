@@ -76,18 +76,6 @@ function specsForPurpose(purpose: DossierPurpose, subjects: PublicSubject[]): Re
           party
         );
       }
-      if (party.kind === "COMPANY") {
-        add(
-          "trt-certidao-de-acoes-trabalhistas-ceat",
-          `Passivo trabalhista da ${party.displayName}.`,
-          party
-        );
-        add(
-          "trf-certidao-de-distribuicao-da-justica-federal",
-          `Distribuição federal da ${party.displayName}.`,
-          party
-        );
-      }
     }
     if (rural) {
       add(
@@ -101,11 +89,6 @@ function specsForPurpose(purpose: DossierPurpose, subjects: PublicSubject[]): Re
 
   if (purpose === "INVENTARIO") {
     const person = firstOf(subjects, "PERSON") || fallback;
-    add(
-      "certidao-de-obito",
-      "Abre o inventário e comprova o falecimento.",
-      person
-    );
     add(
       "consulta-de-inventario",
       "Verifica se já existe inventário em cartório de notas.",
@@ -134,11 +117,6 @@ function specsForPurpose(purpose: DossierPurpose, subjects: PublicSubject[]): Re
   if (purpose === "DUE_DILIGENCE_SOCIETARIA") {
     for (const party of parties.length ? parties : [fallback]) {
       add(
-        "pesquisa-de-protesto",
-        `Mapeia cartórios de protesto em nome de ${party.displayName}.`,
-        party
-      );
-      add(
         "certidao-de-protesto",
         `Certidão de protesto de ${party.displayName}.`,
         party
@@ -148,29 +126,12 @@ function specsForPurpose(purpose: DossierPurpose, subjects: PublicSubject[]): Re
         `Bens imóveis em nome de ${party.displayName}.`,
         party
       );
-      if (party.kind === "COMPANY") {
-        add(
-          "trt-certidao-de-acoes-trabalhistas-ceat",
-          `Ações trabalhistas da ${party.displayName}.`,
-          party
-        );
-        add(
-          "trf-certidao-de-distribuicao-da-justica-federal",
-          `Distribuição federal da ${party.displayName}.`,
-          party
-        );
-      }
     }
     return specs;
   }
 
   if (purpose === "PROCESSO") {
     const target = lawsuit || parties[0] || fallback;
-    add(
-      "trf-certidao-de-distribuicao-da-justica-federal",
-      "Distribuição na Justiça Federal ligada ao caso.",
-      target
-    );
     for (const party of parties) {
       add(
         "certidao-de-protesto",

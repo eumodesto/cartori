@@ -85,7 +85,7 @@ export default function DesignSystemShowcasePage() {
   const [activePillTab, setActivePillTab] = React.useState("b2b");
 
   // Form states
-  const [inputValue, setInputValue] = React.useState("Certidão de Nascimento em Breve Relato");
+  const [inputValue, setInputValue] = React.useState("Certidão de Matrícula de Imóvel");
   const [selectValue, setSelectValue] = React.useState("sp");
   const [checkboxChecked, setCheckboxChecked] = React.useState(true);
   const [radioValue, setRadioValue] = React.useState("digital");
@@ -357,7 +357,7 @@ export default function DesignSystemShowcasePage() {
                   <p className="text-sm italic text-neutral-600">Italic — citações e ênfase editorial</p>
                 </div>
                 <p className="text-sm text-neutral-600 leading-relaxed border-t border-neutral-200 pt-4">
-                  Centralize solicitações de Registro Civil, Imóveis, Notas e Protesto.
+                  Centralize solicitações de Imóveis, Notas e Protesto.
                   Selecione estado, cidade e cartório com preenchimento automático.
                 </p>
               </CardContent>
@@ -416,7 +416,7 @@ export default function DesignSystemShowcasePage() {
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
                   <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Heading 3</span>
-                  <span className="font-sans text-xl font-semibold tracking-tight text-neutral-900">Certidão de Nascimento</span>
+                  <span className="font-sans text-xl font-semibold tracking-tight text-neutral-900">Certidão de Matrícula de Imóvel</span>
                   <span className="text-[11px] text-neutral-400 font-mono">Mori / 20px / 600</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
@@ -694,7 +694,7 @@ export default function DesignSystemShowcasePage() {
                 <CardDescription>Uso para classificação de tipo, grupo ou tag documental</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2 pt-0">
-                <Badge variant="brand">Registro Civil</Badge>
+                <Badge variant="brand">Registro de Imóveis</Badge>
                 <Badge variant="default">Imóveis (RGI)</Badge>
                 <Badge variant="secondary">Tabelionato de Notas</Badge>
                 <Badge variant="outline">Protesto</Badge>
@@ -783,8 +783,8 @@ export default function DesignSystemShowcasePage() {
                   {
                     id: "req-1",
                     protocol: "#CRT-8921",
-                    cert: "Certidão de Nascimento",
-                    type: "Registro Civil",
+                    cert: "Certidão de Matrícula de Imóvel",
+                    type: "Registro de Imóveis",
                     client: "Advocacia Silveira & Associados",
                     cartorio: "1º Subdistrito - Sé (São Paulo/SP)",
                     status: "success" as const,
@@ -1095,8 +1095,8 @@ export default function DesignSystemShowcasePage() {
           <Select
             label="Tipo de Certidão Notarial"
             options={[
-              { value: "nasc", label: "Certidão de Nascimento (Registro Civil)" },
-              { value: "casam", label: "Certidão de Casamento (Registro Civil)" },
+              { value: "matricula", label: "Certidão de Matrícula de Imóvel (Registro de Imóveis)" },
+              { value: "protesto", label: "Certidão de Protesto (Tabelionato de Protesto)" },
               { value: "imovel", label: "Matrícula de Imóvel Atualizada (RGI)" },
               { value: "testamento", label: "Negativa de Testamento (CENSEC)" },
             ]}

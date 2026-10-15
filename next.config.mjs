@@ -87,6 +87,13 @@ const nextConfig = {
       { source: "/dashboard/emails", destination: "/admin/emails", permanent: true },
       { source: "/dashboard/:path*", destination: "/painel/:path*", permanent: true },
       { source: "/dashboard", destination: "/painel", permanent: true },
+      // Certidões retiradas da venda (Registro Civil e as gratuitas nos órgãos oficiais).
+      {
+        source:
+          "/certidao/:slug(certidao-de-nascimento|certidao-de-casamento|certidao-de-obito|certidao-de-divorcio|certidao-de-interdicao|trf-certidao-de-distribuicao-da-justica-federal|trt-certidao-de-acoes-trabalhistas-ceat|pesquisa-de-protesto|nascimento|casamento|obito|divorcio|interdicao)",
+        destination: "/",
+        permanent: true,
+      },
     ];
   },
 };

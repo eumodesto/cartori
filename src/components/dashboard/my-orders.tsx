@@ -179,7 +179,7 @@ export function MyOrders({
           <p className="text-sm text-neutral-600">
             Depois do checkout, seus pedidos e downloads aparecem aqui.
           </p>
-          <Link href="/#certidoes">
+          <Link href="/painel/solicitar">
             <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
               Nova solicitação
             </Button>

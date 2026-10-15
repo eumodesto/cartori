@@ -114,102 +114,31 @@ const ESCRITURAS_PUBLICAS: CertificateTypeConfig[] = [
   ),
 ];
 
-export const MVP_CERTIFICATES: CertificateTypeConfig[] = [
-  // --- REGISTRO CIVIL ---
-  {
-    id: "nascimento",
-    slug: "certidao-de-nascimento",
-    name: "Certidão de Nascimento",
-    shortDescription: "2ª via oficial de nascimento com validade jurídica nacional em formato digital ou papel moeda.",
-    category: "registro-civil",
-    categoryName: "Registro Civil",
-    basePrice: 299.90,
-    estimatedDays: "3 a 5 dias úteis",
-    requiresCartorio: true,
-    hasSearchFee: true,
-    searchFee: 35.00,
-    hasApostilleOption: true,
-    apostillePrice: 259.90,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    priceMode: "uf-format",
-    fields: CRC_FORM_FIELDS["certidao-de-nascimento"],
-  },
-  {
-    id: "casamento",
-    slug: "certidao-de-casamento",
-    name: "Certidão de Casamento",
-    shortDescription: "2ª via oficial de certidão de casamento com averbações (divórcio, alteração de nome, etc.).",
-    category: "registro-civil",
-    categoryName: "Registro Civil",
-    basePrice: 299.90,
-    estimatedDays: "3 a 5 dias úteis",
-    requiresCartorio: true,
-    hasSearchFee: true,
-    searchFee: 35.00,
-    hasApostilleOption: true,
-    apostillePrice: 259.90,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    priceMode: "uf-format",
-    fields: CRC_FORM_FIELDS["certidao-de-casamento"],
-  },
-  {
-    id: "obito",
-    slug: "certidao-de-obito",
-    name: "Certidão de Óbito",
-    shortDescription: "2ª via de certidão de óbito indispensável para inventários, heranças, partilhas e encerramentos.",
-    category: "registro-civil",
-    categoryName: "Registro Civil",
-    basePrice: 299.90,
-    estimatedDays: "3 a 5 dias úteis",
-    requiresCartorio: true,
-    hasSearchFee: true,
-    searchFee: 35.00,
-    hasApostilleOption: true,
-    apostillePrice: 259.90,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    priceMode: "uf-format",
-    fields: CRC_FORM_FIELDS["certidao-de-obito"],
-  },
-  {
-    id: "divorcio",
-    slug: "certidao-de-divorcio",
-    name: "Certidão de Divórcio",
-    shortDescription: "2ª via da certidão de casamento com averbação de divórcio, ou certidão específica de divórcio lavrada no registro civil.",
-    category: "registro-civil",
-    categoryName: "Registro Civil",
-    basePrice: 299.90,
-    estimatedDays: "3 a 5 dias úteis",
-    requiresCartorio: true,
-    hasSearchFee: true,
-    searchFee: 35.00,
-    hasApostilleOption: true,
-    apostillePrice: 259.90,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    priceMode: "uf-format",
-    fields: CRC_FORM_FIELDS["certidao-de-divorcio"],
-  },
-  {
-    id: "interdicao",
-    slug: "certidao-de-interdicao",
-    name: "Certidão de Interdição",
-    shortDescription: "Comprova se a capacidade civil de uma pessoa foi limitada por decisão judicial e indica o curador nomeado.",
-    category: "registro-civil",
-    categoryName: "Registro Civil",
-    basePrice: 329.90,
-    estimatedDays: "3 a 6 dias úteis",
-    requiresCartorio: true,
-    hasSearchFee: true,
-    searchFee: 35.00,
-    hasApostilleOption: true,
-    apostillePrice: 259.90,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    fields: CRC_FORM_FIELDS["certidao-de-interdicao"],
-  },
+/**
+ * Certidões retiradas da venda: as gratuitas nos órgãos oficiais (TRF, TRT, pesquisa de protesto).
+ * Bloqueadas também quando ainda existem no banco.
+ * Registro Civil não está aqui: é vendido só na área logada (ver private-catalog.ts).
+ */
+export const RETIRED_CERTIFICATE_SLUGS: ReadonlySet<string> = new Set([
+  "trf-certidao-de-distribuicao-da-justica-federal",
+  "trt-certidao-de-acoes-trabalhistas-ceat",
+  "pesquisa-de-protesto",
+]);
+
+export const RETIRED_CATEGORIES: ReadonlySet<string> = new Set(["distribuidores-judiciais"]);
+
+/** Categorias vendidas só para usuários logados; nunca em listagens públicas. */
+export const PRIVATE_CATEGORIES: ReadonlySet<string> = new Set(["registro-civil"]);
+
+export function isPrivateCertificate(cert: { category?: string }) {
+  return PRIVATE_CATEGORIES.has(cert.category ?? "");
+}
+
+export function isRetiredCertificate(cert: { slug: string; category?: string }) {
+  return RETIRED_CERTIFICATE_SLUGS.has(cert.slug) || RETIRED_CATEGORIES.has(cert.category ?? "");
+}
+
+export const MVP_CERTIFICATES: CertificateTypeConfig[] = [
 
   // --- TABELIONATO DE NOTAS ---
   {
@@ -291,7 +220,7 @@ export const MVP_CERTIFICATES: CertificateTypeConfig[] = [
     id: "matricula-imovel",
     slug: "certidao-de-matricula-de-imovel",
     name: "Certidão de Matrícula de Imóvel (Inteiro Teor com Ônus e Ações)",
-    shortDescription: "Certidão oficial do imóvel com histórico completo de proprietários, averbações, hipotecas, penhoras e ônus.",
+    shortDescription: "Certidão do imóvel com histórico completo de proprietários, averbações, hipotecas, penhoras e ônus.",
     category: "imoveis",
     categoryName: "Registro de Imóveis",
     basePrice: 269.90,
@@ -400,62 +329,7 @@ export const MVP_CERTIFICATES: CertificateTypeConfig[] = [
     priceMode: "uf-flat",
     fields: CRC_FORM_FIELDS["certidao-de-protesto"],
   },
-  {
-    id: "pesquisa-protesto",
-    slug: "pesquisa-de-protesto",
-    name: "Pesquisa de Protesto",
-    shortDescription: "Verifica se existem protestos e em quais cartórios estão registrados, para análise de risco em crédito e transações.",
-    category: "protesto",
-    categoryName: "Tabelionato de Protesto",
-    basePrice: 99.90,
-    estimatedDays: "1 a 3 dias úteis",
-    requiresCartorio: false,
-    hasSearchFee: false,
-    searchFee: 0,
-    hasApostilleOption: false,
-    apostillePrice: 0,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    fields: CRC_FORM_FIELDS["pesquisa-de-protesto"],
-  },
 
-  // --- DISTRIBUIDORES JUDICIAIS (TRF e TRT only; other CRC distributor SKUs stay out) ---
-  {
-    id: "trf-distribuicao",
-    slug: "trf-certidao-de-distribuicao-da-justica-federal",
-    name: "TRF – Certidão de Distribuição da Justiça Federal",
-    shortDescription: "Informa se há processos distribuídos na Justiça Federal em nome da pessoa ou empresa. Usada em concursos, imigração, passaporte e diligências.",
-    category: "distribuidores-judiciais",
-    categoryName: "Distribuidores Judiciais",
-    basePrice: 99.90,
-    estimatedDays: "1 a 3 dias úteis",
-    requiresCartorio: false,
-    hasSearchFee: false,
-    searchFee: 0,
-    hasApostilleOption: false,
-    apostillePrice: 0,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    fields: CRC_FORM_FIELDS["trf-certidao-de-distribuicao-da-justica-federal"],
-  },
-  {
-    id: "trt-ceat",
-    slug: "trt-certidao-de-acoes-trabalhistas-ceat",
-    name: "TRT – Certidão de Ações Trabalhistas (CEAT)",
-    shortDescription: "Informa se há ações trabalhistas registradas no TRT contra pessoa ou empresa. Usada em contratações, licitações e due diligence.",
-    category: "distribuidores-judiciais",
-    categoryName: "Distribuidores Judiciais",
-    basePrice: 99.90,
-    estimatedDays: "1 a 3 dias úteis",
-    requiresCartorio: false,
-    hasSearchFee: false,
-    searchFee: 0,
-    hasApostilleOption: false,
-    apostillePrice: 0,
-    hasShippingOption: true,
-    shippingPrice: 32.00,
-    fields: CRC_FORM_FIELDS["trt-certidao-de-acoes-trabalhistas-ceat"],
-  },
 
   // CCIR: approved SKU; category `rural` is new (not RI and not distribuidores).
   {

@@ -42,7 +42,7 @@ function DashboardHome() {
             : "Acesso pessoal: pedidos e novas solicitações. Recursos empresariais liberam ao cadastrar o CNPJ da empresa."
         }
         actions={
-          <Link href="/#certidoes">
+          <Link href="/painel/solicitar">
             <Button variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
               Nova solicitação
             </Button>

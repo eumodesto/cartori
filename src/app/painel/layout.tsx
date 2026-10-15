@@ -8,7 +8,7 @@ import { areaLinksGroup } from "@/components/layout/area-links";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
 import { isBusinessLockedHref } from "@/lib/auth-types";
-import { Layers, FileText, Search, Building2, Users, Wallet, FolderOpen } from "lucide-react";
+import { Layers, FileText, FilePlus2, Search, Building2, Users, Wallet, FolderOpen } from "lucide-react";
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -45,6 +45,13 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           href: "/painel",
           icon: <Layers className="w-4 h-4" />,
           isActive: pathname === "/painel",
+        },
+        {
+          id: "request",
+          label: "Solicitar certidão",
+          href: "/painel/solicitar",
+          icon: <FilePlus2 className="w-4 h-4" />,
+          isActive: pathname.startsWith("/painel/solicitar"),
         },
         {
           id: "orders",

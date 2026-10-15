@@ -14,12 +14,6 @@ const CLOSE_MARKER = /\[\[encerrar\]\]/gi;
 
 function extraAliases(slug: string): string[] {
   switch (slug) {
-    case "certidao-de-nascimento":
-      return ["certidão de nascimento", "certidao de nascimento", "nascimento"];
-    case "certidao-de-casamento":
-      return ["certidão de casamento", "certidao de casamento", "casamento"];
-    case "certidao-de-obito":
-      return ["certidão de óbito", "certidao de obito", "óbito", "obito"];
     case "certidao-negativa-de-testamento":
       return ["censec", "negativa de testamento", "testamento"];
     case "certidao-de-escritura-de-compra-e-venda":
@@ -30,22 +24,12 @@ function extraAliases(slug: string): string[] {
       return ["certidão de inventário", "certidao de inventario"];
     case "pesquisa-de-imoveis":
       return ["pesquisa de imóveis", "pesquisa de imoveis"];
-    case "pesquisa-de-protesto":
-      return ["pesquisa de protesto"];
     case "certidao-de-matricula-de-imovel":
       return ["matrícula de imóvel", "matricula de imovel", "matrícula", "matricula"];
     case "certidao-de-protesto":
       return ["certidão de protesto", "certidao de protesto", "protesto"];
-    case "trf-certidao-de-distribuicao-da-justica-federal":
-      return ["trf", "justiça federal", "justica federal", "distribuição federal"];
-    case "trt-certidao-de-acoes-trabalhistas-ceat":
-      return ["trt", "ceat", "ações trabalhistas", "acoes trabalhistas"];
     case "ccir-certificado-cadastro-imovel-rural-incra":
       return ["ccir", "incra", "imóvel rural", "imovel rural"];
-    case "certidao-de-divorcio":
-      return ["certidão de divórcio", "certidao de divorcio", "divórcio", "divorcio"];
-    case "certidao-de-interdicao":
-      return ["certidão de interdição", "certidao de interdicao", "interdição", "interdicao"];
     case "certidao-de-procuracao":
       return ["procuração", "procuracao", "certidão de procuração"];
     case "busca-da-matricula-do-imovel":

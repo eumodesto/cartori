@@ -564,7 +564,7 @@ export function CertificateConfigDialog({
         <div className="shrink-0 bg-primary-900 text-white p-6 flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-primary-300 tracking-wider">
-              Configuração Notarial • {certificate.categoryName}
+              Pedido • {certificate.categoryName}
             </span>
             <h3 id="certificate-config-title" className="text-xl font-bold font-serif">
               {certificate.name}
@@ -634,7 +634,7 @@ export function CertificateConfigDialog({
 
               {selectedCity && (
                 <SearchableSelect
-                  label="Cartório / Serventia oficial"
+                  label="Cartório"
                   rightBadge={
                     cartorios.length > 0 ? (
                       <span className="text-[10px] font-bold text-primary-700 bg-primary-50 px-2 py-0.5 rounded border border-primary-200">
