@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Clock } from "lucide-react";
+import Link from "next/link";
+import { Clock, Search } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { MVP_CERTIFICATES, getCertificateBySlug } from "@/lib/catalog";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/lib/certificate-links";
 import { CartItem, CertificateTypeConfig } from "@/lib/types";
 import { FilterTags } from "@/components/ui/filter-tags";
+import { Input } from "@/components/ui/input";
 import { LivingOrigamiBg } from "@/components/ui/living-origami-bg";
 import { GetStartedButton } from "@/components/ui/get-started-button";
 import { SlideUpText } from "@/components/ui/slide-up-text";
@@ -97,8 +99,9 @@ export function CatalogBrowser({
     },
     [certificates]
   );
-  const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(
-    () => findCertificate(initialCertificateSlug)
+  // Na home (deepLink sem lockedSlug) o formulário nunca abre por cima do catálogo.
+  const [selectedCert, setSelectedCert] = useState<CertificateTypeConfig | null>(() =>
+    !deepLink || lockedSlug ? findCertificate(initialCertificateSlug) : null
   );
   /** Certidão aberta por último: ao fechar o diálogo, a listagem mostra só ela. */
   const [focusedSlug, setFocusedSlug] = useState<string | null>(null);
@@ -107,15 +110,19 @@ export function CatalogBrowser({
     (raw: string) => {
       const cert = findCertificate(raw);
       if (!cert) return;
+      const page = `/certidao/${cert.slug}`;
+      // Na home, o card abre a página real da certidão (só ela, com o formulário aberto):
+      // endereço, conteúdo e o que o Google lê ficam iguais. Na própria página, abre aqui.
+      if (deepLink && lockedSlug !== cert.slug) {
+        router.push(page);
+        return;
+      }
       setSelectedCert(cert);
-      if (deepLink) {
-        const next = `/certidao/${cert.slug}`;
-        if (window.location.pathname !== next) {
-          window.history.replaceState(null, "", next);
-        }
+      if (deepLink && window.location.pathname !== page) {
+        window.history.replaceState(null, "", page);
       }
     },
-    [deepLink, findCertificate]
+    [deepLink, findCertificate, lockedSlug, router]
   );
 
   /** Em foco, a URL fica na página da certidão; sem foco, volta para a home. */
@@ -151,7 +158,8 @@ export function CatalogBrowser({
     if (!deepLink) return;
     const fromProp = certificateFromParam(initialCertificateSlug);
     if (fromProp) {
-      setSelectedCert(fromProp);
+      if (lockedSlug !== fromProp.slug) router.replace(`/certidao/${fromProp.slug}`);
+      else setSelectedCert(fromProp);
       return;
     }
     const fromLocation = certificateFromParam(
@@ -160,8 +168,14 @@ export function CatalogBrowser({
         new URL(window.location.href).searchParams
       )
     );
-    if (fromLocation) setSelectedCert(fromLocation);
-  }, [deepLink, initialCertificateSlug]);
+    if (!fromLocation) return;
+    // Link antigo na home (?certidao=…): vai para a página real da certidão.
+    if (lockedSlug !== fromLocation.slug) {
+      router.replace(`/certidao/${fromLocation.slug}`);
+      return;
+    }
+    setSelectedCert(fromLocation);
+  }, [deepLink, initialCertificateSlug, lockedSlug, router]);
 
   const searchedCertificates = useMemo(() => {
     const needle = normalizeSearch(catalogQuery);
@@ -205,8 +219,13 @@ export function CatalogBrowser({
 
   const lockedCert = lockedSlug ? getCertificateBySlug(lockedSlug) ?? null : null;
 
+  // Página da certidão: só ela até a pessoa buscar outra (a busca roda no navegador).
+  const lockedSearching = Boolean(lockedCert && catalogQuery.trim());
+
   const filteredCertificates = lockedCert
-    ? [lockedCert]
+    ? lockedSearching
+      ? searchedCertificates
+      : [lockedCert]
     : focusedCert
     ? [focusedCert]
     : searchedCertificates.filter((cert) => {
@@ -242,7 +261,7 @@ export function CatalogBrowser({
 
   const resolvedHeading = lockedCert
     ? {
-        eyebrow: "Pedido online",
+        eyebrow: "",
         title: lockedCert.name,
         subtitle: "Clique em Solicitar para informar o local e os dados do documento.",
       }
@@ -266,9 +285,11 @@ export function CatalogBrowser({
       )}
 
       <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-        <span className="text-xs uppercase font-bold tracking-widest text-primary-700 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
-          {resolvedHeading.eyebrow}
-        </span>
+        {resolvedHeading.eyebrow && (
+          <span className="text-xs uppercase font-bold tracking-widest text-primary-700 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
+            {resolvedHeading.eyebrow}
+          </span>
+        )}
         <h2 className="text-3xl font-extrabold text-slate-900 font-serif">
           {resolvedHeading.title}
         </h2>
@@ -290,6 +311,24 @@ export function CatalogBrowser({
           }}
           searchPlaceholder="Buscar por nome, tipo ou cartório..."
         />
+        )}
+
+        {lockedCert && (
+          <div className="mx-auto flex max-w-xl flex-col items-stretch gap-3 pt-4 sm:flex-row sm:items-center">
+            <Input
+              aria-label="Buscar outra certidão"
+              placeholder="Buscar outra certidão..."
+              value={catalogQuery}
+              onChange={(event) => setCatalogQuery(event.target.value)}
+              leftIcon={<Search className="h-4 w-4" />}
+            />
+            <Link
+              href="/#certidoes"
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-neutral-300 bg-neutral-0 px-4 text-sm font-semibold text-brand-800 hover:bg-neutral-50"
+            >
+              Ver todas as certidões
+            </Link>
+          </div>
         )}
       </div>
 
@@ -379,7 +418,7 @@ export function CatalogBrowser({
             ))}
           </div>
 
-          {catalogPageCount > 1 && !lockedCert && (
+          {catalogPageCount > 1 && (!lockedCert || lockedSearching) && (
             <Pagination
               className="mt-8"
               currentPage={currentCatalogPage}
