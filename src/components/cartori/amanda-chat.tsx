@@ -187,7 +187,7 @@ export function AmandaChat({
       <div className="px-4 py-3 border-b border-white/15 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <img
-            src="/amanda.png"
+            src="/amanda.webp"
             alt="Amanda, assistente Cartori"
             className="w-9 h-9 rounded-full object-cover shrink-0 border border-amber-400/70 shadow-sm"
           />
@@ -224,7 +224,7 @@ export function AmandaChat({
           <div className="flex flex-col justify-center h-full gap-4">
             <div className="flex items-center gap-3">
               <img
-                src="/amanda.png"
+                src="/amanda.webp"
                 alt="Amanda"
                 className="w-12 h-12 rounded-full object-cover shrink-0 border border-amber-400/70"
               />
@@ -262,7 +262,7 @@ export function AmandaChat({
               >
                 {msg.role === "assistant" && (
                   <img
-                    src="/amanda.png"
+                    src="/amanda.webp"
                     alt=""
                     className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5 border border-white/20"
                   />
@@ -307,7 +307,7 @@ export function AmandaChat({
             {isTyping && (
               <div className="flex justify-start gap-2">
                 <img
-                  src="/amanda.png"
+                  src="/amanda.webp"
                   alt=""
                   className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5 border border-white/20"
                 />

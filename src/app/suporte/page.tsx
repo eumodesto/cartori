@@ -19,9 +19,10 @@ import {
 } from "@/lib/support-contacts";
 
 export const metadata: Metadata = {
-  title: "Suporte e contato | Cartori",
+  title: "Suporte Cartori: atendimento para pedidos de certidões",
   description:
-    "Canais oficiais da Cartori: e-mail, DPO, painel da conta e redes sociais. A Amanda fica no painel depois do primeiro pedido.",
+    "Fale com a Cartori por e-mail, pelo painel da conta ou pelas redes oficiais. Tire dúvidas sobre pedidos, prazos e cancelamento. Veja os canais.",
+  alternates: { canonical: "/suporte" },
 };
 
 const ICONS = {

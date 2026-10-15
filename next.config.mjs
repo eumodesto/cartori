@@ -55,7 +55,21 @@ const nextConfig = {
         value: "max-age=63072000; includeSubDomains",
       });
     }
-    return [{ source: "/:path*", headers }];
+    const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
+    const privateSections = [
+      "painel",
+      "admin",
+      "operacao",
+      "checkout",
+      "carrinho",
+      "pedido",
+      "pos-login",
+      "design-system",
+    ];
+    return [
+      { source: "/:path*", headers },
+      ...privateSections.map((section) => ({ source: `/${section}/:path*`, headers: noindex })),
+    ];
   },
   async redirects() {
     // Rotas antigas /dashboard/* → nova arquitetura por seção (/painel, /operacao, /admin).

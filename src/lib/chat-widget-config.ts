@@ -37,12 +37,16 @@ export function isChatWidgetEnabled(
   return includedRoutes.some(matches);
 }
 
-export const ASSISTANT_ASSETS = {
-  webm: "/assistant/amanda-wave.webm",
-  mp4: "/assistant/amanda-wave.mp4",
-  poster: "/amanda.png",
-  fallback: "/amanda.png",
-} as const;
+/** Vídeo opcional: só é usado se os arquivos existirem em /public/assistant. */
+export const ASSISTANT_ASSETS: {
+  webm: string | null;
+  mp4: string | null;
+  fallback: string;
+} = {
+  webm: null,
+  mp4: null,
+  fallback: "/amanda.webp",
+};
 
 export const LAUNCHER_POSITION_KEY = "cartori_amanda_launcher_pos";
 

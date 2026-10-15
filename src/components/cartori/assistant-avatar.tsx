@@ -19,7 +19,8 @@ export function AssistantAvatar({
   const reducedMotion = useReducedMotion();
   const [videoFailed, setVideoFailed] = React.useState(false);
   const [imageSrc, setImageSrc] = React.useState(ASSISTANT_ASSETS.fallback);
-  const showVideo = animated && !reducedMotion && !videoFailed;
+  const hasVideo = Boolean(ASSISTANT_ASSETS.webm || ASSISTANT_ASSETS.mp4);
+  const showVideo = hasVideo && animated && !reducedMotion && !videoFailed;
 
   const frameClass = cn(
     "rounded-full object-cover shrink-0 bg-brand-900",
@@ -41,8 +42,8 @@ export function AssistantAvatar({
         onError={() => setVideoFailed(true)}
         aria-label={alt}
       >
-        <source src={ASSISTANT_ASSETS.webm} type="video/webm" />
-        <source src={ASSISTANT_ASSETS.mp4} type="video/mp4" />
+        {ASSISTANT_ASSETS.webm && <source src={ASSISTANT_ASSETS.webm} type="video/webm" />}
+        {ASSISTANT_ASSETS.mp4 && <source src={ASSISTANT_ASSETS.mp4} type="video/mp4" />}
       </video>
     );
   }

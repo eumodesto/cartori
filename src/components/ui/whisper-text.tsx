@@ -93,6 +93,7 @@ export function WhisperText({
           >
             {item.word}
           </span>
+          {i < words.length - 1 ? " " : null}
         </React.Fragment>
       ))}
     </span>

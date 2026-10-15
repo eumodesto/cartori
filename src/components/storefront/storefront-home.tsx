@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import {
   Building2,
   CheckCircle,
@@ -14,11 +14,18 @@ import { Testimonials } from "@/components/ui/testimonials-columns";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { CatalogBrowser } from "@/components/storefront/catalog-browser";
 import { useBusinessSignup } from "@/components/auth/business-signup-link";
+import { STOREFRONT_FAQ } from "@/lib/storefront-faq";
 
 export function StorefrontHome({
   initialCertificateSlug,
+  landingHero,
+  landingContent,
 }: {
   initialCertificateSlug?: string;
+  /** Página de certidão: H1 e resumo próprios no lugar da chamada geral. */
+  landingHero?: { title: string; summary: string };
+  /** Conteúdo da página de certidão, renderizado no servidor. */
+  landingContent?: ReactNode;
 }) {
   const { open: openBusinessSignup } = useBusinessSignup();
   const [addedNotice, setAddedNotice] = useState("");
@@ -64,22 +71,29 @@ export function StorefrontHome({
                 <span>Plataforma para Advocacias e imobiliárias</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-serif">
-                <WhisperText
-                  className="justify-center lg:justify-start"
-                  delay={100}
-                  duration={0.5}
-                  x={-20}
-                  y={0}
-                  parts={[
-                    { text: "Várias certidões. Diferentes cartórios." },
-                    { text: "Um único pedido.", className: "text-amber-400", newline: true },
-                  ]}
-                />
-              </h1>
+              {landingHero ? (
+                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-serif">
+                  {landingHero.title}
+                </h1>
+              ) : (
+                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-serif">
+                  <WhisperText
+                    className="justify-center lg:justify-start"
+                    delay={100}
+                    duration={0.5}
+                    x={-20}
+                    y={0}
+                    parts={[
+                      { text: "Várias certidões. Diferentes cartórios." },
+                      { text: "Um único pedido.", className: "text-amber-400", newline: true },
+                    ]}
+                  />
+                </h1>
+              )}
 
               <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
-                Centralize suas solicitações de Registro Civil, Imóveis, Notas e Protesto. Selecione o estado, cidade e cartório com preenchimento automático.
+                {landingHero?.summary ??
+                  "Centralize suas solicitações de Registro Civil, Imóveis, Notas e Protesto. Selecione o estado, cidade e cartório com preenchimento automático."}
               </p>
 
               {/* Feature Pills */}
@@ -120,6 +134,8 @@ export function StorefrontHome({
         </div>
       </section>
 
+      {landingContent}
+
       <section id="faq" className="scroll-mt-32 py-16 bg-neutral-0 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
@@ -136,24 +152,7 @@ export function StorefrontHome({
             </p>
           </div>
           <div className="max-w-3xl mx-auto divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
-            {[
-              {
-                q: "Como solicito uma certidão?",
-                a: "Escolha o tipo no catálogo, informe estado, cidade e cartório (quando souber) e os dados do documento. Depois confirme o pedido e pague com PIX ou cartão.",
-              },
-              {
-                q: "A certidão tem validade oficial?",
-                a: "Sim. São documentos oficiais com validade em todo o território nacional. A via digital sai como e-certidão com assinatura ICP-Brasil; a via em papel é enviada pelos Correios.",
-              },
-              {
-                q: "Como acompanho o status e as mensagens?",
-                a: "Com a conta, abra Minha conta no Dashboard. Lá ficam o status da solicitação, recados da equipe e o envio de documentos.",
-              },
-              {
-                q: "E se eu não souber o cartório?",
-                a: "Sinalize no formulário que não conhece a serventia. A equipe Cartori faz a busca operacional e segue a emissão.",
-              },
-            ].map((item) => (
+            {STOREFRONT_FAQ.map((item) => (
               <details key={item.q} className="group px-5 py-4">
                 <summary className="cursor-pointer list-none text-sm font-semibold text-slate-900 flex items-center justify-between gap-4">
                   {item.q}

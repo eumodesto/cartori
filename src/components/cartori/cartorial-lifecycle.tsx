@@ -69,7 +69,7 @@ export const CartorialLifecycle: React.FC<{ onOpenGlossary?: () => void }> = ({
       description:
         "A certidão digital é lavrada com assinatura digital qualificada (Padrão ICP-Brasil), com validade plena em qualquer banco ou tribunal.",
       icon: <Award className="w-4 h-4 text-semantic-success" />,
-      sla: "Download Imediato",
+      sla: "PDF no painel após a emissão",
       color: "bg-semantic-success-bg text-semantic-success border-semantic-success-border",
     },
   ];

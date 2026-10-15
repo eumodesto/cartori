@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { FileText, HelpCircle, MapPin, Tag } from "lucide-react";
+import { Clock, FileText, HelpCircle, MapPin, Tag } from "lucide-react";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -706,12 +706,32 @@ export function CertificateConfigDialog({
                       {
                         value: "BOTH",
                         label: `Digital + físico — ${formatCurrency(bothList)} + frete ${formatCurrency(certificate.shippingPrice)}`,
-                        description: "PDF imediato após emissão e via em papel.",
+                        description:
+                          "PDF liberado no painel quando o cartório concluir a emissão, mais a via em papel pelos Correios.",
                       },
                     ]
                   : []),
               ]}
             />
+            <div className="flex gap-2.5 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm leading-relaxed text-amber-950">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden />
+              <p>
+                <strong>A emissão não é instantânea.</strong>{" "}
+                {certificate.estimatedDays ? (
+                  <>
+                    O prazo estimado é de <strong>{certificate.estimatedDays}</strong> após a
+                    confirmação do pagamento e depende do cartório ou órgão emissor.
+                  </>
+                ) : (
+                  "O prazo conta a partir da confirmação do pagamento e depende do cartório ou órgão emissor."
+                )}{" "}
+                {format === "PHYSICAL_PAPER"
+                  ? "Depois da emissão, a via em papel é enviada pelos Correios."
+                  : format === "BOTH"
+                    ? "O PDF fica disponível no painel assim que a certidão é emitida; a via em papel segue depois pelos Correios."
+                    : "O PDF fica disponível no painel assim que a certidão é emitida."}
+              </p>
+            </div>
           </div>
 
           <div className="space-y-4 pt-4 border-t border-slate-100">

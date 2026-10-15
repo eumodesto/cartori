@@ -6,6 +6,7 @@ import { MVP_CERTIFICATES } from "@/lib/catalog";
 import {
   CERTIFICATE_QUERY_KEY,
   certificateFromParam,
+  certificatePath,
   certificateSlugFromLocation,
 } from "@/lib/certificate-links";
 import { CartItem, CertificateTypeConfig } from "@/lib/types";
@@ -240,15 +241,26 @@ export function CatalogBrowser({
 
                   <div>
                     <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors font-serif">
-                      <SlideUpText
-                        split="characters"
-                        stagger={0.03}
-                        inView
-                        once
-                        className="text-lg font-bold font-serif"
+                      <a
+                        href={certificatePath(cert.slug)}
+                        onClick={(event) => {
+                          if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) {
+                            return;
+                          }
+                          event.preventDefault();
+                          openCertificate(cert.slug);
+                        }}
                       >
-                        {cert.name}
-                      </SlideUpText>
+                        <SlideUpText
+                          split="characters"
+                          stagger={0.03}
+                          inView
+                          once
+                          className="text-lg font-bold font-serif"
+                        >
+                          {cert.name}
+                        </SlideUpText>
+                      </a>
                     </h3>
                     <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
                       {cert.shortDescription}

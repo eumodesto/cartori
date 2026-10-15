@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { LegalMail, LegalPage, LegalSection } from "@/components/storefront/legal-page";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade (LGPD) | Cartori",
+  title: "Política de Privacidade da Cartori: proteção de dados LGPD",
   description:
-    "Como a Cartore Express Ltda. coleta, usa e protege dados pessoais no Cartori.com.br, em conformidade com a LGPD.",
+    "Saiba como a Cartore Express Ltda. coleta, usa e protege seus dados no Cartori.com.br, conforme a LGPD, e como exercer seus direitos de titular.",
+  alternates: { canonical: "/privacidade" },
 };
 
 export default function PrivacidadePage() {

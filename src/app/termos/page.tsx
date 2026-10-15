@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { LegalMail, LegalPage, LegalSection } from "@/components/storefront/legal-page";
 
 export const metadata: Metadata = {
-  title: "Termos e Condições de Uso | Cartori",
+  title: "Termos de Uso da Cartori: regras do serviço de certidões",
   description:
-    "Termos de uso do Cartori.com.br, operado pela Cartore Express Ltda. Assessoria e intermediação documental — não somos cartório oficial.",
+    "Termos de uso do Cartori.com.br, operado pela Cartore Express Ltda. Intermediação documental: não somos cartório oficial. Leia antes de pedir.",
+  alternates: { canonical: "/termos" },
 };
 
 export default function TermosPage() {

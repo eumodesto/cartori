@@ -651,7 +651,7 @@ export default function DesignSystemShowcasePage() {
                   value={radioValue}
                   onChange={setRadioValue}
                   options={[
-                    { value: "digital", label: "Certidão Digital (PDF Seguro)", description: "Envio instantâneo por e-mail" },
+                    { value: "digital", label: "Certidão Digital (PDF Seguro)", description: "PDF enviado por e-mail após a emissão pelo cartório" },
                     { value: "fisica", label: "Certidão em Papel Moeda", description: "Envio via Correios Sedex" },
                   ]}
                 />
