@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePlatformAdmin } from "@/lib/authorization";
 import { renderTemplatePreview } from "@/lib/email";
+import { renderBrandedEmail } from "@/lib/email-layout";
 import { getEmailTemplateDef } from "@/lib/email-templates";
 
 export async function POST(
@@ -42,15 +43,20 @@ export async function POST(
     );
     const subjectTpl = draftSubject ?? resolved?.subject ?? def.subject;
     const bodyTpl = draftBody ?? resolved?.body ?? def.body;
+    const subject = renderTemplateString(subjectTpl, vars);
+    const body = renderTemplateString(bodyTpl, vars);
     return NextResponse.json({
       success: true,
-      preview: {
-        subject: renderTemplateString(subjectTpl, vars),
-        body: renderTemplateString(bodyTpl, vars),
-      },
+      preview: { subject, body, html: renderBrandedEmail(subject, body).html },
     });
   }
 
   const preview = await renderTemplatePreview(params.key, vars);
-  return NextResponse.json({ success: true, preview });
+  return NextResponse.json({
+    success: true,
+    preview: preview && {
+      ...preview,
+      html: renderBrandedEmail(preview.subject, preview.body).html,
+    },
+  });
 }

@@ -54,7 +54,11 @@ export default function EmailsPage() {
     { type: "success" | "error"; text: string } | null
   >(null);
 
-  const [preview, setPreview] = React.useState<{ subject: string; body: string } | null>(
+  const [preview, setPreview] = React.useState<{
+    subject: string;
+    body: string;
+    html?: string;
+  } | null>(
     null
   );
 
@@ -418,10 +422,19 @@ export default function EmailsPage() {
                 <p className="text-xs text-neutral-400 uppercase tracking-wide">Assunto</p>
                 <p className="text-sm font-semibold text-neutral-900">{preview.subject}</p>
                 <div className="my-3 h-px bg-neutral-200" />
-                <p className="text-xs text-neutral-400 uppercase tracking-wide">Corpo</p>
-                <pre className="mt-1 whitespace-pre-wrap font-sans text-sm text-neutral-700 leading-relaxed">
-                  {preview.body}
-                </pre>
+                <p className="text-xs text-neutral-400 uppercase tracking-wide">Como o cliente recebe</p>
+                {preview.html ? (
+                  <iframe
+                    title="Pré-visualização do e-mail"
+                    srcDoc={preview.html}
+                    sandbox=""
+                    className="mt-2 h-[640px] w-full rounded-md border border-neutral-200 bg-white"
+                  />
+                ) : (
+                  <pre className="mt-1 whitespace-pre-wrap font-sans text-sm text-neutral-700 leading-relaxed">
+                    {preview.body}
+                  </pre>
+                )}
               </div>
               <p className="text-[11px] text-neutral-500">
                 Pré-visualização com dados de exemplo. As variáveis são substituídas no envio real.

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { renderBrandedEmail } from "@/lib/email-layout";
 import { resolveEmailCredentials, resolveEmailTemplate } from "@/lib/email-settings";
 import { renderTemplateString } from "@/lib/email-templates";
 import {
@@ -27,7 +28,10 @@ async function shouldSendTemplateToUser(
 
 export type DeliveryResult = { sent: true } | { sent: false; error: string };
 
-/** Envio via Resend usando credenciais resolvidas (banco → env). Server-only. */
+/**
+ * Envio via Resend usando credenciais resolvidas (banco → env). Server-only.
+ * Todo e-mail sai no layout da marca (logo, CNPJ, rodapé com links), em HTML e texto.
+ */
 export async function deliverEmail(
   to: string,
   subject: string,
@@ -44,7 +48,7 @@ export async function deliverEmail(
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from, to: [to], subject, text }),
+    body: JSON.stringify({ from, to: [to], subject, ...renderBrandedEmail(subject, text) }),
   });
   if (!res.ok) {
     const body = (await res.text()).slice(0, 400);
