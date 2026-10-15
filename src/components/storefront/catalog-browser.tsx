@@ -54,6 +54,8 @@ interface CatalogBrowserProps {
   scrollTargetId?: string;
   /** Sobrescreve o cabeçalho padrão do catálogo. */
   heading?: Partial<CatalogHeading>;
+  /** Avisa qual certidão ficou em foco ao fechar o diálogo (null = catálogo completo). */
+  onFocusChange?: (slug: string | null) => void;
 }
 
 export function CatalogBrowser({
@@ -63,6 +65,7 @@ export function CatalogBrowser({
   onAdded,
   scrollTargetId = "certidoes",
   heading,
+  onFocusChange,
 }: CatalogBrowserProps) {
   const { addItem } = useCart();
   const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set());
@@ -89,18 +92,28 @@ export function CatalogBrowser({
     [deepLink]
   );
 
-  const closeCertificate = useCallback(() => {
-    if (selectedCert) setFocusedSlug(selectedCert.slug);
-    setSelectedCert(null);
-    if (
-      deepLink &&
-      (window.location.pathname.startsWith("/certidao/") ||
+  /** Em foco, a URL fica na página da certidão; sem foco, volta para a home. */
+  const changeFocus = useCallback(
+    (slug: string | null) => {
+      setFocusedSlug(slug);
+      onFocusChange?.(slug);
+      if (!deepLink) return;
+      const next = slug ? `/certidao/${slug}` : "/";
+      const onCertificateUrl =
+        window.location.pathname.startsWith("/certidao/") ||
         window.location.search.includes(CERTIFICATE_QUERY_KEY) ||
-        window.location.search.includes("servico="))
-    ) {
-      window.history.replaceState(null, "", "/");
-    }
-  }, [deepLink, selectedCert]);
+        window.location.search.includes("servico=");
+      if (slug ? window.location.pathname !== next : onCertificateUrl) {
+        window.history.replaceState(null, "", next);
+      }
+    },
+    [deepLink, onFocusChange]
+  );
+
+  const closeCertificate = useCallback(() => {
+    changeFocus(selectedCert?.slug ?? null);
+    setSelectedCert(null);
+  }, [changeFocus, selectedCert]);
 
   useEffect(() => {
     if (!registerOpenHandler) return;
@@ -162,7 +175,9 @@ export function CatalogBrowser({
         return activeCategories.has(cert.category);
       });
 
-  const showAllCertificates = () => setFocusedSlug(null);
+  const showAllCertificates = () => {
+    if (focusedSlug) changeFocus(null);
+  };
 
   const catalogPageCount = Math.max(
     1,
@@ -176,7 +191,6 @@ export function CatalogBrowser({
 
   useEffect(() => {
     setCatalogPage(1);
-    setFocusedSlug(null);
   }, [catalogQuery, activeCategories]);
 
   const goToCatalogPage = (page: number) => {
@@ -216,9 +230,15 @@ export function CatalogBrowser({
           className="pt-4"
           items={categoryFilters}
           active={activeCategories}
-          onChange={setActiveCategories}
+          onChange={(next) => {
+            setActiveCategories(next);
+            showAllCertificates();
+          }}
           query={catalogQuery}
-          onQueryChange={setCatalogQuery}
+          onQueryChange={(next) => {
+            setCatalogQuery(next);
+            showAllCertificates();
+          }}
           searchPlaceholder="Buscar por nome, tipo ou cartório..."
         />
       </div>

@@ -13,7 +13,12 @@ import { GetStartedButton } from "@/components/ui/get-started-button";
 import { Testimonials } from "@/components/ui/testimonials-columns";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { CatalogBrowser } from "@/components/storefront/catalog-browser";
+import {
+  CertificateLanding,
+  certificateLandingTitle,
+} from "@/components/storefront/certificate-landing";
 import { useBusinessSignup } from "@/components/auth/business-signup-link";
+import { getCertificateBySlug } from "@/lib/catalog";
 import { STOREFRONT_FAQ } from "@/lib/storefront-faq";
 
 export function StorefrontHome({
@@ -29,6 +34,21 @@ export function StorefrontHome({
 }) {
   const { open: openBusinessSignup } = useBusinessSignup();
   const [addedNotice, setAddedNotice] = useState("");
+  /** undefined = o catálogo ainda não mudou o foco; vale o conteúdo vindo do servidor. */
+  const [focusedSlug, setFocusedSlug] = useState<string | null | undefined>(undefined);
+  const focusedCert = focusedSlug ? getCertificateBySlug(focusedSlug) : undefined;
+  const hero =
+    focusedSlug === undefined
+      ? landingHero
+      : focusedCert
+        ? { title: certificateLandingTitle(focusedCert), summary: focusedCert.shortDescription }
+        : undefined;
+  const certificateContent =
+    focusedSlug === undefined
+      ? landingContent
+      : focusedCert
+        ? <CertificateLanding cert={focusedCert} />
+        : null;
 
   useEffect(() => {
     const scrollToHash = () => {
@@ -71,9 +91,9 @@ export function StorefrontHome({
                 <span>Plataforma para Advocacias e imobiliárias</span>
               </div>
 
-              {landingHero ? (
+              {hero ? (
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-serif">
-                  {landingHero.title}
+                  {hero.title}
                 </h1>
               ) : (
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight font-serif">
@@ -92,7 +112,7 @@ export function StorefrontHome({
               )}
 
               <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
-                {landingHero?.summary ??
+                {hero?.summary ??
                   "Centralize suas solicitações de Registro Civil, Imóveis, Notas e Protesto. Selecione o estado, cidade e cartório com preenchimento automático."}
               </p>
 
@@ -120,6 +140,7 @@ export function StorefrontHome({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <CatalogBrowser
             deepLink
+            onFocusChange={setFocusedSlug}
             scrollTargetId="certidoes"
             initialCertificateSlug={initialCertificateSlug}
             onAdded={(items) => {
@@ -134,7 +155,7 @@ export function StorefrontHome({
         </div>
       </section>
 
-      {landingContent}
+      {certificateContent}
 
       <section id="faq" className="scroll-mt-32 py-16 bg-neutral-0 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
