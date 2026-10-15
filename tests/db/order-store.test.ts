@@ -58,45 +58,6 @@ describe("saveOrder", () => {
 });
 
 describe("saveOrder: comportamento atual de defeitos conhecidos", () => {
-  it("[F3] novo pagamento sobrescreve a linha anterior; o providerPaymentId antigo fica órfão", async () => {
-    const first = makeStoredOrder();
-    await saveOrder(first);
-    const oldProviderId = first.payment!.providerPaymentId!;
-    const oldPaymentRowId = first.payment!.id;
-
-    await saveOrder({
-      ...first,
-      payment: {
-        ...first.payment!,
-        id: randomUUID(),
-        providerPaymentId: `mp-teste-${randomUUID()}`,
-        paymentMethod: "CREDIT_CARD",
-      },
-    });
-
-    const state = await readOrderState(first.id);
-    expect(state.payments).toHaveLength(1);
-    expect(state.payments[0].id).toBe(oldPaymentRowId);
-    expect(state.payments[0].providerPaymentId).not.toBe(oldProviderId);
-
-    const late = await reconcileFetchedPayment(approvedSnapshot(first));
-    expect(late.reason).toBe("unlinked");
-  });
-
-  it("[F3] metadata do Payment é substituída por { demo }", async () => {
-    const input = makeStoredOrder();
-    await saveOrder(input);
-    await prisma.payment.updateMany({
-      where: { orderId: input.id },
-      data: { metadata: { origem: "mercadopago", detalhe: "accredited" } },
-    });
-
-    await saveOrder(input);
-
-    const state = await readOrderState(input.id);
-    expect(state.payments[0].metadata).toEqual({ demo: false });
-  });
-
   it("[F4] gravar uma cópia antiga desfaz um cancelamento feito no intervalo", async () => {
     const input = makeStoredOrder();
     await saveOrder(input);
@@ -107,7 +68,82 @@ describe("saveOrder: comportamento atual de defeitos conhecidos", () => {
 
     expect((await readOrderState(input.id)).status).toBe("PENDING_PAYMENT");
   });
+});
 
+describe("saveOrder: cobranças anteriores são preservadas (F3, compatibilidade)", () => {
+  it.each([
+    ["mesmo id de linha", (old: string) => old],
+    ["id de linha novo", () => randomUUID()],
+  ])("outra cobrança vira linha nova (%s); o webhook da antiga continua vinculado", async (_label, rowId) => {
+    const first = makeStoredOrder();
+    await saveOrder(first);
+    const old = (await readOrderState(first.id)).payments[0];
+
+    const secondProviderId = `mp-teste-${randomUUID()}`;
+    await saveOrder({
+      ...first,
+      payment: { ...first.payment!, id: rowId(old.id), providerPaymentId: secondProviderId },
+    });
+
+    const payments = (await readOrderState(first.id)).payments;
+    expect(payments).toHaveLength(2);
+    expect(payments.find((p) => p.id === old.id)).toMatchObject({
+      providerPaymentId: old.providerPaymentId,
+      status: "PENDING",
+    });
+    expect(payments.some((p) => p.providerPaymentId === secondProviderId)).toBe(true);
+
+    const late = await reconcileFetchedPayment(approvedSnapshot(first));
+    expect(late).toMatchObject({ reason: "paid", orderId: first.id });
+  });
+
+  it("trocar o método de uma linha já cobrada cria linha nova sem copiar o providerPaymentId", async () => {
+    const pix = makeStoredOrder();
+    await saveOrder(pix);
+
+    await saveOrder({ ...pix, payment: { ...pix.payment!, paymentMethod: "CREDIT_CARD" } });
+
+    const payments = (await readOrderState(pix.id)).payments;
+    expect(payments).toHaveLength(2);
+    expect(payments.find((p) => p.paymentMethod === "PIX")?.providerPaymentId).toBe(
+      pix.payment!.providerPaymentId
+    );
+    expect(payments.find((p) => p.paymentMethod === "CREDIT_CARD")?.providerPaymentId).toBeNull();
+  });
+
+  it("linha sem cobrança no provedor continua sendo atualizada no lugar", async () => {
+    const base = makeStoredOrder();
+    const placeholder = {
+      ...base,
+      payment: { ...base.payment!, paymentMethod: "CREDIT_CARD" as const, providerPaymentId: undefined },
+    };
+    await saveOrder(placeholder);
+
+    const providerPaymentId = `mp-teste-${randomUUID()}`;
+    await saveOrder({ ...placeholder, payment: { ...placeholder.payment, providerPaymentId } });
+
+    const payments = (await readOrderState(base.id)).payments;
+    expect(payments).toHaveLength(1);
+    expect(payments[0]).toMatchObject({ id: base.payment!.id, providerPaymentId });
+  });
+
+  it("metadata existente é mesclada, não substituída", async () => {
+    const input = makeStoredOrder();
+    await saveOrder(input);
+    await prisma.payment.updateMany({
+      where: { orderId: input.id },
+      data: { metadata: { origem: "mercadopago", detalhe: "accredited" } },
+    });
+
+    await saveOrder(input);
+
+    const state = await readOrderState(input.id);
+    expect(state.payments[0].metadata).toEqual({
+      origem: "mercadopago",
+      detalhe: "accredited",
+      demo: false,
+    });
+  });
 });
 
 describe("saveOrder: itens não são recriados (F10)", () => {

@@ -10,6 +10,7 @@ import {
 } from "@prisma/client";
 import { findExistingCartorioIds } from "@/lib/cartorios";
 import { prisma } from "@/lib/prisma";
+import { createId } from "@/lib/utils";
 import {
   OrderDraft,
   StoredOrder,
@@ -26,6 +27,12 @@ type OrderRecord = Prisma.OrderGetPayload<{
 
 function money(value: Prisma.Decimal | number | string | null | undefined): number {
   return Number(value ?? 0);
+}
+
+function jsonObject(value: Prisma.JsonValue | null | undefined): Prisma.JsonObject {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Prisma.JsonObject)
+    : {};
 }
 
 function toStoredStatus(status: OrderStatus): StoredOrderStatus {
@@ -410,20 +417,32 @@ export async function saveOrder(order: StoredOrder): Promise<StoredOrder> {
         qrCode: order.payment.qrCode,
         qrCodeBase64: order.payment.qrCodeBase64,
         ticketUrl: order.payment.ticketUrl,
-        metadata: { demo: Boolean(order.payment.demo) },
       };
+      const demo = Boolean(order.payment.demo);
 
-      if (existing) {
+      // Linha com cobrança no provedor é histórico financeiro: outra cobrança
+      // (ou outro método) vira linha nova, para o webhook antigo continuar vinculado.
+      const keepsExistingCharge =
+        Boolean(existing?.providerPaymentId) &&
+        (existing!.providerPaymentId !== paymentData.providerPaymentId ||
+          existing!.paymentMethod !== paymentData.paymentMethod);
+
+      if (existing && !keepsExistingCharge) {
         await tx.payment.update({
           where: { id: existing.id },
-          data: paymentData,
+          data: { ...paymentData, metadata: { ...jsonObject(existing.metadata), demo } },
         });
       } else {
         await tx.payment.create({
           data: {
-            id: order.payment.id,
-            orderId: order.id,
             ...paymentData,
+            id: existing && order.payment.id === existing.id ? createId() : order.payment.id,
+            orderId: order.id,
+            providerPaymentId:
+              paymentData.providerPaymentId === existing?.providerPaymentId
+                ? null
+                : paymentData.providerPaymentId,
+            metadata: { demo },
           },
         });
       }
