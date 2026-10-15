@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/components/auth/auth-provider";
+import { TrackingTester } from "@/components/analytics/tracking-tester";
 import {
   EMPTY_TRACKING_CONFIG,
   TRACKING_FIELDS,
@@ -186,6 +187,11 @@ export default function ConfiguracoesPage() {
                 <p className="text-[11px] leading-relaxed text-neutral-500">
                   {FIELD_HELP[field].where}
                 </p>
+                <TrackingTester
+                  field={field}
+                  savedId={saved[field]}
+                  unsaved={form[field] !== saved[field] || form.enabled !== saved.enabled}
+                />
               </div>
             );
           })}

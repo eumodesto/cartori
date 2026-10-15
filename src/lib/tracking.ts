@@ -75,6 +75,58 @@ export function parseStoredTracking(raw: string | null | undefined): TrackingCon
   return config;
 }
 
+/** Domínios mínimos que o CSP do site precisa liberar para cada tag funcionar. */
+export const TRACKING_CSP_REQUIREMENTS: Record<TrackingField, Record<string, string[]>> = {
+  gtmId: {
+    "script-src": ["https://*.googletagmanager.com"],
+    "connect-src": ["https://*.googletagmanager.com"],
+  },
+  ga4Id: {
+    "script-src": ["https://*.googletagmanager.com"],
+    "connect-src": ["https://*.google-analytics.com", "https://*.analytics.google.com"],
+  },
+  adsId: {
+    "script-src": ["https://*.googletagmanager.com", "https://www.googleadservices.com"],
+    "connect-src": ["https://www.googleadservices.com", "https://*.g.doubleclick.net"],
+  },
+};
+
+function parseCsp(header: string): Map<string, Set<string>> {
+  const directives = new Map<string, Set<string>>();
+  for (const part of header.split(";")) {
+    const [name, ...sources] = part.trim().split(/\s+/);
+    if (name) directives.set(name.toLowerCase(), new Set(sources));
+  }
+  return directives;
+}
+
+export type PublishedTagCheck = {
+  inHtml: boolean;
+  cspMissing: string[];
+};
+
+/** Confere, no HTML e no CSP servidos pelo site, se cada ID salvo está publicado. */
+export function checkPublishedTags(
+  html: string,
+  cspHeader: string,
+  config: TrackingConfig
+): Partial<Record<TrackingField, PublishedTagCheck>> {
+  const csp = parseCsp(cspHeader);
+  const result: Partial<Record<TrackingField, PublishedTagCheck>> = {};
+  for (const field of FIELD_KEYS) {
+    const id = config[field];
+    if (!id) continue;
+    const cspMissing = Object.entries(TRACKING_CSP_REQUIREMENTS[field]).flatMap(
+      ([directive, sources]) =>
+        sources
+          .filter((source) => !csp.get(directive)?.has(source))
+          .map((source) => `${directive} ${source}`)
+    );
+    result[field] = { inHtml: html.includes(id), cspMissing };
+  }
+  return result;
+}
+
 /** Tags que de fato vão para a página. Desligado → nenhuma. */
 export function activeTrackingTags(config: TrackingConfig): {
   gtmId: string | null;

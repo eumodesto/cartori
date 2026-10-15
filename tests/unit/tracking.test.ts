@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   activeTrackingTags,
+  checkPublishedTags,
   parseStoredTracking,
   parseTrackingInput,
 } from "@/lib/tracking";
@@ -66,6 +67,47 @@ describe("parseStoredTracking", () => {
       JSON.stringify({ enabled: true, gtmId: "GTM-X');alert(1);//", ga4Id: "G-ABC123DEF4" })
     );
     expect(config).toEqual({ enabled: true, gtmId: "", ga4Id: "G-ABC123DEF4", adsId: "" });
+  });
+});
+
+describe("checkPublishedTags", () => {
+  const config = { enabled: true, gtmId: "GTM-ABC1234", ga4Id: "G-ABC123DEF4", adsId: "AW-123456789" };
+  const fullCsp = [
+    "default-src 'self'",
+    "script-src 'self' https://*.googletagmanager.com https://www.googleadservices.com",
+    "connect-src 'self' https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.googleadservices.com https://*.g.doubleclick.net",
+  ].join("; ");
+
+  it("marca cada ID presente no HTML e CSP completo", () => {
+    const html = `<script>gtm('GTM-ABC1234')</script><script src="https://www.googletagmanager.com/gtag/js?id=G-ABC123DEF4"></script>AW-123456789`;
+    expect(checkPublishedTags(html, fullCsp, config)).toEqual({
+      gtmId: { inHtml: true, cspMissing: [] },
+      ga4Id: { inHtml: true, cspMissing: [] },
+      adsId: { inHtml: true, cspMissing: [] },
+    });
+  });
+
+  it("aponta ID ausente e domínio faltando no CSP", () => {
+    const csp = "script-src 'self' https://*.googletagmanager.com; connect-src 'self'";
+    const result = checkPublishedTags("<html>GTM-ABC1234</html>", csp, {
+      ...config,
+      adsId: "",
+    });
+    expect(result.gtmId).toEqual({
+      inHtml: true,
+      cspMissing: ["connect-src https://*.googletagmanager.com"],
+    });
+    expect(result.ga4Id?.inHtml).toBe(false);
+    expect(result.ga4Id?.cspMissing).toContain("connect-src https://*.google-analytics.com");
+    expect(result.adsId).toBeUndefined();
+  });
+
+  it("CSP real do next.config cobre as três tags", async () => {
+    const nextConfig = (await import("../../next.config.mjs")).default;
+    const [{ headers }] = await nextConfig.headers!();
+    const csp = headers.find((h: { key: string }) => h.key === "Content-Security-Policy")!.value;
+    const result = checkPublishedTags("GTM-ABC1234 G-ABC123DEF4 AW-123456789", csp, config);
+    expect(Object.values(result).every((check) => check.cspMissing.length === 0)).toBe(true);
   });
 });
 
