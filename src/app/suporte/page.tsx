@@ -19,9 +19,9 @@ import {
 } from "@/lib/support-contacts";
 
 export const metadata: Metadata = {
-  title: "Suporte Cartori: atendimento para pedidos de certidões",
+  title: "Suporte InterJuri: atendimento para pedidos de certidões",
   description:
-    "Fale com a Cartori por e-mail, pelo painel da conta ou pelas redes oficiais. Tire dúvidas sobre pedidos, prazos e cancelamento. Veja os canais.",
+    "Fale com a InterJuri por e-mail, pelo painel da conta ou pelas redes oficiais. Tire dúvidas sobre pedidos, prazos e cancelamento. Veja os canais.",
   alternates: { canonical: "/suporte" },
 };
 
@@ -51,10 +51,10 @@ export default function SuportePage() {
             Atendimento
           </p>
           <h1 className="mt-2 text-3xl sm:text-4xl font-serif font-bold text-neutral-900 leading-tight">
-            Suporte Cartori
+            Suporte InterJuri
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-neutral-600 leading-relaxed">
-            Canais oficiais da {SUPPORT_COMPANY.legalName}, operadora do Cartori.com.br.
+            Canais oficiais da {SUPPORT_COMPANY.legalName}, operadora do InterJuri.com.br.
             Use o e-mail de atendimento para pedidos e cancelamentos e o DPO para dados pessoais.
             A Amanda responde no painel depois do primeiro pedido.
           </p>
@@ -118,7 +118,7 @@ export default function SuportePage() {
                 {SUPPORT_COMPANY.city}.
               </p>
               <p className="mt-2 text-sm text-neutral-500">
-                A Cartori é empresa privada de intermediação documental — não é cartório oficial.
+                A InterJuri é empresa privada de intermediação documental — não é cartório oficial.
               </p>
             </section>
           </div>

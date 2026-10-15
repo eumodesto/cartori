@@ -1,5 +1,5 @@
 /**
- * Cruzamento Cartori × CRC.
+ * Cruzamento InterJuri × CRC.
  * Fontes CRC (nessa ordem): Product.basePrice → ProductField.additionalValue
  * (exceto apostila) → mediana ProductPriceExtra.
  *
@@ -200,7 +200,7 @@ console.log(JSON.stringify(summary, null, 2));
 console.log("\nDivergências (qualquer certeza):");
 for (const r of rows.filter((r) => r.status === "divergente")) {
   console.log(
-    `${r.slug}\tCartori ${r.cartoriPrice}\tCRC ${r.crcPrice} (${r.crcSource}, ${r.certainty})`
+    `${r.slug}\tInterJuri ${r.cartoriPrice}\tCRC ${r.crcPrice} (${r.crcSource}, ${r.certainty})`
   );
 }
 console.log("\nWrote", out);

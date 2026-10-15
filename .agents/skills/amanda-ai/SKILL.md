@@ -1,13 +1,13 @@
 ---
 name: amanda-ai
-description: Define o chat Amanda do Cartori (catálogo servidor, sem inventar preço, rota pública limitada). Use ao alterar /api/amanda/chat, amanda-knowledge, amanda-products ou o widget de chat.
+description: Define o chat Amanda do InterJuri (catálogo servidor, sem inventar preço, rota pública limitada). Use ao alterar /api/amanda/chat, amanda-knowledge, amanda-products ou o widget de chat.
 ---
 
 # amanda-ai
 
 ## Objetivo
 
-Amanda explica certidões e o fluxo Cartori com o catálogo atual. Não é canal de pedido, pagamento ou autorização.
+Amanda explica certidões e o fluxo InterJuri com o catálogo atual. Não é canal de pedido, pagamento ou autorização.
 
 ## Quando usar
 

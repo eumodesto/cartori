@@ -1,5 +1,5 @@
 /**
- * Inventário de grants + RLS no Postgres do Cartori.
+ * Inventário de grants + RLS no Postgres do InterJuri.
  *
  * Postura esperada (Data API fechada, authz na aplicação):
  * - Tabelas Prisma em public: sem GRANT a anon/authenticated/PUBLIC

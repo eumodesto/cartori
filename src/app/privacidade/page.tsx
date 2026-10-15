@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { LegalMail, LegalPage, LegalSection } from "@/components/storefront/legal-page";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade da Cartori: proteção de dados LGPD",
+  title: "Política de Privacidade da InterJuri: proteção de dados LGPD",
   description:
-    "Saiba como a Cartore Express Ltda. coleta, usa e protege seus dados no Cartori.com.br, conforme a LGPD, e como exercer seus direitos de titular.",
+    "Saiba como a Cartore Express Ltda. coleta, usa e protege seus dados no InterJuri.com.br, conforme a LGPD, e como exercer seus direitos de titular.",
   alternates: { canonical: "/privacidade" },
 };
 
@@ -14,7 +14,7 @@ export default function PrivacidadePage() {
       crumb="Privacidade"
       kicker="LGPD · Lei nº 13.709/2018"
       title="Política de Privacidade"
-      lede="Esta política descreve como a CARTORE EXPRESS LTDA - EPP (CNPJ 57.448.583/0001-35), operadora do site Cartori.com.br, coleta, utiliza, compartilha e protege os dados pessoais dos Usuários."
+      lede="Esta política descreve como a CARTORE EXPRESS LTDA - EPP (CNPJ 57.448.583/0001-35), operadora do site InterJuri.com.br, coleta, utiliza, compartilha e protege os dados pessoais dos Usuários."
     >
       <LegalSection id="publico" title="1. Público-alvo">
         <p>
@@ -40,7 +40,7 @@ export default function PrivacidadePage() {
             </span>
           </li>
           <li>
-            <strong>Dados de pagamento:</strong> transacionados via Mercado Pago. O Cartori
+            <strong>Dados de pagamento:</strong> transacionados via Mercado Pago. O InterJuri
             retém apenas o status do pagamento e os dados de faturamento, sem armazenar os
             números do cartão de crédito.
             <br />
@@ -61,7 +61,7 @@ export default function PrivacidadePage() {
       <LegalSection id="terceiros" title="3. Ferramentas de terceiros e rastreamento">
         <p>
           Para otimizar a experiência do Usuário e realizar campanhas de marketing, o site
-          Cartori.com.br utiliza as seguintes tecnologias de terceiros, que podem coletar dados
+          InterJuri.com.br utiliza as seguintes tecnologias de terceiros, que podem coletar dados
           de navegação via cookies:
         </p>
         <ul className="list-disc pl-5 space-y-2">

@@ -155,24 +155,24 @@ export function ChatLauncher({
         dragging ? "cursor-grabbing" : "cursor-grab",
         "select-none touch-none",
         "transition-colors duration-normal",
-        "hover:border-amber-400/40 hover:bg-brand-900 hover:text-neutral-0",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950",
+        "hover:border-primary-400/40 hover:bg-brand-900 hover:text-neutral-0",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-brand-950",
         className
       )}
       style={position ? { left: position.x, top: position.y } : undefined}
     >
       <span className="relative shrink-0">
-        <AssistantAvatar size={68} animated className="pointer-events-none w-[68px] h-[68px] border border-amber-400/50" />
+        <AssistantAvatar size={68} animated className="pointer-events-none w-[68px] h-[68px] border border-primary-400/50" />
         <span
           className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-semantic-success border-2 border-brand-950"
           aria-hidden
         />
       </span>
       <span className="min-w-0 pr-1">
-        <span className="block text-sm font-semibold leading-tight text-[#011E37] group-hover:text-white">
+        <span className="block text-sm font-semibold leading-tight text-primary-950 group-hover:text-white">
           Amanda
         </span>
-        <span className="block text-[11px] font-medium leading-tight mt-0.5 text-[#0B496C] group-hover:text-amber-100">
+        <span className="block text-[11px] font-medium leading-tight mt-0.5 text-primary-700 group-hover:text-primary-100">
           Especialista em Certidões
         </span>
       </span>

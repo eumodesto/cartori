@@ -22,7 +22,7 @@ export async function GET() {
       cache: "no-store",
       redirect: "follow",
       signal: AbortSignal.timeout(10_000),
-      headers: { "User-Agent": "Cartori-TagCheck/1.0" },
+      headers: { "User-Agent": "InterJuri-TagCheck/1.0" },
     });
     if (!res.ok) {
       return NextResponse.json({

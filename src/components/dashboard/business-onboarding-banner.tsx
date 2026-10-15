@@ -25,7 +25,7 @@ export function BusinessOnboardingBanner({
 
   return (
     <aside
-      aria-label="Conta empresarial Cartori"
+      aria-label="Conta empresarial InterJuri"
       className="relative w-full rounded-xl border border-brand-200 bg-brand-50/70 p-4 sm:p-5 pr-11 sm:pr-12"
     >
       <button
@@ -41,7 +41,7 @@ export function BusinessOnboardingBanner({
         Mais controle. Mais eficiência. Mais crescimento.
       </p>
       <h2 className="mt-1.5 text-lg sm:text-xl font-serif font-bold text-neutral-900 leading-snug">
-        Desbloqueie a conta empresarial da Cartori
+        Desbloqueie a conta empresarial da InterJuri
       </h2>
       <p className="mt-1.5 text-sm text-neutral-600 leading-relaxed max-w-3xl">
         Cadastre o CNPJ da sua empresa para centralizar solicitações, organizar demandas e

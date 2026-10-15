@@ -271,7 +271,7 @@ export function CatalogBrowser({
             {pagedCertificates.map((cert) => (
               <div
                 key={cert.id}
-                className="relative overflow-hidden rounded-2xl border border-white/15 p-6 shadow-sm hover:shadow-lg hover:border-amber-400/40 transition-all flex flex-col justify-between group"
+                className="relative overflow-hidden rounded-2xl border border-white/15 p-6 shadow-sm hover:shadow-lg hover:border-primary-400/40 transition-all flex flex-col justify-between group"
               >
                 <LivingOrigamiBg seed={cert.id} birdCount={7} />
 
@@ -281,13 +281,13 @@ export function CatalogBrowser({
                       {cert.categoryName}
                     </span>
                     <span className="text-xs text-slate-300 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-amber-300" />
+                      <Clock className="w-3.5 h-3.5 text-primary-300" />
                       {cert.estimatedDays}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors font-serif">
+                    <h3 className="text-lg font-bold text-white group-hover:text-primary-300 transition-colors font-serif">
                       <a
                         href={certificatePath(cert.slug)}
                         onClick={(event) => {
@@ -318,8 +318,8 @@ export function CatalogBrowser({
                 <div className="relative z-10 pt-6 mt-6 border-t border-white/15 flex items-center justify-end">
                   <GetStartedButton
                     size="sm"
-                    className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
-                    iconClassName="bg-brand-950/15 text-brand-950"
+                    className="bg-primary-500 hover:bg-primary-400 text-white border-transparent shadow-xs"
+                    iconClassName="bg-white/15 text-white"
                     onClick={() => openCertificate(cert.slug)}
                   >
                     Solicitar

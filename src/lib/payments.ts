@@ -89,7 +89,7 @@ export async function issuePixForOrder(order: StoredOrder): Promise<StoredOrder>
     orderId: order.id,
     orderNumber: order.orderNumber,
     amount: amount.number,
-    description: `Cartori ${order.protocol}`,
+    description: `InterJuri ${order.protocol}`,
     payer: checkoutPayer(order),
   });
 
@@ -155,7 +155,7 @@ export async function chargeCardForOrder(
     orderId: order.id,
     orderNumber: order.orderNumber,
     amount: amount.number,
-    description: `Cartori ${order.protocol}`,
+    description: `InterJuri ${order.protocol}`,
     payer: checkoutPayer(order),
     ...card,
   });

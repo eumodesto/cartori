@@ -15,7 +15,7 @@ import {
 import { displayStatusMeta, orderStepLabel, staffStatusLabel } from "@/lib/order-status";
 
 function authorLabel(kind: string) {
-  if (kind === "STAFF") return "Cartori";
+  if (kind === "STAFF") return "InterJuri";
   if (kind === "SYSTEM") return "Sistema";
   return "Você";
 }
@@ -233,7 +233,7 @@ export function OrderCasePanel({
         <h3 className="text-sm font-semibold text-neutral-900">Mensagens</h3>
         {data.messages.length === 0 ? (
           <p className="text-sm text-neutral-500">
-            Ainda não há mensagens neste pedido. A Cartori avisa aqui quando precisar de documento ou resposta.
+            Ainda não há mensagens neste pedido. A InterJuri avisa aqui quando precisar de documento ou resposta.
           </p>
         ) : (
           <ul className="space-y-3">

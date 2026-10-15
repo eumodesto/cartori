@@ -83,7 +83,7 @@ export function ChatPanel({
             <AssistantAvatar
               size={36}
               animated={false}
-              className="w-9 h-9 border border-amber-400/70"
+              className="w-9 h-9 border border-primary-400/70"
             />
             <span
               className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-semantic-success border-2 border-brand-950"
@@ -92,13 +92,13 @@ export function ChatPanel({
           </span>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-neutral-0 leading-tight">Amanda</p>
-            <p className="text-[11px] text-amber-200/90 truncate">Especialista em Certidões</p>
+            <p className="text-[11px] text-primary-200/90 truncate">Especialista em Certidões</p>
           </div>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+          className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
           aria-label="Fechar chat"
         >
           <X className="w-4 h-4" />

@@ -1,5 +1,5 @@
 <!-- BEGIN:cartori-invariants -->
-# Invariantes Cartori
+# Invariantes InterJuri
 
 - `authId` (Supabase Auth → `User.authId`) é a identidade canônica.
 - Conhecer um UUID não concede acesso.

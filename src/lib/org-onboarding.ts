@@ -26,7 +26,7 @@ import { isValidCnpj } from "@/lib/validators";
  */
 export { planAfterBusinessOnboarding } from "@/lib/org-plan";
 
-const CNPJ_TAKEN = "Este CNPJ já está cadastrado em outra conta Cartori.";
+const CNPJ_TAKEN = "Este CNPJ já está cadastrado em outra conta InterJuri.";
 
 export async function postBusinessOnboarding(req: NextRequest) {
   const auth = await requireAuth();

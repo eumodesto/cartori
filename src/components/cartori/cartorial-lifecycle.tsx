@@ -83,14 +83,14 @@ export const CartorialLifecycle: React.FC<{ onOpenGlossary?: () => void }> = ({
       <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-start sm:items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-brand-800/80 border border-brand-700 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-5 h-5 text-amber-400" />
+            <ShieldCheck className="w-5 h-5 text-primary-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold tracking-tight text-neutral-0">
                 Ciclo de Expedição das suas Certidões
               </h3>
-              <span className="text-[10px] font-semibold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-semibold uppercase bg-primary-500/20 text-primary-300 border border-primary-500/30 px-1.5 py-0.5 rounded">
                 Lei 6.015/73
               </span>
             </div>
@@ -107,7 +107,7 @@ export const CartorialLifecycle: React.FC<{ onOpenGlossary?: () => void }> = ({
               onClick={onOpenGlossary}
               className="text-xs text-brand-200 hover:text-neutral-0 bg-brand-800/60 hover:bg-brand-800 border border-brand-700/60 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+              <HelpCircle className="w-3.5 h-3.5 text-primary-400" />
               <span>Glossário Notarial</span>
             </button>
           )}
@@ -138,7 +138,7 @@ export const CartorialLifecycle: React.FC<{ onOpenGlossary?: () => void }> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-brand-800 text-[11px] font-bold text-amber-400 flex items-center justify-center shrink-0 border border-brand-700">
+                    <span className="w-5 h-5 rounded-full bg-brand-800 text-[11px] font-bold text-primary-400 flex items-center justify-center shrink-0 border border-brand-700">
                       {step.number}
                     </span>
                     <span className="text-xs font-bold text-neutral-0">
@@ -163,7 +163,7 @@ export const CartorialLifecycle: React.FC<{ onOpenGlossary?: () => void }> = ({
 
               <div className="mt-3 pt-2 border-t border-brand-800/40 flex items-center justify-between text-[10px] text-brand-300">
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-amber-400" />
+                  <Clock className="w-3 h-3 text-primary-400" />
                   <span>SLA Médio:</span>
                 </span>
                 <span className="font-semibold text-neutral-100">{step.sla}</span>

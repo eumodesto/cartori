@@ -65,7 +65,7 @@ assert(
 
 const company = parseSubjectInput({
   kind: "COMPANY",
-  displayName: "Cartori LTDA",
+  displayName: "InterJuri LTDA",
   identifiers: [{ kind: "CNPJ", value: "11.222.333/0001-81" }],
 });
 assert(typeof company !== "string", `CNPJ válido rejeitado: ${company}`);
@@ -76,7 +76,7 @@ if (typeof company !== "string") {
 assert(
   parseSubjectInput({
     kind: "COMPANY",
-    displayName: "Cartori LTDA",
+    displayName: "InterJuri LTDA",
     identifiers: [{ kind: "CNPJ", value: "00.000.000/0000-00" }],
   }) === "CNPJ inválido.",
   "CNPJ inválido"

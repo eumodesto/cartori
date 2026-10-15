@@ -1,6 +1,6 @@
 /**
  * Builds src/lib/crc-form-fields.ts from CRC ProductField exports.
- * Skips location/format/apostille UI that Cartori already handles.
+ * Skips location/format/apostille UI that InterJuri already handles.
  * Dedupes UF-suffixed copies. Attaches ProductPriceExtra + CRC visibleWhen.
  */
 const fs = require("fs");

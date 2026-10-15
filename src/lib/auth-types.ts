@@ -30,7 +30,7 @@ export function isBusinessAccount(profile: AuthProfile | null | undefined) {
   return Boolean(profile?.organization?.id);
 }
 
-/** Espelho de UI de `canOperateCases`: equipe Cartori (mesa operacional). */
+/** Espelho de UI de `canOperateCases`: equipe InterJuri (mesa operacional). */
 export function isStaffProfile(profile: AuthProfile | null | undefined) {
   return profile?.role === "ADMIN" || profile?.role === "OPERATOR";
 }
@@ -42,7 +42,7 @@ export function isPlatformAdminProfile(profile: AuthProfile | null | undefined) 
 
 /**
  * Espelho de UI de `canOnboardBusiness`: só CLIENT sem empresa cadastra CNPJ.
- * Equipe Cartori (OPERATOR/ADMIN) recebe 403 em POST /api/org.
+ * Equipe InterJuri (OPERATOR/ADMIN) recebe 403 em POST /api/org.
  */
 export function canRegisterCompany(profile: AuthProfile | null | undefined) {
   return profile?.role === "CLIENT" && !profile.organization;

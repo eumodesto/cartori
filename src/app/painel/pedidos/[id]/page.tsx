@@ -13,7 +13,7 @@ export default function SolicitacaoDetailPage() {
     <div className="space-y-6">
       <PageHeader
         title="Acompanhamento"
-        description="Mensagens da Cartori, status da certidão e envio de RG, CNH, certidões e comprovantes."
+        description="Mensagens da InterJuri, status da certidão e envio de RG, CNH, certidões e comprovantes."
         actions={
           <Link href="/painel/pedidos">
             <Button variant="outline">Todas as solicitações</Button>

@@ -1,6 +1,6 @@
 ---
 name: database-changes
-description: Define mudanças de schema Cartori via Prisma/Postgres (migrations, transações, Data API fechada). Use ao alterar prisma/schema.prisma, migrations, transações de onboarding/pedido ou grants Postgres.
+description: Define mudanças de schema InterJuri via Prisma/Postgres (migrations, transações, Data API fechada). Use ao alterar prisma/schema.prisma, migrations, transações de onboarding/pedido ou grants Postgres.
 ---
 
 # database-changes

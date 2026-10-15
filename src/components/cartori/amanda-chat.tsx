@@ -188,12 +188,12 @@ export function AmandaChat({
         <div className="flex items-center gap-2.5 min-w-0">
           <img
             src="/amanda.webp"
-            alt="Amanda, assistente Cartori"
-            className="w-9 h-9 rounded-full object-cover shrink-0 border border-amber-400/70 shadow-sm"
+            alt="Amanda, assistente InterJuri"
+            className="w-9 h-9 rounded-full object-cover shrink-0 border border-primary-400/70 shadow-sm"
           />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white leading-tight">Amanda</p>
-            <p className="text-[11px] text-amber-200/90 truncate">
+            <p className="text-[11px] text-primary-200/90 truncate">
               Especialista em Certidões
             </p>
           </div>
@@ -226,7 +226,7 @@ export function AmandaChat({
               <img
                 src="/amanda.webp"
                 alt="Amanda"
-                className="w-12 h-12 rounded-full object-cover shrink-0 border border-amber-400/70"
+                className="w-12 h-12 rounded-full object-cover shrink-0 border border-primary-400/70"
               />
               <div>
                 <h3 className="text-white text-base font-semibold mb-1 font-serif">
@@ -271,7 +271,7 @@ export function AmandaChat({
                   className={cn(
                     "max-w-[85%] px-3 py-2 text-sm leading-relaxed",
                     msg.role === "user"
-                    ? "bg-amber-500 text-primary-950 rounded-2xl rounded-tr-md font-medium whitespace-pre-wrap"
+                    ? "bg-primary-500 text-white rounded-2xl rounded-tr-md font-medium whitespace-pre-wrap"
                     : "bg-white/15 text-white rounded-2xl rounded-tl-md border border-white/15"
                   )}
                 >
@@ -283,7 +283,7 @@ export function AmandaChat({
                           key={product.slug}
                           type="button"
                           onClick={() => onSelectProduct?.(product.slug)}
-                          className="group w-full flex items-center justify-between gap-2 text-left bg-amber-400 hover:bg-amber-300 text-primary-950 rounded-lg px-3 py-2 transition-colors"
+                          className="group w-full flex items-center justify-between gap-2 text-left bg-primary-500 hover:bg-primary-400 text-white rounded-lg px-3 py-2 transition-colors"
                         >
                           <span className="min-w-0">
                             <span className="block text-xs font-bold leading-tight truncate">
@@ -313,9 +313,9 @@ export function AmandaChat({
                 />
                 <div className="px-3 py-2.5 rounded-2xl rounded-tl-md bg-white/10 border border-white/10">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse [animation-delay:150ms]" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse [animation-delay:300ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse [animation-delay:150ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse [animation-delay:300ms]" />
                   </div>
                 </div>
               </div>
@@ -333,7 +333,7 @@ export function AmandaChat({
         onSubmit={handleSubmit}
         className={cn(
           "p-3 border-t shrink-0 transition-colors duration-fast pb-[max(0.75rem,env(safe-area-inset-bottom))]",
-          isFocused ? "border-amber-400/50 bg-white/10" : "border-white/15 bg-black/10"
+          isFocused ? "border-primary-400/50 bg-white/10" : "border-white/15 bg-black/10"
         )}
       >
         <div className="relative flex items-center">
@@ -346,7 +346,7 @@ export function AmandaChat({
             placeholder="Pergunte à Amanda..."
             maxLength={2000}
             disabled={isTyping}
-            className="w-full bg-white/10 border border-white/20 rounded-xl py-2.5 pl-3.5 pr-12 text-sm text-white placeholder:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/80"
+            className="w-full bg-white/10 border border-white/20 rounded-xl py-2.5 pl-3.5 pr-12 text-sm text-white placeholder:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/80"
           />
           <button
             type="submit"
@@ -356,7 +356,7 @@ export function AmandaChat({
               "absolute right-1.5 rounded-lg p-2 transition-colors",
               input.trim() === "" || isTyping
                 ? "text-slate-500 cursor-not-allowed"
-                : "text-primary-950 bg-amber-400 hover:bg-amber-300"
+                : "text-white bg-primary-500 hover:bg-primary-400"
             )}
           >
             {isTyping ? (

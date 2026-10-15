@@ -1,6 +1,6 @@
 # Estado saudável da plataforma
 
-Este documento é o plano operacional para recuperar e manter o Cartori em um estado coerente. O código e as migrations são a fonte de verdade de comportamento; este arquivo registra decisões, riscos e ordem de execução.
+Este documento é o plano operacional para recuperar e manter o InterJuri em um estado coerente. O código e as migrations são a fonte de verdade de comportamento; este arquivo registra decisões, riscos e ordem de execução.
 
 ## Ordem de recuperação
 

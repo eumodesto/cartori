@@ -80,13 +80,13 @@ export function StorefrontHome({
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(240,240,240,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(240,240,240,0.08)_1px,transparent_1px)] bg-[size:6rem_4rem]"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_100%_200px,#d5c5ff,transparent)] opacity-25" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(0,109,253,0.3),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_100%_200px,#7DB2FF,transparent)] opacity-25" />
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-semibold text-amber-300">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/15 px-3.5 py-1.5 rounded-full text-xs font-semibold text-primary-300">
                 <Building2 className="w-3.5 h-3.5" />
                 <span>Plataforma para Advocacias e imobiliárias</span>
               </div>
@@ -105,7 +105,7 @@ export function StorefrontHome({
                     y={0}
                     parts={[
                       { text: "Várias certidões. Diferentes cartórios." },
-                      { text: "Um único pedido.", className: "text-amber-400", newline: true },
+                      { text: "Um único pedido.", className: "text-primary-400", newline: true },
                     ]}
                   />
                 </h1>
@@ -119,15 +119,15 @@ export function StorefrontHome({
               {/* Feature Pills */}
               <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-300 font-medium">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-amber-400" />
+                  <CheckCircle className="w-4 h-4 text-primary-400" />
                   <span>Pedido Multi itens</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-amber-400" />
+                  <CheckCircle className="w-4 h-4 text-primary-400" />
                   <span>Integração IBGE & Cartórios</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-amber-400" />
+                  <CheckCircle className="w-4 h-4 text-primary-400" />
                   <span>Prazo Agilizado</span>
                 </div>
               </div>
@@ -193,7 +193,7 @@ export function StorefrontHome({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <span className="text-xs uppercase font-bold tracking-widest text-amber-400 bg-white/10 px-3 py-1 rounded-full border border-white/15">
+              <span className="text-xs uppercase font-bold tracking-widest text-primary-400 bg-white/10 px-3 py-1 rounded-full border border-white/15">
                 Solução B2B Corporativa
               </span>
               <h2 className="text-3xl sm:text-4xl font-black font-serif">
@@ -206,7 +206,7 @@ export function StorefrontHome({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-white">
-                    <Building2 className="w-4 h-4 text-amber-400" />
+                    <Building2 className="w-4 h-4 text-primary-400" />
                     <span>Gestão por Processo / Imóvel</span>
                   </div>
                   <p className="text-xs text-slate-400">
@@ -216,7 +216,7 @@ export function StorefrontHome({
 
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-white">
-                    <Download className="w-4 h-4 text-amber-400" />
+                    <Download className="w-4 h-4 text-primary-400" />
                     <span>Repositório Digital Central</span>
                   </div>
                   <p className="text-xs text-slate-400">
@@ -226,7 +226,7 @@ export function StorefrontHome({
 
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-white">
-                    <Lock className="w-4 h-4 text-amber-400" />
+                    <Lock className="w-4 h-4 text-primary-400" />
                     <span>Pagamento Seguro Mercado Pago</span>
                   </div>
                   <p className="text-xs text-slate-400">
@@ -236,7 +236,7 @@ export function StorefrontHome({
 
                 <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-white">
-                    <Users className="w-4 h-4 text-amber-400" />
+                    <Users className="w-4 h-4 text-primary-400" />
                     <span>Múltiplos Usuários</span>
                   </div>
                   <p className="text-xs text-slate-400">
@@ -247,8 +247,8 @@ export function StorefrontHome({
 
               <GetStartedButton
                 size="md"
-                className="bg-amber-400 hover:bg-amber-300 text-brand-950 border-transparent shadow-xs"
-                iconClassName="bg-brand-950/15 text-brand-950"
+                className="bg-primary-500 hover:bg-primary-400 text-white border-transparent shadow-xs"
+                iconClassName="bg-white/15 text-white"
                 onClick={openBusinessSignup}
               >
                 Criar conta empresarial
@@ -256,8 +256,8 @@ export function StorefrontHome({
             </div>
 
             <div className="lg:col-span-5 min-h-[420px]">
-              <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-widest text-amber-400/90">
-                Quem opera com a Cartori
+              <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-widest text-primary-400/90">
+                Quem opera com a InterJuri
               </p>
               <Testimonials />
             </div>

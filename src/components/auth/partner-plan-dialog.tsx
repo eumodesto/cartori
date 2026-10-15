@@ -126,7 +126,7 @@ export function PartnerPlanDialog({
       <Dialog isOpen={isOpen} onClose={onClose} size="md">
         {header}
         <DialogContent>
-          <Alert variant="info" title="Conta da equipe Cartori">
+          <Alert variant="info" title="Conta da equipe InterJuri">
             Contas de operação e administração não podem ter empresa vinculada. Para usar o fluxo
             empresarial, entre com uma conta de cliente.
           </Alert>

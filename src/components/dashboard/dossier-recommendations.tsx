@@ -80,7 +80,7 @@ export function DossierRecommendations({
             <div className="space-y-1 min-w-0">
               <CardTitle>Pacote para solicitar</CardTitle>
               <CardDescription>
-                Certidões do catálogo Cartori para esta finalidade. Não é consulta à Receita nem
+                Certidões do catálogo InterJuri para esta finalidade. Não é consulta à Receita nem
                 parecer jurídico — é o pedido que o escritório ou a imobiliária precisa emitir.
                 Preço final sai no checkout, com UF e cartório.
               </CardDescription>

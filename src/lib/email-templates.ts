@@ -67,7 +67,7 @@ const V = {
   },
 } satisfies Record<string, EmailTemplateVariable>;
 
-const SIGN = "\n\nEquipe Cartori";
+const SIGN = "\n\nEquipe InterJuri";
 
 /** Corpo default por status de pedido. */
 const STATUS_BODIES: Record<string, string> = {
@@ -93,7 +93,7 @@ const STATUS_BODIES: Record<string, string> = {
     "Olá, {{customerName}}!\n\nA via física do pedido {{protocol}} foi enviada. Você pode acompanhar os detalhes de envio pelo painel:\n{{orderLink}}" +
     SIGN,
   COMPLETED:
-    "Olá, {{customerName}}!\n\nO pedido {{protocol}} foi concluído. Obrigado por confiar na Cartori! Todos os documentos ficam disponíveis no seu painel:\n{{orderLink}}" +
+    "Olá, {{customerName}}!\n\nO pedido {{protocol}} foi concluído. Obrigado por confiar na InterJuri! Todos os documentos ficam disponíveis no seu painel:\n{{orderLink}}" +
     SIGN,
   CANCELLED:
     "Olá, {{customerName}}!\n\nO pedido {{protocol}} foi cancelado. Se você tiver qualquer dúvida ou isso não estava previsto, fale com o nosso suporte pelo painel:\n{{orderLink}}" +
@@ -138,7 +138,7 @@ const STATUS_TEMPLATES: EmailTemplateDef[] = ORDER_STATUS_TEMPLATE_STATUSES.map(
         ? "Enviado quando o pedido é cancelado."
         : `Enviado quando o pedido muda para "${STATUS_LABELS[status] || status}".`,
     status,
-    subject: "Cartori · pedido {{protocol}}: {{statusLabel}}",
+    subject: "InterJuri · pedido {{protocol}}: {{statusLabel}}",
     body: STATUS_BODIES[status],
     variables: [V.customerName, V.protocol, V.statusLabel, V.orderLink],
   })
@@ -150,9 +150,9 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
     group: "conta",
     label: "Nova conta",
     description: "Boas-vindas enviadas quando um novo usuário cria conta.",
-    subject: "Bem-vindo(a) à Cartori, {{customerName}}!",
+    subject: "Bem-vindo(a) à InterJuri, {{customerName}}!",
     body:
-      "Olá, {{customerName}}!\n\nSua conta na Cartori foi criada com sucesso. A partir do seu painel você solicita certidões, acompanha o status e recebe os documentos.\n\nAcesse o painel:\n{{appLink}}" +
+      "Olá, {{customerName}}!\n\nSua conta na InterJuri foi criada com sucesso. A partir do seu painel você solicita certidões, acompanha o status e recebe os documentos.\n\nAcesse o painel:\n{{appLink}}" +
       SIGN,
     variables: [V.customerName, V.appLink],
   },
@@ -161,7 +161,7 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
     group: "compra",
     label: "Nova compra",
     description: "Confirmação enviada quando um pedido é criado.",
-    subject: "Cartori · recebemos o seu pedido {{protocol}}",
+    subject: "InterJuri · recebemos o seu pedido {{protocol}}",
     body:
       "Olá, {{customerName}}!\n\nRecebemos o seu pedido {{protocol}}. Confira os itens:\n\n{{itemsList}}\n\nTotal: {{total}}\n\nAcompanhe o andamento pelo painel:\n{{orderLink}}" +
       SIGN,
@@ -174,7 +174,7 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
     label: "Documentos · Certidão Negativa de Testamento",
     description:
       "Solicita a documentação necessária quando o cliente compra a Certidão Negativa de Testamento (CENSEC).",
-    subject: "Cartori · documentos para a Certidão Negativa de Testamento ({{protocol}})",
+    subject: "InterJuri · documentos para a Certidão Negativa de Testamento ({{protocol}})",
     body:
       "Olá, {{customerName}}!\n\nPara emitir a Certidão Negativa de Testamento (CENSEC) do pedido {{protocol}}, precisamos de alguns documentos e dados do falecido:\n\n- Nome completo do falecido\n- CPF do falecido (se houver)\n- Data de nascimento e data do óbito\n- Certidão de óbito (foto ou PDF)\n- Nomes dos pais do falecido (filiação)\n\nEnvie os documentos diretamente pelo painel do pedido:\n{{orderLink}}\n\nAssim que recebermos, damos andamento à busca na Central Notarial (CENSEC)." +
       SIGN,

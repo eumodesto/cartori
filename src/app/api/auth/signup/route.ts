@@ -48,7 +48,7 @@ async function validateCompany(body: Record<string, unknown>): Promise<
   if (taken) {
     return {
       ok: false,
-      response: badRequest("Este CNPJ já está cadastrado em outra conta Cartori.", 409),
+      response: badRequest("Este CNPJ já está cadastrado em outra conta InterJuri.", 409),
     };
   }
 

@@ -34,7 +34,7 @@ export const testimonials: Testimonial[] = [
     name: "Connect Imóveis Exclusive",
     role: "Imobiliária",
     initials: "CI",
-    text: "Nas transações, a Cartori encurta a espera por matrícula e ônus. Mais previsibilidade para fechar o negócio.",
+    text: "Nas transações, a InterJuri encurta a espera por matrícula e ônus. Mais previsibilidade para fechar o negócio.",
   },
   {
     name: "Teixeira de Carvalho",

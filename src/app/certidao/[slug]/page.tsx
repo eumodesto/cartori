@@ -30,7 +30,7 @@ export function generateMetadata({ params }: { params: Params }): Metadata {
   const slug = resolveCertificateSlug(params.slug);
   const cert = slug ? getCertificateBySlug(slug) : undefined;
   if (!cert) {
-    return { title: "Catálogo de certidões | Cartori", robots: { index: false } };
+    return { title: "Catálogo de certidões | InterJuri", robots: { index: false } };
   }
   const title = certificateSeoTitle(cert);
   const description = certificateSeoDescription(cert);

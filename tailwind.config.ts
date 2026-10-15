@@ -18,7 +18,7 @@ const config: Config = {
         display: "var(--tracking-display)",
       },
       colors: {
-        // Primitive Brand Scale (Base: #011E37 - Cartori Navy)
+        // Primitive Brand Scale (logotipo InterJuri: #006DFD / #021F50)
         brand: {
           50: "var(--brand-50)",
           100: "var(--brand-100)",
@@ -95,18 +95,18 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "#0F2942",
-          50: "#f0f6fa",
-          100: "#e0edf5",
-          200: "#bad7ea",
-          300: "#7fb7d9",
-          400: "#3d91c4",
-          500: "#1a73a7",
-          600: "#0f5a89",
-          700: "#0e486f",
-          800: "#0f2942",
-          900: "#0b2034",
-          950: "#011E37",
+          DEFAULT: "#021F50",
+          50: "#EEF5FF",
+          100: "#D9E8FF",
+          200: "#B3D1FF",
+          300: "#7DB2FF",
+          400: "#3D8DFF",
+          500: "#006DFD",
+          600: "#0057D1",
+          700: "#0045A6",
+          800: "#04367F",
+          900: "#032A66",
+          950: "#021F50",
         },
         gold: {
           DEFAULT: "#C59B27",
@@ -122,8 +122,8 @@ const config: Config = {
           900: "#5e401c",
         },
         accent: {
-          DEFAULT: "#0284C7",
-          light: "#E0F2FE",
+          DEFAULT: "#006DFD",
+          light: "#EEF5FF",
         },
       },
       borderRadius: {

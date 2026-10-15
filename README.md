@@ -1,6 +1,6 @@
-# Cartori
+# InterJuri
 
-Plataforma Cartori para solicitação e operação de certidões cartoriais.
+Plataforma InterJuri para solicitação e operação de certidões cartoriais.
 
 ## Desenvolvimento local
 

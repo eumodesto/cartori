@@ -19,7 +19,7 @@ describe("matriz de autorização documentada", () => {
     }
   });
 
-  it("onboarding empresarial: CLIENT sim, equipe Cartori não", () => {
+  it("onboarding empresarial: CLIENT sim, equipe InterJuri não", () => {
     const onboarding = row("POST /api/org/partner");
     expect(onboarding.CLIENT).toBe("ALLOW");
     expect(onboarding.OPERATOR).toBe("DENY");
@@ -40,7 +40,7 @@ describe("matriz de autorização documentada", () => {
     expect(row("listar dossiês da Organization").CLIENT).toBe("DENY");
   });
 
-  it("fila operacional é da equipe Cartori", () => {
+  it("fila operacional é da equipe InterJuri", () => {
     const ops = row("fila operacional");
     expect(ops.CLIENT).toBe("DENY");
     expect(ops.OPERATOR).toBe("ALLOW");

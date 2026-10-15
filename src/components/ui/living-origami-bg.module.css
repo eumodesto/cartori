@@ -4,9 +4,9 @@
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 90% 70% at 10% -20%, rgba(120, 119, 198, 0.12), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 110% 120%, rgba(8, 118, 165, 0.1), transparent 50%),
-    #011e37;
+    radial-gradient(ellipse 90% 70% at 10% -20%, rgba(0, 109, 253, 0.16), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 110% 120%, rgba(61, 141, 255, 0.12), transparent 50%),
+    #021f50;
   perspective: 700px;
 }
 
@@ -15,9 +15,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(1, 30, 55, 0.55) 0%,
-    rgba(1, 30, 55, 0.72) 48%,
-    rgba(1, 30, 55, 0.86) 100%
+    rgba(2, 31, 80, 0.55) 0%,
+    rgba(2, 31, 80, 0.72) 48%,
+    rgba(2, 31, 80, 0.86) 100%
   );
 }
 

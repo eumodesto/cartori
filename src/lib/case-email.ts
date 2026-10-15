@@ -24,18 +24,18 @@ function renderEmail(input: QueueInput) {
   const link = appUrl(`/painel/pedidos/${input.orderId}`);
   if (input.template === "status_changed") {
     return {
-      subject: `Cartori · pedido ${input.protocol} atualizado`,
+      subject: `InterJuri · pedido ${input.protocol} atualizado`,
       text: `O status do pedido ${input.protocol} mudou para ${input.statusLabel || "atualizado"}.\n\nAbra o painel para ver a mensagem e enviar documentos se for preciso:\n${link}\n`,
     };
   }
   if (input.template === "attachment_uploaded") {
     return {
-      subject: `Cartori · novo arquivo no pedido ${input.protocol}`,
+      subject: `InterJuri · novo arquivo no pedido ${input.protocol}`,
       text: `Há um novo arquivo no pedido ${input.protocol}.\n\nAbra o painel:\n${link}\n`,
     };
   }
   return {
-    subject: `Cartori · mensagem no pedido ${input.protocol}`,
+    subject: `InterJuri · mensagem no pedido ${input.protocol}`,
     text: `${input.preview || "Há uma nova mensagem no seu pedido."}\n\nResponda ou envie documentos no painel:\n${link}\n`,
   };
 }

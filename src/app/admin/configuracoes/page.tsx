@@ -125,7 +125,7 @@ export default function ConfiguracoesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Configurações"
-        description="Integrações da plataforma Cartori. As tags configuradas aqui são carregadas em todas as páginas do site."
+        description="Integrações da plataforma InterJuri. As tags configuradas aqui são carregadas em todas as páginas do site."
       />
 
       <form
@@ -136,7 +136,7 @@ export default function ConfiguracoesPage() {
           <div>
             <h2 className="text-sm font-bold text-neutral-900">Tags do Google</h2>
             <p className="text-xs text-neutral-500">
-              Informe apenas os IDs. A Cartori monta o código oficial de cada tag automaticamente.
+              Informe apenas os IDs. A InterJuri monta o código oficial de cada tag automaticamente.
             </p>
           </div>
           <Switch

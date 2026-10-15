@@ -37,13 +37,13 @@ export function TestimonialsColumn({
             {items.map((item) => (
               <article
                 key={`${copy}-${item.name}`}
-                className="w-full max-w-[13.75rem] rounded-2xl border border-white/15 bg-white/[0.07] p-5 shadow-[0_12px_32px_rgba(1,30,55,0.35)] backdrop-blur-sm"
+                className="w-full max-w-[13.75rem] rounded-2xl border border-white/15 bg-white/[0.07] p-5 shadow-[0_12px_32px_rgba(2,31,80,0.35)] backdrop-blur-sm"
               >
                 <p className="text-xs leading-relaxed text-slate-200">{item.text}</p>
                 <div className="mt-4 flex items-center gap-2.5">
                   <div
                     aria-hidden
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[11px] font-bold text-primary-950"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-500 text-[11px] font-bold text-white"
                   >
                     {item.initials}
                   </div>

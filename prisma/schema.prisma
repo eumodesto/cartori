@@ -19,7 +19,7 @@ enum OrganizationPlan {
   PARTNER  // programa comercial Partner/revendedor (ativação TBD)
 }
 
-/// Papel dentro da Organization. Não confundir com UserRole.ADMIN (Cartori).
+/// Papel dentro da Organization. Não confundir com UserRole.ADMIN (InterJuri).
 enum OrganizationMemberRole {
   OWNER
   ADMIN
@@ -169,7 +169,7 @@ model Order {
   organizationId String?
   organization   Organization?  @relation(fields: [organizationId], references: [id])
   
-  // Canal de venda: vitrine Cartori (Ads) vs loja do parceiro
+  // Canal de venda: vitrine InterJuri (Ads) vs loja do parceiro
   channel        OrderChannel   @default(CARTORI)
   kind           OrderKind      @default(OWN)
   sellerOrgId    String?

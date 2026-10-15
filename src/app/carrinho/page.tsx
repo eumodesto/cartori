@@ -18,7 +18,7 @@ export default function CarrinhoPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <p className="text-[11px] font-semibold uppercase tracking-widest text-brand-700">
-              Vitrine Cartori
+              Vitrine InterJuri
             </p>
             <h1 className="text-3xl font-serif font-bold text-neutral-900">Pedido</h1>
             <p className="text-sm text-neutral-600 mt-1">

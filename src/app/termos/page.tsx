@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { LegalMail, LegalPage, LegalSection } from "@/components/storefront/legal-page";
 
 export const metadata: Metadata = {
-  title: "Termos de Uso da Cartori: regras do serviço de certidões",
+  title: "Termos de Uso da InterJuri: regras do serviço de certidões",
   description:
-    "Termos de uso do Cartori.com.br, operado pela Cartore Express Ltda. Intermediação documental: não somos cartório oficial. Leia antes de pedir.",
+    "Termos de uso do InterJuri.com.br, operado pela Cartore Express Ltda. Intermediação documental: não somos cartório oficial. Leia antes de pedir.",
   alternates: { canonical: "/termos" },
 };
 
@@ -12,19 +12,19 @@ export default function TermosPage() {
   return (
     <LegalPage
       crumb="Termos de uso"
-      kicker="Cartori.com.br"
+      kicker="InterJuri.com.br"
       title="Termos e Condições de Uso"
-      lede="Documento aplicável ao uso do site Cartori.com.br, operado pela CARTORE EXPRESS LTDA - EPP, CNPJ 57.448.583/0001-35, com sede em São Paulo - SP."
+      lede="Documento aplicável ao uso do site InterJuri.com.br, operado pela CARTORE EXPRESS LTDA - EPP, CNPJ 57.448.583/0001-35, com sede em São Paulo - SP."
     >
       <LegalSection id="aviso-legal" title="1. Aviso legal e natureza dos serviços">
         <p>
-          O site Cartori.com.br é operado e de propriedade da{" "}
+          O site InterJuri.com.br é operado e de propriedade da{" "}
           <strong>CARTORE EXPRESS LTDA - EPP</strong>, pessoa jurídica de direito privado,
           inscrita no CNPJ sob o nº <strong>57.448.583/0001-35</strong>, com sede na cidade de
           São Paulo - SP.
         </p>
         <p>
-          O Cartori é uma empresa privada de assessoria e intermediação documental.{" "}
+          O InterJuri é uma empresa privada de assessoria e intermediação documental.{" "}
           <strong>Não somos</strong> um órgão governamental, Tribunal de Justiça, cartório
           oficial ou delegação do poder público. Prestamos um serviço de comodidade logística,
           que consiste em buscar, solicitar e realizar o pagamento de custas de certidões e
@@ -35,7 +35,7 @@ export default function TermosPage() {
 
       <LegalSection id="capacidade" title="2. Capacidade civil">
         <p>
-          Os serviços oferecidos pelo Cartori são de uso estrito e exclusivo para pessoas
+          Os serviços oferecidos pelo InterJuri são de uso estrito e exclusivo para pessoas
           físicas maiores de 18 (dezoito) anos e pessoas jurídicas. Ao utilizar nosso site e
           solicitar nossos serviços, o Usuário declara ter plena capacidade civil para aceitar
           estes Termos.
@@ -56,7 +56,7 @@ export default function TermosPage() {
           <li>
             <strong>Certidões físicas:</strong> a emissão e o envio físico do documento (via
             Correios ou transportadora) são de responsabilidade e execução exclusiva do órgão
-            emissor (Cartório/Tribunal). O Cartori não possui controle sobre a logística, prazos
+            emissor (Cartório/Tribunal). O InterJuri não possui controle sobre a logística, prazos
             de trânsito ou eventuais extravios das vias físicas após a postagem realizada pelo
             órgão.
           </li>
@@ -66,7 +66,7 @@ export default function TermosPage() {
       <LegalSection id="prazos" title="4. Prazos e responsabilidades">
         <p>
           O prazo estimado informado no site refere-se ao tempo médio de processamento. Por
-          dependermos de sistemas governamentais e de cartórios terceiros, o Cartori não se
+          dependermos de sistemas governamentais e de cartórios terceiros, o InterJuri não se
           responsabiliza por atrasos decorrentes de greves, inoperância de sistemas públicos ou
           exigências adicionais (diligências) feitas pelo cartório oficial para a emissão do
           documento.
@@ -76,7 +76,7 @@ export default function TermosPage() {
       <LegalSection id="pagamentos" title="5. Pagamentos e processamento">
         <p>
           Todas as transações financeiras realizadas no site são processadas de forma segura por
-          meio do gateway de pagamento Mercado Pago. O Cartori não tem acesso, não processa e
+          meio do gateway de pagamento Mercado Pago. O InterJuri não tem acesso, não processa e
           não armazena os dados de cartão de crédito ou credenciais bancárias dos Usuários em
           seus próprios servidores.
         </p>

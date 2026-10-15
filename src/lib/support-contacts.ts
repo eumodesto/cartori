@@ -5,7 +5,7 @@ export const INSTAGRAM_URL = "https://www.instagram.com/cartori.certidoes";
 
 export const SUPPORT_COMPANY = {
   legalName: "CARTORE EXPRESS LTDA - EPP",
-  brand: "Cartori",
+  brand: "InterJuri",
   cnpj: "57.448.583/0001-35",
   city: "São Paulo - SP",
   hours: "Atendimento notarial 24h",

@@ -191,7 +191,7 @@ export default function PedidoPage() {
               {isCard ? (
                 <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 space-y-2">
                   <p className="text-xs text-neutral-500">
-                    Checkout transparente do Mercado Pago. A Cartori não vê nem guarda o número do cartão.
+                    Checkout transparente do Mercado Pago. A InterJuri não vê nem guarda o número do cartão.
                   </p>
                   <MercadoPagoCardBrick
                     amount={order.payment?.amount || order.totalAmount}

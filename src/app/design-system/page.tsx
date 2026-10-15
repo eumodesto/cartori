@@ -168,7 +168,7 @@ export default function DesignSystemShowcasePage() {
           breadcrumbs={
             <Breadcrumb
               items={[
-                { label: "Cartori Core", href: "/" },
+                { label: "InterJuri Core", href: "/" },
                 { label: "Engenharia & Design", href: "#" },
                 { label: "Design System Showcase", isCurrent: true },
               ]}
@@ -207,29 +207,29 @@ export default function DesignSystemShowcasePage() {
             {/* Brand Colors */}
             <Card padding="sm">
               <CardHeader>
-                <CardTitle className="text-xs">Cartori Navy (Brand Scale)</CardTitle>
-                <CardDescription>Base Primária: #011E37</CardDescription>
+                <CardTitle className="text-xs">InterJuri Navy (Brand Scale)</CardTitle>
+                <CardDescription>Base Primária: #021F50 · Azul #006DFD</CardDescription>
               </CardHeader>
               <CardContent className="space-y-1.5 pt-0">
                 <div className="flex items-center justify-between p-1.5 rounded bg-brand-950 text-neutral-0 text-[10px] font-mono">
                   <span>brand-950</span>
-                  <span>#011E37</span>
+                  <span>#021F50</span>
                 </div>
                 <div className="flex items-center justify-between p-1.5 rounded bg-brand-900 text-neutral-0 text-[10px] font-mono">
                   <span>brand-900</span>
-                  <span>#062943</span>
+                  <span>#032A66</span>
                 </div>
                 <div className="flex items-center justify-between p-1.5 rounded bg-brand-700 text-neutral-0 text-[10px] font-mono">
                   <span>brand-700</span>
-                  <span>#0B496C</span>
+                  <span>#0045A6</span>
                 </div>
                 <div className="flex items-center justify-between p-1.5 rounded bg-brand-500 text-neutral-0 text-[10px] font-mono">
                   <span>brand-500</span>
-                  <span>#0876A5</span>
+                  <span>#006DFD</span>
                 </div>
                 <div className="flex items-center justify-between p-1.5 rounded bg-brand-50 text-brand-950 border border-brand-200 text-[10px] font-mono">
                   <span>brand-50</span>
-                  <span>#F0F8FB</span>
+                  <span>#EEF5FF</span>
                 </div>
               </CardContent>
             </Card>
@@ -401,7 +401,7 @@ export default function DesignSystemShowcasePage() {
               <div className="space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">
                   <span className="text-[10px] uppercase tracking-widest text-neutral-400 w-28 shrink-0 font-sans">Display</span>
-                  <span className="font-serif text-4xl font-bold text-neutral-900">Cartori</span>
+                  <span className="font-serif text-4xl font-bold text-neutral-900">InterJuri</span>
                   <span className="text-[11px] text-neutral-400 font-mono">Editorial Sans / 40px / 800</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-6 border-b border-neutral-100 pb-4">

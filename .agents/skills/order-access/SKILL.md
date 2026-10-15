@@ -1,6 +1,6 @@
 ---
 name: order-access
-description: Define ownership de pedidos Cartori e criação no checkout (userId do contexto, preço no servidor). Use ao alterar /api/orders, checkout, order-store, order-access ou listagens de solicitações.
+description: Define ownership de pedidos InterJuri e criação no checkout (userId do contexto, preço no servidor). Use ao alterar /api/orders, checkout, order-store, order-access ou listagens de solicitações.
 ---
 
 # order-access

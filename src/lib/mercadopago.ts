@@ -229,7 +229,7 @@ export async function createCardPayment(input: CreateCardPaymentInput) {
         installments: input.installments,
         payment_method_id: input.paymentMethodId,
         ...(Number.isFinite(issuerId) ? { issuer_id: issuerId } : {}),
-        statement_descriptor: "CARTORI",
+        statement_descriptor: "INTERJURI",
         three_d_secure_mode: "optional",
         payer: {
           email: input.payer.email,

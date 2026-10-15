@@ -1,6 +1,6 @@
-# 🏛️ Cartori - Documento Oficial de Arquitetura & Plano Diretor do MVP
+# 🏛️ InterJuri - Documento Oficial de Arquitetura & Plano Diretor do MVP
 
-Este documento define a arquitetura técnica, modelo de dados, integrações de APIs e roadmap do **Cartori**, uma plataforma **SaaS B2B & B2C** para emissão centralizada de certidões cartoriais e registrais em todo o Brasil.
+Este documento define a arquitetura técnica, modelo de dados, integrações de APIs e roadmap do **InterJuri**, uma plataforma **SaaS B2B & B2C** para emissão centralizada de certidões cartoriais e registrais em todo o Brasil.
 
 ---
 
@@ -10,7 +10,7 @@ Este documento define a arquitetura técnica, modelo de dados, integrações de 
 * No Brasil, cartórios são fragmentados por comarcas, circunscrições e atribuições (Registro Civil, Registro de Imóveis, Notas, Protesto).
 * Advogados (inventários, divórcios, ações cíveis) e Imobiliárias (due diligence, compra e venda) perdem horas solicitando documentos em múltiplos sites diferentes, pagando taxas dispersas e gerenciando múltiplos prazos.
 
-### A Solução **Cartori**:
+### A Solução **InterJuri**:
 * **Carrinho Multi-Item Notarial:** O cliente pode solicitar em um único pedido uma *Certidão de Nascimento em SP*, uma *Matrícula de Imóvel no RJ* e uma *Negativa de Testamento*, recebendo uma **única fatura/cobrança consolidada**.
 * **Foco B2B (Advogados e Imobiliárias):**
   * Possibilidade de etiquetar cada certidão com o **Número do Processo Judicial**, **Código do Imóvel** ou **Nome do Cliente** para prestação de contas.

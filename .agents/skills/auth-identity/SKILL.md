@@ -1,6 +1,6 @@
 ---
 name: auth-identity
-description: Define identidade canônica Cartori (Supabase Auth + User.authId, CPF/e-mail únicos). Use ao alterar login, signup, callback, syncAuthUser, getAuthProfile ou vínculo de conta Prisma.
+description: Define identidade canônica InterJuri (Supabase Auth + User.authId, CPF/e-mail únicos). Use ao alterar login, signup, callback, syncAuthUser, getAuthProfile ou vínculo de conta Prisma.
 ---
 
 # auth-identity

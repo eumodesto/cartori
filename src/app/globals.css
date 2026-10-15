@@ -14,22 +14,22 @@
   --font-display: "PP Editorial Sans", system-ui, sans-serif;
   --tracking-display: 0.04em;
 
-  /* Cartori Brand Scale (Base: #011E37 - Cartori Navy) */
-  --brand-50:  #F0F8FB;
-  --brand-100: #D9EEF5;
-  --brand-200: #A5D5E5;
-  --brand-300: #67B6D2;
-  --brand-400: #2995BC;
-  --brand-500: #0876A5;
-  --brand-600: #075D86;
-  --brand-700: #0B496C;
-  --brand-800: #0A3856;
-  --brand-900: #062943;
-  --brand-950: #011E37;
+  /* InterJuri Brand Scale (logotipo: azul #006DFD e marinho #021F50) */
+  --brand-50:  #EEF5FF;
+  --brand-100: #D9E8FF;
+  --brand-200: #B3D1FF;
+  --brand-300: #7DB2FF;
+  --brand-400: #3D8DFF;
+  --brand-500: #006DFD;
+  --brand-600: #0057D1;
+  --brand-700: #0045A6;
+  --brand-800: #04367F;
+  --brand-900: #032A66;
+  --brand-950: #021F50;
 
   /* Brand Accents (Identidade Visual) */
-  --accent-cyan:   #0091BB;
-  --accent-blue:   #0E6098;
+  --accent-cyan:   #3D8DFF;
+  --accent-blue:   #006DFD;
   --accent-green:  #74BE59;
   --accent-teal:   #25AB9F;
   --accent-yellow: #E3BF1E;
@@ -151,7 +151,7 @@
   --radius-xl:   16px;
   --radius-full: 9999px;
 
-  /* Shadows (Tonalizadas com Cartori Navy) */
+  /* Shadows (Tonalizadas com InterJuri Navy) */
   --shadow-xs: 0 1px 2px rgba(1, 30, 55, 0.05);
   --shadow-sm: 0 4px 12px rgba(1, 30, 55, 0.08);
   --shadow-md: 0 12px 32px rgba(1, 30, 55, 0.12);
@@ -167,7 +167,7 @@
 }
 
 /* ==========================================================================
-   4. DARK MODE TOKENS (Cartori Deep Navy / Slate)
+   4. DARK MODE TOKENS (InterJuri Deep Navy / Slate)
    ========================================================================== */
 .dark, [data-theme="dark"] {
   /* Inverted Neutral Scale for Dark Mode */
@@ -185,16 +185,16 @@
   --neutral-950: #FFFFFF;
 
   /* Brand Accents adapted for Dark Backgrounds */
-  --brand-50:  #0F344C;
-  --brand-100: #134563;
-  --brand-200: #0B496C;
-  --brand-300: #0876A5;
-  --brand-400: #2995BC;
-  --brand-500: #67B6D2;
-  --brand-600: #A5D5E5;
-  --brand-700: #D9EEF5;
-  --brand-800: #E8F5F9;
-  --brand-900: #F0F8FB;
+  --brand-50:  #0A2148;
+  --brand-100: #0E2B5C;
+  --brand-200: #0045A6;
+  --brand-300: #0057D1;
+  --brand-400: #3D8DFF;
+  --brand-500: #7DB2FF;
+  --brand-600: #B3D1FF;
+  --brand-700: #D9E8FF;
+  --brand-800: #EAF2FF;
+  --brand-900: #F3F8FF;
   --brand-950: #FFFFFF;
 
   /* Semantic Base Colors in Dark Mode */
@@ -242,8 +242,8 @@
   --border-error:   #F87171;
 
   /* Actions */
-  --action-primary:            #0876A5;
-  --action-primary-hover:      #2995BC;
+  --action-primary:            #006DFD;
+  --action-primary-hover:      #3D8DFF;
   --action-secondary:          #122B3E;
   --action-secondary-hover:    #1A384D;
   --action-destructive:        #DC2626;

@@ -205,7 +205,7 @@ export default function EmailsPage() {
     <div className="space-y-6">
       <PageHeader
         title="E-mails & Templates"
-        description="Configure a integração de envio (Resend/SMTP) e edite os templates de e-mail transacionais da Cartori."
+        description="Configure a integração de envio (Resend/SMTP) e edite os templates de e-mail transacionais da InterJuri."
       />
 
       {error && <Alert variant="error">{error}</Alert>}
@@ -257,7 +257,7 @@ export default function EmailsPage() {
             type="email"
             value={fromEmail}
             onChange={(e) => setFromEmail(e.target.value)}
-            placeholder="Cartori <no-reply@interjuri.com.br>"
+            placeholder="InterJuri <no-reply@interjuri.com.br>"
           />
         </div>
 

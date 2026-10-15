@@ -121,13 +121,13 @@ export function canAccessOwnedDossier(
   return Boolean(dossierUserId) && dossierUserId === context.userId;
 }
 
-/** Mesa operacional Cartori. Não é OrganizationMemberRole.ADMIN. */
+/** Mesa operacional InterJuri. Não é OrganizationMemberRole.ADMIN. */
 export function canOperateCases(context: AuthContext): boolean {
   return context.platformRole === "ADMIN" || context.platformRole === "OPERATOR";
 }
 
 /**
- * Administração global de usuários/clientes (Cartori).
+ * Administração global de usuários/clientes (InterJuri).
  * Apenas platformRole ADMIN. OPERATOR NÃO gerencia usuários (fail-closed).
  * Não confundir com OrganizationMemberRole.ADMIN.
  */

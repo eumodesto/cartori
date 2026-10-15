@@ -58,15 +58,16 @@ const footerLinks: FooterSectionData[] = [
 export function Footer() {
   return (
     <footer className="relative w-full bg-transparent">
-      <div className="max-w-7xl mx-auto px-0 py-0 sm:px-6 sm:py-8 lg:px-8">
-        <div className="relative overflow-hidden rounded-none border-y border-white/20 text-neutral-300 shadow-[0_18px_50px_rgba(1,30,55,0.22),inset_0_1px_0_rgba(255,255,255,0.28)] sm:rounded-[1.75rem] sm:border md:rounded-[2rem]">
+      {/* Fundo a 10px das laterais e do fim da página; o conteúdo mantém a largura de max-w-7xl. */}
+      <div className="px-[10px] pb-[10px] pt-0 sm:pt-8">
+        <div className="relative overflow-hidden rounded-[1.75rem] border border-white/20 text-neutral-300 shadow-[0_18px_50px_rgba(2,31,80,0.22),inset_0_1px_0_rgba(255,255,255,0.28)] md:rounded-[2rem]">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-brand-950"
           />
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(165deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.08)_18%,rgba(8,118,165,0.18)_42%,rgba(1,30,55,0)_70%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(165deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.08)_18%,rgba(0,109,253,0.2)_42%,rgba(2,31,80,0)_70%)]"
           />
           <div
             aria-hidden
@@ -85,7 +86,8 @@ export function Footer() {
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,transparent_28%,rgba(0,0,0,0.18)_100%)]"
           />
 
-          <div className="relative px-6 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-16">
+          {/* Padding = antigo recuo do card (0 / 24 / 32px) − 10px de recuo − 1px de borda + padding interno (24 / 40 / 56px). */}
+          <div className="relative mx-auto w-full max-w-[1258px] px-[13px] py-10 sm:px-[53px] sm:py-12 lg:px-[77px] lg:py-16">
             <div className="flex w-full flex-col gap-10">
               <AnimatedContainer className="w-full space-y-4">
                 <Link href="/" className="inline-flex items-center">
@@ -97,13 +99,13 @@ export function Footer() {
                 </Link>
                 <div className="max-w-3xl space-y-3 text-neutral-400 text-sm leading-relaxed">
                   <p>
-                    A Cartori é uma empresa privada e independente, sem vínculo, afiliação ou representação de órgãos públicos, cartórios, tribunais ou entidades governamentais.
+                    A InterJuri é uma empresa privada e independente, sem vínculo, afiliação ou representação de órgãos públicos, cartórios, tribunais ou entidades governamentais.
                   </p>
                   <p>
                     Prestamos serviço de intermediação e facilitação para solicitação de certidões e documentos junto aos órgãos e serventias responsáveis pela emissão.
                   </p>
                   <p>
-                    Os documentos também podem ser solicitados diretamente aos respectivos órgãos ou cartórios competentes. Os valores cobrados pela Cartori podem incluir taxas de serviço, atendimento, processamento e intermediação, além dos emolumentos e demais custos cobrados pelo órgão emissor, quando aplicáveis.
+                    Os documentos também podem ser solicitados diretamente aos respectivos órgãos ou cartórios competentes. Os valores cobrados pela InterJuri podem incluir taxas de serviço, atendimento, processamento e intermediação, além dos emolumentos e demais custos cobrados pelo órgão emissor, quando aplicáveis.
                   </p>
                   <p>
                     A emissão, conteúdo, validade e prazo de disponibilização dos documentos são de responsabilidade do órgão ou serventia competente.
@@ -159,7 +161,7 @@ export function Footer() {
 
             <div className="mt-12 pt-8 border-t border-white/10">
               <p className="text-neutral-400 text-sm">
-                © 2026 CARTORI. CARTORE EXPRESS LTDA - EPP. CNPJ 57.448.583/0001-35. Todos os direitos reservados.
+                © 2026 INTERJURI. CARTORE EXPRESS LTDA - EPP. CNPJ 57.448.583/0001-35. Todos os direitos reservados.
               </p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 ---
 name: authorization-tenant
-description: Define autorização server-side e isolamento de tenant Cartori (AuthContext, Membership ACTIVE, Organization ≠ Partner). Use ao alterar requireAuth, rotas /api/org, papéis, dashboard B2B ou qualquer checagem de permissão.
+description: Define autorização server-side e isolamento de tenant InterJuri (AuthContext, Membership ACTIVE, Organization ≠ Partner). Use ao alterar requireAuth, rotas /api/org, papéis, dashboard B2B ou qualquer checagem de permissão.
 ---
 
 # authorization-tenant
@@ -31,7 +31,7 @@ Papéis:
 
 | Campo | Enum | Significado |
 |---|---|---|
-| `platformRole` / `User.role` | CLIENT, OPERATOR, ADMIN | Plataforma Cartori |
+| `platformRole` / `User.role` | CLIENT, OPERATOR, ADMIN | Plataforma InterJuri |
 | `orgRole` | OWNER, ADMIN, MEMBER | Papel **dentro** da org |
 
 `OrganizationMemberRole.ADMIN` ≠ `UserRole.ADMIN`. Comparar papéis com igualdade, nunca `includes("ADMIN")`.
@@ -89,7 +89,7 @@ UI dashboard: `isBusinessLockedHref` / `B2B_LOCKED_HREFS` trava dossiês, organi
 ## Gaps reais / TBD
 
 - Equipe / invites: FUTURE.
-- ADMIN global Cartori (usuários/papéis): FUTURE.
+- ADMIN global InterJuri (usuários/papéis): FUTURE.
 - Mesa operacional do **pedido**: ALLOW para OPERATOR e ADMIN (`/api/ops`, `canOperateCases`). Assignment por operador TBD.
 - Ativação Partner: TBD.
 

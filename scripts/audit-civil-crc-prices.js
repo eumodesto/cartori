@@ -1,5 +1,5 @@
 /**
- * Audit Registro Civil prices: Cartori (crc-uf-prices + form extras) vs CRC dump.
+ * Audit Registro Civil prices: InterJuri (crc-uf-prices + form extras) vs CRC dump.
  * node scripts/audit-civil-crc-prices.js
  */
 const fs = require("fs");
@@ -220,7 +220,7 @@ console.log("=== Duplicate UF keys in crc-uf-prices.ts ===");
 if (!duplicateUfs.length) console.log("none");
 else duplicateUfs.forEach((d) => console.log(JSON.stringify(d)));
 
-console.log("\n=== Format table Cartori vs CRC (by-state JSON) ===");
+console.log("\n=== Format table InterJuri vs CRC (by-state JSON) ===");
 console.log("diffs", formatDiffs.length);
 formatDiffs.slice(0, 80).forEach((d) => console.log(JSON.stringify(d)));
 if (formatDiffs.length > 80) console.log("... +" + (formatDiffs.length - 80));
@@ -372,7 +372,7 @@ for (const slug of SLUGS) {
   );
 }
 
-console.log("\n=== Addon Cartori vs CRC diffs ===");
+console.log("\n=== Addon InterJuri vs CRC diffs ===");
 console.log("diffs", addonDiffs.length);
 const byKind = {};
 for (const d of addonDiffs) {

@@ -81,7 +81,7 @@ export async function listAccountAlerts(userId: string): Promise<AccountAlert[]>
       orderId: order.id,
       protocol: order.protocol,
       title: "Nova mensagem",
-      body: preview(message.body) || "A equipe Cartori enviou uma mensagem.",
+      body: preview(message.body) || "A equipe InterJuri enviou uma mensagem.",
       href: `/painel/pedidos/${order.id}`,
       createdAt: message.createdAt.toISOString(),
     });

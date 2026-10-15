@@ -1,6 +1,6 @@
 ---
 name: catalog-certificates
-description: Define catálogo de certidões e cartórios Cartori (Product no Prisma com fallback estático). Use ao alterar produtos, preços por UF, campos de formulário, cartórios ou /api/cartorios.
+description: Define catálogo de certidões e cartórios InterJuri (Product no Prisma com fallback estático). Use ao alterar produtos, preços por UF, campos de formulário, cartórios ou /api/cartorios.
 ---
 
 # catalog-certificates

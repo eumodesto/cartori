@@ -38,7 +38,7 @@ export function BusinessBenefitsDialog({
       <DialogHeader onClose={onClose}>
         <DialogTitle className="font-serif text-lg">O que a conta empresarial libera</DialogTitle>
         <DialogDescription className="text-sm text-neutral-600 max-w-xl">
-          A conta empresarial expande sua experiência na Cartori: de uso pessoal para gestão
+          A conta empresarial expande sua experiência na InterJuri: de uso pessoal para gestão
           profissional da sua operação.
         </DialogDescription>
       </DialogHeader>

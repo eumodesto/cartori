@@ -134,7 +134,7 @@ describe("onboarding empresarial", () => {
     expect(canOnboardBusiness(orgAdminA)).toBe(true);
   });
 
-  it("nega MEMBER e equipe Cartori", () => {
+  it("nega MEMBER e equipe InterJuri", () => {
     expect(canOnboardBusiness(memberA)).toBe(false);
     expect(canOnboardBusiness(admin)).toBe(false);
     expect(canOnboardBusiness(operator)).toBe(false);
@@ -173,7 +173,7 @@ describe("posse de pedido e dossiê", () => {
 });
 
 describe("mesa operacional", () => {
-  it("só equipe Cartori opera casos", () => {
+  it("só equipe InterJuri opera casos", () => {
     expect(canOperateCases(admin)).toBe(true);
     expect(canOperateCases(operator)).toBe(true);
     expect(canOperateCases(clientA)).toBe(false);

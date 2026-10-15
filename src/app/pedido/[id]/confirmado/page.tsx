@@ -4,7 +4,7 @@ import { getTrackingConfig } from "@/lib/tracking-settings";
 import { ConfirmadoView } from "./confirmado-view";
 
 export const metadata: Metadata = {
-  title: "Pagamento confirmado | Cartori",
+  title: "Pagamento confirmado | InterJuri",
   robots: { index: false, follow: false },
 };
 

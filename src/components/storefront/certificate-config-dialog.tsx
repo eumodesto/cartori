@@ -563,7 +563,7 @@ export function CertificateConfigDialog({
       >
         <div className="shrink-0 bg-primary-900 text-white p-6 flex items-center justify-between">
           <div>
-            <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+            <span className="text-[10px] uppercase font-bold text-primary-300 tracking-wider">
               Configuração Notarial • {certificate.categoryName}
             </span>
             <h3 id="certificate-config-title" className="text-xl font-bold font-serif">

@@ -12,7 +12,7 @@ export const NOTIFICATION_CATEGORIES = [
   {
     id: "news",
     label: "Novidades e dicas",
-    description: "Comunicados ocasionais da Cartori (opcional).",
+    description: "Comunicados ocasionais da InterJuri (opcional).",
   },
 ] as const;
 

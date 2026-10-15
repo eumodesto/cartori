@@ -81,7 +81,7 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     notes: "CLIENT sem membership, ou OWNER/ADMIN ACTIVE da mesma org. MEMBER DENY. Não promove platformRole. Não concede PARTNER.",
   },
   {
-    resource: "administração global Cartori",
+    resource: "administração global InterJuri",
     CLIENT: "DENY",
     OPERATOR: "DENY",
     ADMIN: "FUTURE",

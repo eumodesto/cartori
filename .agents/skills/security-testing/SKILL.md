@@ -1,6 +1,6 @@
 ---
 name: security-testing
-description: Define como validar regressões de identidade, autorização e tenant no Cartori (Vitest + scripts HTTP etapa 4–6). Use ao fechar mudança de auth, org, membership, pedidos ou papéis — não em todo tweak de UI.
+description: Define como validar regressões de identidade, autorização e tenant no InterJuri (Vitest + scripts HTTP etapa 4–6). Use ao fechar mudança de auth, org, membership, pedidos ou papéis — não em todo tweak de UI.
 ---
 
 # security-testing

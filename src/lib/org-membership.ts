@@ -26,7 +26,7 @@ export class MembershipInconsistentError extends Error {
 
 export class OrganizationCnpjTakenError extends Error {
   constructor() {
-    super("Este CNPJ já está cadastrado em outra conta Cartori.");
+    super("Este CNPJ já está cadastrado em outra conta InterJuri.");
     this.name = "OrganizationCnpjTakenError";
   }
 }

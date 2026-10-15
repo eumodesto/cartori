@@ -18,7 +18,7 @@ export type CnpjCompany = {
 
 const lookupHeaders = {
   Accept: "application/json",
-  "User-Agent": "Cartori/1.0 (consulta-cnpj)",
+  "User-Agent": "InterJuri/1.0 (consulta-cnpj)",
 };
 
 function companyFromBrasilApi(cnpj: string, data: Record<string, unknown>): CnpjCompany {

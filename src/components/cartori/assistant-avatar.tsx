@@ -9,7 +9,7 @@ export function AssistantAvatar({
   size = 68,
   animated = true,
   className,
-  alt = "Amanda, assistente Cartori",
+  alt = "Amanda, assistente InterJuri",
 }: {
   size?: number;
   animated?: boolean;

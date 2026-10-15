@@ -1,4 +1,4 @@
-# Inventário da plataforma Cartori
+# Inventário da plataforma InterJuri
 
 Levantamento do código em 8 de outubro de 2026, para revisão de arquitetura, segurança e banco de dados. Mercado Pago está configurado parcialmente por decisão do produto.
 

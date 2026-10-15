@@ -1,6 +1,6 @@
 ---
 name: payment-integrity
-description: Define cobrança Cartori server-authoritative via Mercado Pago (valor no banco, webhook assinado, reconciliação). Use ao alterar payments, webhook, card/PIX, money-cents ou status PAID.
+description: Define cobrança InterJuri server-authoritative via Mercado Pago (valor no banco, webhook assinado, reconciliação). Use ao alterar payments, webhook, card/PIX, money-cents ou status PAID.
 ---
 
 # payment-integrity

@@ -241,13 +241,13 @@ export function AuthDialog({
               (companyIntent
                 ? "Conta para advocacias e imobiliárias"
                 : mode === "login"
-                  ? "Entrar na Cartori"
+                  ? "Entrar na InterJuri"
                   : "Criar sua conta")}
           </DialogTitle>
           <DialogDescription>
             {description ||
               (companyIntent
-                ? "Crie a conta e siga para o dashboard empresarial. Com o CNPJ cadastrado, o escritório passa a operar no painel B2B que a Cartori já oferece."
+                ? "Crie a conta e siga para o dashboard empresarial. Com o CNPJ cadastrado, o escritório passa a operar no painel B2B que a InterJuri já oferece."
                 : required
                   ? "Para concluir o pedido, entre ou crie uma conta. Depois do pagamento você acompanha tudo no Dashboard."
                   : "O Dashboard abre no modo pessoal. Cadastrar a empresa com CNPJ libera recursos B2B.")}

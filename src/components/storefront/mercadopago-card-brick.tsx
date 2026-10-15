@@ -83,9 +83,9 @@ export function MercadoPagoCardBrick({
             style: {
               theme: "default",
               customVariables: {
-                baseColor: "#011E37",
+                baseColor: "#021F50",
                 formBackgroundColor: "transparent",
-                baseColorFirstVariant: "#062943",
+                baseColorFirstVariant: "#006DFD",
               },
             },
           },

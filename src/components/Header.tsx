@@ -15,8 +15,8 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
       <div className="bg-primary-900 text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-            <span>A Cartori é uma Empresa privada, que faz a intermediação com órgãos competentes pelas emissões.</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-primary-400" />
+            <span>A InterJuri é uma Empresa privada, que faz a intermediação com órgãos competentes pelas emissões.</span>
           </div>
           <div className="hidden sm:flex items-center gap-4 text-slate-300">
             <span>Atendimento Notarial 24h</span>
@@ -72,10 +72,10 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
             href="/carrinho"
             className="relative flex items-center gap-2 bg-primary-800 hover:bg-primary-900 text-white text-xs font-bold px-3 sm:px-4 py-2.5 rounded-xl shadow-sm transition-all hover:shadow"
           >
-            <ShoppingBag className="w-4 h-4 text-amber-400" />
+            <ShoppingBag className="w-4 h-4 text-primary-400" />
             <span>Pedido</span>
             {cartCount > 0 && (
-              <span className="bg-amber-500 text-primary-950 font-extrabold text-[11px] w-5 h-5 rounded-full flex items-center justify-center shadow">
+              <span className="bg-primary-500 text-white font-extrabold text-[11px] w-5 h-5 rounded-full flex items-center justify-center shadow">
                 {cartCount}
               </span>
             )}

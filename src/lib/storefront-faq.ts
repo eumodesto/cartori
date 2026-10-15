@@ -13,6 +13,6 @@ export const STOREFRONT_FAQ = [
   },
   {
     q: "E se eu não souber o cartório?",
-    a: "Sinalize no formulário que não conhece a serventia. A equipe Cartori faz a busca operacional e segue a emissão.",
+    a: "Sinalize no formulário que não conhece a serventia. A equipe InterJuri faz a busca operacional e segue a emissão.",
   },
 ] as const;

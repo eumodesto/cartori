@@ -9,12 +9,12 @@ import type { CertificateTypeConfig } from "@/lib/types";
 
 /** Domínio canônico. Fixo para que previews e *.vercel.app nunca virem canônico. */
 export const SITE_URL = "https://www.interjuri.com.br";
-export const SITE_NAME = "Cartori";
+export const SITE_NAME = "InterJuri";
 
 export const TITLE_MAX = 60;
 export const DESCRIPTION_MAX = 155;
 
-export const HOME_TITLE = "Certidões online em todo o Brasil em um só pedido | Cartori";
+export const HOME_TITLE = "Certidões online em todo o Brasil, um só pedido | InterJuri";
 export const HOME_DESCRIPTION =
   "Peça certidões de nascimento, casamento, imóveis, protesto e notas em todo o Brasil. Um só pedido, PIX ou cartão e acompanhamento online. Solicite agora.";
 
@@ -23,7 +23,7 @@ export const OG_IMAGE = {
   url: "/og-image.png",
   width: 1200,
   height: 630,
-  alt: "Cartori: certidões online em todo o Brasil",
+  alt: "InterJuri: certidões online em todo o Brasil",
 };
 
 export function absoluteUrl(path = "/") {

@@ -445,7 +445,7 @@ export default function CheckoutPage() {
                     {
                       value: "CREDIT_CARD",
                       label: "Cartão de crédito ou débito",
-                      description: "Pague na Cartori, em até 12x. Dados do cartão ficam no Mercado Pago.",
+                      description: "Pague na InterJuri, em até 12x. Dados do cartão ficam no Mercado Pago.",
                     },
                   ]}
                 />
@@ -475,7 +475,7 @@ export default function CheckoutPage() {
                   <div>
                     <p className="text-sm font-semibold text-neutral-900">Pagar com cartão</p>
                     <p className="text-xs text-neutral-500 mt-1">
-                      Checkout transparente do Mercado Pago. A Cartori não vê nem guarda o número do cartão.
+                      Checkout transparente do Mercado Pago. A InterJuri não vê nem guarda o número do cartão.
                     </p>
                   </div>
                   <MercadoPagoCardBrick

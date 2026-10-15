@@ -1,6 +1,6 @@
-# Cartori Design System V1 — Manual Técnico Oficial
+# InterJuri Design System V1 — Manual Técnico Oficial
 
-Documento mestre de especificações, diretrizes visuais, arquitetura de tokens, patterns operacionais e governança de componentes da plataforma **Cartori**.
+Documento mestre de especificações, diretrizes visuais, arquitetura de tokens, patterns operacionais e governança de componentes da plataforma **InterJuri**.
 
 > **Status:** Fundação aprovada para implementação V1  
 > **Escopo:** SaaS B2B, Backoffice Cartorial e Superfícies Compartilhadas
@@ -9,7 +9,7 @@ Documento mestre de especificações, diretrizes visuais, arquitetura de tokens,
 
 ## 01. Propósito e Escopo
 
-O **Cartori Design System** é a camada de referência visual, comportamental e técnica usada para construir interfaces consistentes dentro do ecossistema Cartori. Ele não substitui a arquitetura de produto ou o motor de negócio; ele define como esse produto deve aparecer e se comportar.
+O **InterJuri Design System** é a camada de referência visual, comportamental e técnica usada para construir interfaces consistentes dentro do ecossistema InterJuri. Ele não substitui a arquitetura de produto ou o motor de negócio; ele define como esse produto deve aparecer e se comportar.
 
 ### Princípio Central
 Compartilhar regras de design e primitives, sem obrigar todas as superfícies a parecerem idênticas. O e-commerce B2C, o SaaS B2B, o backoffice e o white-label pertencem à mesma marca, mas possuem densidades e objetivos diferentes.
@@ -19,16 +19,16 @@ Compartilhar regras de design e primitives, sem obrigar todas as superfícies a 
 | Superfície | Objetivo | Características Visuais e Densidade | Navegação | Preço |
 | :--- | :--- | :--- | :--- | :--- |
 | **SaaS B2B** | Operação diária de empresas (Advocacias / Imobiliárias) | Alta clareza, boa densidade, tabelas operacionais, status e workflows | Sidebar + Header | Contextual / Faturamento |
-| **Backoffice Cartori** | Execução e conferência interna | Mais densidade, prioridade para fila de pedidos, SLA, pendências e ação | Sidebar operacional | Operacional |
+| **Backoffice InterJuri** | Execução e conferência interna | Mais densidade, prioridade para fila de pedidos, SLA, pendências e ação | Sidebar operacional | Operacional |
 | **B2C Commerce** | Aquisição e compra via Google Ads | Mais comercial, foco em preço, catálogo, formulários e checkout | Marketing + Checkout | Visível e comercial |
-| **White-label B2B2C** | Coleta e pagamento pelo cliente final | Marca da organização parceira + estrutura controlada pela Cartori | Fluxo guiado | Definido pelo parceiro |
+| **White-label B2B2C** | Coleta e pagamento pelo cliente final | Marca da organização parceira + estrutura controlada pela InterJuri | Fluxo guiado | Definido pelo parceiro |
 
 ### O Design System NÃO deve:
 * Refatorar a lógica de negócio do B2C.
 * Criar um tema independente para cada componente do 21st.dev.
 * Substituir clareza por efeitos visuais.
 * Transformar todo conteúdo em card.
-* Acoplar componentes a dados específicos da Cartori quando puderem ser genéricos.
+* Acoplar componentes a dados específicos da InterJuri quando puderem ser genéricos.
 
 ---
 
@@ -44,7 +44,7 @@ Compartilhar regras de design e primitives, sem obrigar todas as superfícies a 
 | **Densidade Controlada** | Mais informação útil por viewport, sem sacrificar legibilidade. |
 
 ### Personalidade
-**LegalTech + FinTech + SaaS B2B.** A Cartori deve parecer uma ferramenta operacional madura e confiável, não um portal governamental e não uma interface experimental.
+**LegalTech + FinTech + SaaS B2B.** A InterJuri deve parecer uma ferramenta operacional madura e confiável, não um portal governamental e não uma interface experimental.
 
 ### O que Evitar:
 * Glassmorphism forte, neon, glow e gradientes decorativos.
@@ -81,7 +81,7 @@ $$\text{PRIMITIVE TOKEN} \longrightarrow \text{SEMANTIC TOKEN} \longrightarrow \
 
 ## 04. Foundations e Tokens
 
-### 4.1 Brand Palette (Cartori Navy)
+### 4.1 Brand Palette (InterJuri Navy)
 Definida centralmente em `src/app/globals.css`:
 
 | Token | HEX | Uso Principal |
@@ -229,7 +229,7 @@ Licença atual: *Free for Personal Use* (Pangram Pangram). Para produção comer
 ### 8.1 IconBar (Quick Actions / Contextual Toolbar)
 * **Comportamento:** `[ícone] → hover/foco → [ícone + Label expandido]`
 * **Uso:** Ações contextuais de alta frequência (*Nova solicitação*, *Nova pesquisa*, *Novo cliente*, *Enviar documento*).
-* **Tokens:** Migrado para tokens oficiais Cartori com animação fluida e suporte completo a teclado.
+* **Tokens:** Migrado para tokens oficiais InterJuri com animação fluida e suporte completo a teclado.
 
 ### 8.2 AppSidebar
 * **Dimensões:** Aberta $\approx 256$px | Fechada $\approx 64$px.
@@ -276,14 +276,14 @@ Pattern principal para emissão dentro do SaaS. Reutiliza o motor de serviços, 
 $$\text{Cliente} \longrightarrow \text{Contexto} \longrightarrow \text{Serviço} \longrightarrow \text{Localização} \longrightarrow \text{Dados} \longrightarrow \text{Revisão} \longrightarrow \text{Pagamento / Faturamento} \longrightarrow \text{Acompanhamento}$$
 
 ### 9.3 White-label Request Page
-Página pública enviada pela organização parceira ao cliente final. Permite logotipo, nome, cor principal e contato da organização, mantendo estrutura, tipografia, spacing, acessibilidade e componentes controlados pela Cartori (*Theming controlado sem CSS livre*).
+Página pública enviada pela organização parceira ao cliente final. Permite logotipo, nome, cor principal e contato da organização, mantendo estrutura, tipografia, spacing, acessibilidade e componentes controlados pela InterJuri (*Theming controlado sem CSS livre*).
 
 ---
 
 ## 10. Integração com 21st.dev e Governança
 
 ### Regra de Adaptação de Componentes:
-$$\text{21st.dev component} + \text{Cartori semantic tokens} + \text{Cartori accessibility} + \text{Cartori interaction rules} = \text{Cartori Component}$$
+$$\text{21st.dev component} + \text{InterJuri semantic tokens} + \text{InterJuri accessibility} + \text{InterJuri interaction rules} = \text{InterJuri Component}$$
 
 ### Checklist de Adaptação:
 1. Remover ou mapear tokens locais conflitantes (`--component-background`, etc.).
