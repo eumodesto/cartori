@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "src") },
   },
+  esbuild: { jsx: "automatic" },
   test: {
     include: ["tests/unit/**/*.test.ts"],
     environment: "node",

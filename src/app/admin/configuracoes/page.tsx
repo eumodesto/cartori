@@ -7,7 +7,6 @@ import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useAuth } from "@/components/auth/auth-provider";
 import { TrackingTester } from "@/components/analytics/tracking-tester";
 import {
   EMPTY_TRACKING_CONFIG,
@@ -52,9 +51,6 @@ const toneClass = {
 };
 
 export default function ConfiguracoesPage() {
-  const { profile, loading } = useAuth();
-  const isAdmin = profile?.role === "ADMIN";
-
   const [saved, setSaved] = React.useState<TrackingConfig>(EMPTY_TRACKING_CONFIG);
   const [form, setForm] = React.useState<TrackingConfig>(EMPTY_TRACKING_CONFIG);
   const [fetching, setFetching] = React.useState(true);
@@ -64,7 +60,6 @@ export default function ConfiguracoesPage() {
   );
 
   React.useEffect(() => {
-    if (!isAdmin) return;
     setFetching(true);
     fetch("/api/admin/tracking-settings", { cache: "no-store" })
       .then((r) => r.json())
@@ -78,12 +73,7 @@ export default function ConfiguracoesPage() {
       })
       .catch(() => setMessage({ type: "error", text: "Falha ao carregar as configurações." }))
       .finally(() => setFetching(false));
-  }, [isAdmin]);
-
-  if (loading || !profile) {
-    return <p className="text-sm text-neutral-500">Carregando...</p>;
-  }
-  if (!isAdmin) return null;
+  }, []);
 
   const invalidField = FIELD_ORDER.find(
     (field) => form[field] && !isValidTrackingId(field, form[field])

@@ -14,8 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { orderStatusMeta } from "@/lib/order-status";
-import { useAuth } from "@/components/auth/auth-provider";
-import { useRouter } from "next/navigation";
 
 type OpsOrder = {
   id: string;
@@ -27,24 +25,11 @@ type OpsOrder = {
   certificates: string[];
 };
 
-function isStaffRole(role: string | undefined) {
-  return role === "ADMIN" || role === "OPERATOR";
-}
-
 export default function OperacaoPage() {
-  const { profile, loading } = useAuth();
-  const router = useRouter();
   const [orders, setOrders] = React.useState<OpsOrder[]>([]);
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
-    if (!loading && profile && !isStaffRole(profile.role)) {
-      router.replace("/painel");
-    }
-  }, [loading, profile, router]);
-
-  React.useEffect(() => {
-    if (!profile || !isStaffRole(profile.role)) return;
     fetch("/api/ops/orders", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
@@ -55,12 +40,7 @@ export default function OperacaoPage() {
         setOrders(data.orders || []);
       })
       .catch(() => setError("Falha ao carregar a fila operacional."));
-  }, [profile]);
-
-  if (loading || !profile) {
-    return <p className="text-sm text-neutral-500">Carregando mesa operacional...</p>;
-  }
-  if (!isStaffRole(profile.role)) return null;
+  }, []);
 
   return (
     <div className="space-y-6">

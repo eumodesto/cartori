@@ -4,15 +4,18 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { type NavGroup } from "@/components/layout/app-sidebar";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { areaLinksGroup } from "@/components/layout/area-links";
 import { useAuth } from "@/components/auth/auth-provider";
-import { Inbox, Layers, Mail, Settings, UserCog } from "lucide-react";
+import { isPlatformAdminProfile } from "@/lib/auth-types";
+import { Mail, Settings, UserCog } from "lucide-react";
 
+/** Guarda de UI da seção; as páginas filhas só montam para ADMIN. Quem autoriza é /api/admin. */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { profile, loading, configured } = useAuth();
 
-  const isAdmin = profile?.role === "ADMIN";
+  const isAdmin = isPlatformAdminProfile(profile);
 
   React.useEffect(() => {
     if (loading || !configured) return;
@@ -54,25 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         },
       ],
     },
-    {
-      label: "Navegação",
-      items: [
-        {
-          id: "ops",
-          label: "Mesa operacional",
-          href: "/operacao/pedidos",
-          icon: <Inbox className="w-4 h-4" />,
-          isActive: false,
-        },
-        {
-          id: "painel",
-          label: "Meu painel",
-          href: "/painel",
-          icon: <Layers className="w-4 h-4" />,
-          isActive: false,
-        },
-      ],
-    },
+    ...areaLinksGroup(profile, "admin"),
   ];
 
   return <DashboardShell groups={groups}>{children}</DashboardShell>;

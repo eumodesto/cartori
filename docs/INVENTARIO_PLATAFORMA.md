@@ -113,7 +113,7 @@ Na matriz, 404 significa recurso escondido (fail-closed) e 403 significa proibid
 | Fila operacional e mudança de status | 404 | sim | sim | `requireStaffOps` + transições |
 | Próprios dossiês | sim | sim | sim | `requireDossierAccess` |
 | Cadastrar empresa (CNPJ + OAB/CRECI) | sim | 403 | 403 | `canOnboardBusiness` |
-| Usuários, papéis, e-mails e templates | 403 | 403 | sim | `requireUserManagement` |
+| Usuários, papéis, e-mails, templates e configurações (tags) | 403 | 403 | sim | `requirePlatformAdmin` |
 | Amanda (chat com IA) | com pedido | 403 | 403 | `requireAmandaClient` |
 | Marcar pedido como pago | não | não | não | só o webhook ou a reconciliação do Mercado Pago |
 

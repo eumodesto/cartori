@@ -1,14 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { Eye, RotateCcw, Save } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/components/auth/auth-provider";
 import { cn } from "@/lib/utils";
 
 type TemplateVariable = { name: string; description: string; sample: string };
@@ -42,10 +40,6 @@ const GROUPS: { id: EmailTemplate["group"]; label: string }[] = [
 ];
 
 export default function EmailsPage() {
-  const { profile, loading } = useAuth();
-  const router = useRouter();
-  const isAdmin = profile?.role === "ADMIN";
-
   const [templates, setTemplates] = React.useState<EmailTemplate[]>([]);
   const [settings, setSettings] = React.useState<EmailSettings | null>(null);
   const [error, setError] = React.useState("");
@@ -71,10 +65,6 @@ export default function EmailsPage() {
     { type: "success" | "error"; text: string } | null
   >(null);
 
-  React.useEffect(() => {
-    if (!loading && profile && !isAdmin) router.replace("/painel");
-  }, [loading, profile, isAdmin, router]);
-
   const loadTemplateIntoEditor = React.useCallback((tpl: EmailTemplate) => {
     setSelectedKey(tpl.key);
     setSubject(tpl.subject);
@@ -84,7 +74,6 @@ export default function EmailsPage() {
   }, []);
 
   React.useEffect(() => {
-    if (!isAdmin) return;
     setFetching(true);
     Promise.all([
       fetch("/api/admin/email-templates", { cache: "no-store" }).then((r) => r.json()),
@@ -109,12 +98,7 @@ export default function EmailsPage() {
       })
       .catch(() => setError("Falha ao carregar a configuração de e-mails."))
       .finally(() => setFetching(false));
-  }, [isAdmin, loadTemplateIntoEditor]);
-
-  if (loading || !profile) {
-    return <p className="text-sm text-neutral-500">Carregando...</p>;
-  }
-  if (!isAdmin) return null;
+  }, [loadTemplateIntoEditor]);
 
   const groupTemplates = templates.filter((t) => t.group === group);
   const selected = templates.find((t) => t.key === selectedKey) || null;

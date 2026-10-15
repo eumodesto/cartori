@@ -1,42 +1,6 @@
-import { NextResponse } from "next/server";
 import { Prisma, UserRole } from "@prisma/client";
-import {
-  type AuthContext,
-  canManageUsers,
-  forbiddenResponse,
-  logAuthzDeny,
-  requireAuth,
-  unauthorizedResponse,
-} from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
 import { digitsOnly } from "@/lib/utils";
-
-/**
- * Administração de usuários/clientes (ADMIN only).
- * Fail-closed: sessão + User Prisma + platformRole ADMIN. OPERATOR NÃO gerencia.
- * Papel/organização/dono nunca vêm do browser para autorizar.
- */
-export async function requireUserManagement(): Promise<
-  { ok: true; context: AuthContext } | { ok: false; response: NextResponse }
-> {
-  const auth = await requireAuth();
-  if (!auth.ok) {
-    if (auth.response.status === 401) {
-      return { ok: false, response: unauthorizedResponse("Entre na conta para continuar.") };
-    }
-    return auth;
-  }
-  if (!canManageUsers(auth.context)) {
-    logAuthzDeny({
-      userId: auth.context.userId,
-      role: auth.context.role,
-      resourceType: "admin.users",
-      reason: "not_admin",
-    });
-    return { ok: false, response: forbiddenResponse() };
-  }
-  return { ok: true, context: auth.context };
-}
 
 export const MANAGEABLE_ROLES: readonly UserRole[] = ["CLIENT", "OPERATOR", "ADMIN"] as const;
 

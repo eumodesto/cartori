@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
-import {
-  isManageableRole,
-  listManagedUsers,
-  requireUserManagement,
-} from "@/lib/admin-users";
+import { isManageableRole, listManagedUsers } from "@/lib/admin-users";
+import { requirePlatformAdmin } from "@/lib/authorization";
 
 export async function GET(req: NextRequest) {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.users");
   if (!gate.ok) return gate.response;
 
   const { searchParams } = new URL(req.url);

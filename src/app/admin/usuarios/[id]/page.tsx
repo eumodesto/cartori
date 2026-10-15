@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
@@ -37,8 +36,7 @@ export default function UsuarioDetailPage({
 }: {
   params: { id: string };
 }) {
-  const { profile, loading } = useAuth();
-  const router = useRouter();
+  const { profile } = useAuth();
   const [user, setUser] = React.useState<ManagedUser | null>(null);
   const [error, setError] = React.useState("");
   const [fetching, setFetching] = React.useState(true);
@@ -51,17 +49,9 @@ export default function UsuarioDetailPage({
     { type: "success" | "error"; text: string } | null
   >(null);
 
-  const isAdmin = profile?.role === "ADMIN";
   const isSelf = profile?.id === params.id;
 
   React.useEffect(() => {
-    if (!loading && profile && !isAdmin) {
-      router.replace("/painel");
-    }
-  }, [loading, profile, isAdmin, router]);
-
-  React.useEffect(() => {
-    if (!isAdmin) return;
     setFetching(true);
     fetch(`/api/admin/users/${params.id}`, { cache: "no-store" })
       .then((res) => res.json())
@@ -78,12 +68,7 @@ export default function UsuarioDetailPage({
       })
       .catch(() => setError("Falha ao carregar o usuário."))
       .finally(() => setFetching(false));
-  }, [isAdmin, params.id]);
-
-  if (loading || !profile) {
-    return <p className="text-sm text-neutral-500">Carregando...</p>;
-  }
-  if (!isAdmin) return null;
+  }, [params.id]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireUserManagement } from "@/lib/admin-users";
+import { requirePlatformAdmin } from "@/lib/authorization";
 import { renderTemplatePreview } from "@/lib/email";
 import { getEmailTemplateDef } from "@/lib/email-templates";
 
@@ -7,7 +7,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { key: string } }
 ) {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.email");
   if (!gate.ok) return gate.response;
 
   const def = getEmailTemplateDef(params.key);

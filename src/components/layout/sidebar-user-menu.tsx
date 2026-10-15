@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LogOut, PersonStanding, Settings } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { UserMenu } from "@/components/layout/user-menu";
+import { isPlatformAdminProfile } from "@/lib/auth-types";
 import { cn } from "@/lib/utils";
 
 type MenuEntry = {
@@ -80,7 +81,7 @@ export function SidebarUserMenu({ collapsed }: { collapsed: boolean }) {
       icon: <PersonStanding className="w-4 h-4" />,
       href: "/painel/perfil",
     },
-    ...(profile.role === "ADMIN"
+    ...(isPlatformAdminProfile(profile)
       ? [
           {
             id: "settings",

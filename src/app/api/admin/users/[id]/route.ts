@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
-import {
-  getManagedUser,
-  isManageableRole,
-  requireUserManagement,
-  updateManagedUser,
-} from "@/lib/admin-users";
+import { getManagedUser, isManageableRole, updateManagedUser } from "@/lib/admin-users";
+import { requirePlatformAdmin } from "@/lib/authorization";
 import { digitsOnly } from "@/lib/utils";
 import { isValidPhone } from "@/lib/validators";
 
@@ -13,7 +9,7 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.users");
   if (!gate.ok) return gate.response;
 
   const user = await getManagedUser(params.id);
@@ -30,7 +26,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.users");
   if (!gate.ok) return gate.response;
 
   const body = await req.json().catch(() => ({}));

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -14,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAuth } from "@/components/auth/auth-provider";
 import { cn, maskCpfCnpj } from "@/lib/utils";
 
 type ManagedUser = {
@@ -63,30 +61,16 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-function isStaffRole(role: string | undefined) {
-  return role === "ADMIN" || role === "OPERATOR";
-}
+const isStaffUser = (user: ManagedUser) => user.role === "ADMIN" || user.role === "OPERATOR";
 
 export default function UsuariosPage() {
-  const { profile, loading } = useAuth();
-  const router = useRouter();
   const [users, setUsers] = React.useState<ManagedUser[]>([]);
   const [error, setError] = React.useState("");
   const [fetching, setFetching] = React.useState(true);
   const [tab, setTab] = React.useState<TabId>("all");
   const [query, setQuery] = React.useState("");
 
-  const isAdmin = profile?.role === "ADMIN";
-
   React.useEffect(() => {
-    if (!loading && profile && !isAdmin) {
-      router.replace("/painel");
-    }
-  }, [loading, profile, isAdmin, router]);
-
-  React.useEffect(() => {
-    if (!isAdmin) return;
-    setFetching(true);
     fetch("/api/admin/users", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
@@ -98,12 +82,7 @@ export default function UsuariosPage() {
       })
       .catch(() => setError("Falha ao carregar os usuários."))
       .finally(() => setFetching(false));
-  }, [isAdmin]);
-
-  if (loading || !profile) {
-    return <p className="text-sm text-neutral-500">Carregando...</p>;
-  }
-  if (!isAdmin) return null;
+  }, []);
 
   const normalized = query
     .normalize("NFD")
@@ -113,7 +92,7 @@ export default function UsuariosPage() {
 
   const filtered = users.filter((user) => {
     if (tab === "CLIENT" && user.role !== "CLIENT") return false;
-    if (tab === "staff" && !isStaffRole(user.role)) return false;
+    if (tab === "staff" && !isStaffUser(user)) return false;
     if (!normalized) return true;
     const haystack = [user.name, user.email, user.cpf, user.organization?.name]
       .filter(Boolean)

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireUserManagement } from "@/lib/admin-users";
+import { requirePlatformAdmin } from "@/lib/authorization";
 import { getEmailSettingsView, saveEmailSettings } from "@/lib/email-settings";
 import { isValidEmail } from "@/lib/validators";
 
 export async function GET() {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.email");
   if (!gate.ok) return gate.response;
 
   const settings = await getEmailSettingsView();
@@ -12,7 +12,7 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.email");
   if (!gate.ok) return gate.response;
 
   const body = await req.json().catch(() => ({}));

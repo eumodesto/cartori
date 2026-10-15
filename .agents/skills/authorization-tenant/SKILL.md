@@ -66,7 +66,10 @@ UI dashboard: `isBusinessLockedHref` / `B2B_LOCKED_HREFS` trava dossiês, organi
 
 ## Helpers existentes
 
-`src/lib/authorization.ts` — HTTP wrappers
+`src/lib/authorization.ts` — HTTP wrappers (`requirePlatformAdmin(resourceType)` protege todo `/api/admin/*`, 403)
+`src/lib/case-access.ts` — `requireStaffOps` protege `/api/ops/*` (404 para não-equipe)
+`src/lib/auth-types.ts` — `isStaffProfile` / `isPlatformAdminProfile`: espelhos de UI, nunca autorizam
+`src/components/layout/area-links.tsx` — atalhos entre painel, mesa e admin (guarda de UI fica só no layout da seção)
 `src/lib/authorization-policy.ts` — funções puras
 `src/lib/authorization-matrix.ts`
 `src/lib/org-membership.ts` — persistência

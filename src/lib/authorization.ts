@@ -8,6 +8,7 @@ import {
   type OrganizationAccessOptions,
   buildAuthContext,
   canAccessOrganization,
+  canManageUsers,
   canOnboardBusiness,
   hasAllowedRole,
 } from "@/lib/authorization-policy";
@@ -153,6 +154,25 @@ export async function requireAuth(): Promise<AuthResult> {
       activeMemberships: row.organizationMemberships,
     }),
   };
+}
+
+/**
+ * Administração da plataforma (usuários, e-mails, configurações): só ADMIN.
+ * OPERATOR não administra. `resourceType` identifica o recurso nos logs de negação.
+ */
+export async function requirePlatformAdmin(resourceType: string): Promise<AuthResult> {
+  const auth = await requireAuth();
+  if (!auth.ok) return auth;
+  if (!canManageUsers(auth.context)) {
+    logAuthzDeny({
+      userId: auth.context.userId,
+      role: auth.context.platformRole,
+      resourceType,
+      reason: "not_admin",
+    });
+    return { ok: false, response: forbiddenResponse() };
+  }
+  return auth;
 }
 
 export function requireRole(

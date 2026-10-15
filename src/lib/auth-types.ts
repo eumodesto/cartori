@@ -30,6 +30,16 @@ export function isBusinessAccount(profile: AuthProfile | null | undefined) {
   return Boolean(profile?.organization?.id);
 }
 
+/** Espelho de UI de `canOperateCases`: equipe Cartori (mesa operacional). */
+export function isStaffProfile(profile: AuthProfile | null | undefined) {
+  return profile?.role === "ADMIN" || profile?.role === "OPERATOR";
+}
+
+/** Espelho de UI de `canManageUsers`: administração da plataforma. */
+export function isPlatformAdminProfile(profile: AuthProfile | null | undefined) {
+  return profile?.role === "ADMIN";
+}
+
 /**
  * Espelho de UI de `canOnboardBusiness`: só CLIENT sem empresa cadastra CNPJ.
  * Equipe Cartori (OPERATOR/ADMIN) recebe 403 em POST /api/org.

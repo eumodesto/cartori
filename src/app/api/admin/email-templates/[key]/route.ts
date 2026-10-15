@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireUserManagement } from "@/lib/admin-users";
+import { requirePlatformAdmin } from "@/lib/authorization";
 import {
   resetTemplateOverride,
   resolveEmailTemplate,
@@ -25,7 +25,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { key: string } }
 ) {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.email");
   if (!gate.ok) return gate.response;
 
   if (!getEmailTemplateDef(params.key)) {
@@ -62,7 +62,7 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: { key: string } }
 ) {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.email");
   if (!gate.ok) return gate.response;
 
   if (!getEmailTemplateDef(params.key)) {

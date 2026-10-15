@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireUserManagement } from "@/lib/admin-users";
+import { requirePlatformAdmin } from "@/lib/authorization";
 import { listResolvedTemplates } from "@/lib/email-settings";
 
 export async function GET() {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.email");
   if (!gate.ok) return gate.response;
 
   const resolved = await listResolvedTemplates();

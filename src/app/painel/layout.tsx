@@ -4,20 +4,11 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { type NavGroup } from "@/components/layout/app-sidebar";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { areaLinksGroup } from "@/components/layout/area-links";
 import { PartnerPlanDialog } from "@/components/auth/partner-plan-dialog";
 import { useAuth } from "@/components/auth/auth-provider";
 import { isBusinessLockedHref } from "@/lib/auth-types";
-import {
-  Layers,
-  FileText,
-  Search,
-  Building2,
-  Users,
-  Wallet,
-  FolderOpen,
-  Inbox,
-  UserCog,
-} from "lucide-react";
+import { Layers, FileText, Search, Building2, Users, Wallet, FolderOpen } from "lucide-react";
 
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -43,9 +34,6 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
     !isBusiness && isBusinessLockedHref(href)
       ? { locked: true, onLockedClick: () => setPartnerOpen(true) }
       : {};
-
-  const isStaff = profile?.role === "ADMIN" || profile?.role === "OPERATOR";
-  const isAdmin = profile?.role === "ADMIN";
 
   const groups: NavGroup[] = [
     {
@@ -110,33 +98,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
         },
       ],
     },
-    ...(isStaff
-      ? [
-          {
-            label: "Áreas internas",
-            items: [
-              {
-                id: "ops",
-                label: "Mesa operacional",
-                href: "/operacao/pedidos",
-                icon: <Inbox className="w-4 h-4" />,
-                isActive: false,
-              },
-              ...(isAdmin
-                ? [
-                    {
-                      id: "admin",
-                      label: "Administração",
-                      href: "/admin/usuarios",
-                      icon: <UserCog className="w-4 h-4" />,
-                      isActive: false,
-                    },
-                  ]
-                : []),
-            ],
-          },
-        ]
-      : []),
+    ...areaLinksGroup(profile, "painel"),
   ];
 
   return (

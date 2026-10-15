@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUserManagement } from "@/lib/admin-users";
+import { requirePlatformAdmin } from "@/lib/authorization";
 import { checkPublishedTags } from "@/lib/tracking";
 import { getTrackingConfigFresh } from "@/lib/tracking-settings";
 
@@ -11,7 +11,7 @@ function siteUrl(): string {
 }
 
 export async function GET() {
-  const gate = await requireUserManagement();
+  const gate = await requirePlatformAdmin("admin.tracking");
   if (!gate.ok) return gate.response;
 
   const config = await getTrackingConfigFresh();
