@@ -9,7 +9,7 @@ import { digitsOnly } from "@/lib/utils";
 import { normalizeCpf } from "@/lib/validators";
 
 function siteUrl(path: string) {
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.interjuri.com.br").replace(
     /\/$/,
     ""
   );

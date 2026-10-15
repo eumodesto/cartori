@@ -17,7 +17,7 @@ type QueueInput = {
 
 function appUrl(path: string) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-  return `${base || "https://www.cartori.com.br"}${path}`;
+  return `${base || "https://www.interjuri.com.br"}${path}`;
 }
 
 function renderEmail(input: QueueInput) {

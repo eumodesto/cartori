@@ -130,7 +130,7 @@ export default function PrivacidadePage() {
           Para exercer seus direitos, fazer solicitações relativas aos seus dados ou tirar
           dúvidas sobre esta política, entre em contato com nosso Encarregado de Proteção de
           Dados (DPO) pelo e-mail{" "}
-          <LegalMail href="dpo@cartori.com.br">dpo@cartori.com.br</LegalMail>. Prazo de resposta:
+          <LegalMail href="dpo@interjuri.com.br">dpo@interjuri.com.br</LegalMail>. Prazo de resposta:
           até 15 dias úteis, conforme regulamentação da ANPD.
         </p>
       </LegalSection>

@@ -1,5 +1,5 @@
-export const SUPPORT_EMAIL = "atendimento@cartori.com.br";
-export const DPO_EMAIL = "dpo@cartori.com.br";
+export const SUPPORT_EMAIL = "atendimento@interjuri.com.br";
+export const DPO_EMAIL = "dpo@interjuri.com.br";
 export const FACEBOOK_URL = "https://www.facebook.com/cartori.certidoes";
 export const INSTAGRAM_URL = "https://www.instagram.com/cartori.certidoes";
 

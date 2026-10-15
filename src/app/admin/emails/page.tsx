@@ -257,7 +257,7 @@ export default function EmailsPage() {
             type="email"
             value={fromEmail}
             onChange={(e) => setFromEmail(e.target.value)}
-            placeholder="Cartori <no-reply@cartori.com.br>"
+            placeholder="Cartori <no-reply@interjuri.com.br>"
           />
         </div>
 

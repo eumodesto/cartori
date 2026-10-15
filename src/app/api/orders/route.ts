@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
     const order = await createOrder(draft);
 
     // Notificações do pedido (não bloqueiam o checkout).
-    const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.cartori.com.br").replace(/\/$/, "")}/painel/pedidos/${order.id}`;
+    const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.interjuri.com.br").replace(/\/$/, "")}/painel/pedidos/${order.id}`;
     const itemsList = order.items
       .map((item) => `- ${item.certificateName} (${item.city}/${item.state})`)
       .join("\n");

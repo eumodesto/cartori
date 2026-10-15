@@ -93,7 +93,7 @@ export default function TermosPage() {
         </p>
         <p>
           Para solicitações de suporte e cancelamento, o Usuário deve contatar o e-mail{" "}
-          <LegalMail href="atendimento@cartori.com.br">atendimento@cartori.com.br</LegalMail>.
+          <LegalMail href="atendimento@interjuri.com.br">atendimento@interjuri.com.br</LegalMail>.
         </p>
       </LegalSection>
 
