@@ -16,7 +16,6 @@ import { FilterTags } from "@/components/ui/filter-tags";
 import { Input } from "@/components/ui/input";
 import { LivingOrigamiBg } from "@/components/ui/living-origami-bg";
 import { GetStartedButton } from "@/components/ui/get-started-button";
-import { SlideUpText } from "@/components/ui/slide-up-text";
 import { Pagination } from "@/components/ui/pagination";
 import { CertificateConfigDialog } from "@/components/storefront/certificate-config-dialog";
 import { useCart } from "@/components/cart/cart-provider";
@@ -387,15 +386,7 @@ export function CatalogBrowser({
                           openCertificate(cert.slug);
                         }}
                       >
-                        <SlideUpText
-                          split="characters"
-                          stagger={0.03}
-                          inView
-                          once
-                          className="text-lg font-bold font-serif"
-                        >
-                          {cert.name}
-                        </SlideUpText>
+                        {cert.name}
                       </a>
                     </h3>
                     <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
