@@ -129,7 +129,11 @@ export const TRACKING_CSP_REQUIREMENTS: Record<TrackingField, Record<string, str
   },
   adsId: {
     "script-src": ["https://*.googletagmanager.com", "https://www.googleadservices.com"],
-    "connect-src": ["https://www.googleadservices.com", "https://*.g.doubleclick.net"],
+    "connect-src": [
+      "https://www.googleadservices.com",
+      "https://*.g.doubleclick.net",
+      "https://ad.doubleclick.net",
+    ],
   },
 };
 

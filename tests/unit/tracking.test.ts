@@ -113,7 +113,7 @@ describe("checkPublishedTags", () => {
   const fullCsp = [
     "default-src 'self'",
     "script-src 'self' https://*.googletagmanager.com https://www.googleadservices.com",
-    "connect-src 'self' https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.googleadservices.com https://*.g.doubleclick.net",
+    "connect-src 'self' https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.googleadservices.com https://*.g.doubleclick.net https://ad.doubleclick.net",
   ].join("; ");
 
   it("marca cada ID presente no HTML e CSP completo", () => {

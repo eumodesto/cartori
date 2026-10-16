@@ -12,6 +12,8 @@ const googleTags = {
     "https://*.analytics.google.com",
     "https://*.googletagmanager.com",
     "https://*.g.doubleclick.net",
+    // Medição de conversões do Google Ads (ccm/s/collect).
+    "https://ad.doubleclick.net",
     "https://*.google.com",
     "https://www.google.com.br",
     "https://pagead2.googlesyndication.com",
