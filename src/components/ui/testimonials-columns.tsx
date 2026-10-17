@@ -23,7 +23,8 @@ export function TestimonialsColumn({
             {items.map((item) => (
               <article
                 key={`${copy}-${item.name}`}
-                className="w-full max-w-[13.75rem] rounded-2xl border border-white/15 bg-white/[0.07] p-5 shadow-[0_12px_32px_rgba(2,31,80,0.35)] backdrop-blur-sm"
+                aria-hidden={copy === 1 || undefined}
+                className={cn(copy === 1 && "testimonials-copy", "w-full max-w-[13.75rem] rounded-2xl border border-white/15 bg-white/[0.07] p-5 shadow-[0_12px_32px_rgba(2,31,80,0.35)] backdrop-blur-sm")}
               >
                 <p className="text-xs leading-relaxed text-slate-200">{item.text}</p>
                 <div className="mt-4 flex items-center gap-2.5">
@@ -56,7 +57,7 @@ export function Testimonials({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative flex justify-center gap-3 overflow-hidden py-1 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)] max-h-[420px] sm:max-h-[480px]",
+        "testimonials-viewport relative flex justify-center gap-3 overflow-hidden py-1 [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)] max-h-[420px] sm:max-h-[480px]",
         className
       )}
     >

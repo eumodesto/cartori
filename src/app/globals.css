@@ -383,8 +383,17 @@ button {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
+/* Reduzir movimento: lista parada, sem a cópia do laço, e rolável com o dedo. */
 @media (prefers-reduced-motion: reduce) {
   .testimonials-marquee {
     animation: none;
+  }
+  .testimonials-copy {
+    display: none;
+  }
+  .testimonials-viewport {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 }
