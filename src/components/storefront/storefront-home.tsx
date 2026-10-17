@@ -13,6 +13,7 @@ import { GetStartedButton } from "@/components/ui/get-started-button";
 import { Testimonials } from "@/components/ui/testimonials-columns";
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { CatalogBrowser } from "@/components/storefront/catalog-browser";
+import { HowItWorks } from "@/components/storefront/how-it-works";
 import {
   CertificateLanding,
   certificateLandingTitle,
@@ -153,6 +154,8 @@ export function StorefrontHome({
 
       {certificateContent}
 
+      <HowItWorks />
+
       <section id="faq" className="scroll-mt-32 py-16 bg-neutral-0 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
@@ -185,7 +188,7 @@ export function StorefrontHome({
       </section>
 
       {/* B2B Section for Lawyers & Real Estate */}
-      <section id="como-funciona" className="scroll-mt-32 py-20 bg-primary-950 text-white relative overflow-hidden">
+      <section id="empresas" className="scroll-mt-32 py-20 bg-primary-950 text-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
@@ -216,7 +219,7 @@ export function StorefrontHome({
                     <span>Repositório Digital Central</span>
                   </div>
                   <p className="text-xs text-slate-400">
-                    Todas as e-certidões emitidas ficam salvas permanentemente no painel do seu escritório.
+                    As certidões digitais ficam no painel do escritório por 30 dias após a entrega, prontas para baixar e arquivar.
                   </p>
                 </div>
 

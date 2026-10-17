@@ -24,7 +24,7 @@ const footerLinks: FooterSectionData[] = [
   {
     label: "Empresa",
     links: [
-      { title: "Para Advogados & Imobiliárias", href: "/#como-funciona" },
+      { title: "Para Advogados & Imobiliárias", href: "/#empresas" },
       { title: "Termos de Uso", href: "/termos" },
       { title: "Privacidade (LGPD)", href: "/privacidade" },
       { title: "Suporte", href: "/suporte" },
