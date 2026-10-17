@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { HomeHashLink } from "@/components/storefront/home-hash-link";
 import { BusinessSignupLink } from "@/components/auth/business-signup-link";
-import type { ComponentProps, ReactNode } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import type { ReactNode } from "react";
 import { Facebook, Instagram } from "lucide-react";
 import { FACEBOOK_URL, INSTAGRAM_URL } from "@/lib/support-contacts";
 
@@ -83,9 +83,12 @@ export function Footer() {
             <div className="flex w-full flex-col gap-10">
               <AnimatedContainer className="w-full space-y-4">
                 <Link href="/" className="inline-flex items-center">
-                  <img
+                  <Image
                     src="/brand/interjuri-logo.png"
                     alt="InterJuri"
+                    width={619}
+                    height={176}
+                    sizes="113px"
                     className="h-8 w-auto object-contain brightness-0 invert"
                   />
                 </Link>
@@ -165,26 +168,11 @@ export function Footer() {
 
 type ViewAnimationProps = {
   delay?: number;
-  className?: ComponentProps<typeof motion.div>["className"];
+  className?: string;
   children: ReactNode;
 };
 
-function AnimatedContainer({ className, delay = 0.1, children }: ViewAnimationProps) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
-  return (
-    <motion.div
-      initial={{ filter: "blur(4px)", translateY: -8, opacity: 0 }}
-      whileInView={{ filter: "blur(0px)", translateY: 0, opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay, duration: 0.8 }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+/** Antes animado com framer-motion (~108 KB de JS em toda página); agora estático. */
+function AnimatedContainer({ className, children }: ViewAnimationProps) {
+  return <div className={className}>{children}</div>;
 }

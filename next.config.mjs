@@ -71,6 +71,17 @@ const nextConfig = {
     return [
       { source: "/:path*", headers },
       ...privateSections.map((section) => ({ source: `/${section}/:path*`, headers: noindex })),
+      // Arquivos de public/ sem hash no nome: fontes mudam raramente (1 ano); logos e imagens
+      // ficam 30 dias no cache, revalidando em segundo plano para uma troca de arquivo aparecer.
+      { source: "/fonts/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      {
+        source: "/brand/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }],
+      },
+      {
+        source: "/:file((?!_next/).*\\.(?:png|webp|svg|ico|jpg|jpeg|avif))",
+        headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }],
+      },
     ];
   },
   async redirects() {

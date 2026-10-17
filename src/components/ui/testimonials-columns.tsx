@@ -1,7 +1,4 @@
-"use client";
-
 import * as React from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { testimonials, type Testimonial } from "@/lib/testimonials";
 
@@ -14,23 +11,12 @@ export function TestimonialsColumn({
   testimonials: Testimonial[];
   duration?: number;
 }) {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <div className={cn("overflow-hidden", className)}>
-      <motion.div
-        animate={shouldReduceMotion ? undefined : { y: ["0%", "-50%"] }}
-        transition={
-          shouldReduceMotion
-            ? undefined
-            : {
-                duration,
-                repeat: Infinity,
-                ease: "linear",
-                repeatType: "loop",
-              }
-        }
-        className="flex flex-col gap-4 pb-4"
+      {/* Rolagem contínua em CSS (antes framer-motion); duas cópias = laço sem emenda. */}
+      <div
+        className="testimonials-marquee flex flex-col gap-4 pb-4"
+        style={{ animationDuration: `${duration}s` }}
       >
         {[0, 1].map((copy) => (
           <React.Fragment key={copy}>
@@ -58,7 +44,7 @@ export function TestimonialsColumn({
             ))}
           </React.Fragment>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

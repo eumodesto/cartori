@@ -1,46 +1,18 @@
 import type { Metadata } from "next";
 import { StorefrontHome } from "@/components/storefront/storefront-home";
 import { JsonLd } from "@/components/seo/json-ld";
-import {
-  certificateFromParam,
-  certificatePath,
-  firstSearchParam,
-} from "@/lib/certificate-links";
 import { faqJsonLd } from "@/lib/seo";
 import { STOREFRONT_FAQ } from "@/lib/storefront-faq";
 
-export const dynamic = "force-dynamic";
+// Estática: servida do cache da borda. Links antigos /?certidao= e /?servico= são
+// redirecionados no middleware para /certidao/[slug].
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
-type HomeSearchParams = {
-  certidao?: string | string[];
-  servico?: string | string[];
-};
-
-function certificateFromSearch(searchParams: HomeSearchParams) {
-  return certificateFromParam(
-    firstSearchParam(searchParams.certidao) || firstSearchParam(searchParams.servico)
-  );
-}
-
-export function generateMetadata({
-  searchParams,
-}: {
-  searchParams: HomeSearchParams;
-}): Metadata {
-  const cert = certificateFromSearch(searchParams);
-  return { alternates: { canonical: cert ? certificatePath(cert.slug) : "/" } };
-}
-
-export default function HomePage({
-  searchParams,
-}: {
-  searchParams: HomeSearchParams;
-}) {
-  const cert = certificateFromSearch(searchParams);
+export default function HomePage() {
   return (
     <>
       <JsonLd data={faqJsonLd(STOREFRONT_FAQ)} />
-      <StorefrontHome initialCertificateSlug={cert?.slug} />
+      <StorefrontHome />
     </>
   );
 }

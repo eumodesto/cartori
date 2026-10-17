@@ -4,9 +4,19 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { AmandaChat } from "@/components/cartori/amanda-chat";
-import { ChatLauncher } from "@/components/cartori/chat-launcher";
-import { ChatPanel } from "@/components/cartori/chat-panel";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/components/auth/auth-provider";
+
+// Lançador e painel (com framer-motion) só baixam para quem pode usar a Amanda;
+// visitantes anônimos não recebem esse JavaScript.
+const ChatLauncher = dynamic(
+  () => import("@/components/cartori/chat-launcher").then((m) => m.ChatLauncher),
+  { ssr: false }
+);
+const ChatPanel = dynamic(
+  () => import("@/components/cartori/chat-panel").then((m) => m.ChatPanel),
+  { ssr: false }
+);
 import {
   type ChatWidgetPhase,
   type LauncherPosition,

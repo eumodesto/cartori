@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, Info, Menu, X } from "lucide-react";
 import { AccountAlerts } from "@/components/layout/account-alerts";
@@ -28,15 +29,23 @@ export function Header({ cartCount = 0 }: { cartCount?: number }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center group py-1">
           {/* Mobile Icon */}
-          <img
+          <Image
             src="/brand/interjuri-symbol.png"
             alt="InterJuri"
+            width={113}
+            height={176}
+            priority
+            sizes="36px"
             className="h-9 w-9 object-contain sm:hidden group-hover:scale-105 transition-transform"
           />
           {/* Desktop Horizontal Logo */}
-          <img
+          <Image
             src="/brand/interjuri-logo.png"
             alt="InterJuri"
+            width={619}
+            height={176}
+            priority
+            sizes="155px"
             className="h-10 sm:h-11 w-auto object-contain hidden sm:block group-hover:scale-[1.02] transition-transform dark:brightness-0 dark:invert"
           />
         </Link>
