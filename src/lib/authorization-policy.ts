@@ -30,6 +30,8 @@ export type AuthContext = {
   /** Current tenant from the single ACTIVE membership. */
   organizationId: string | null;
   orgRole: OrganizationMemberRole | null;
+  /** User.staffPermissions: áreas liberadas a um ADMIN restrito. Vazio = acesso total. */
+  adminPermissions: string[];
 };
 
 export type OrganizationAccessOptions = {
@@ -56,6 +58,7 @@ export function buildAuthContext(input: {
   authId: string;
   platformRole: UserRole;
   activeMemberships: readonly ActiveMembership[];
+  staffPermissions?: readonly string[];
 }): AuthContext {
   const membership = pickSingleActiveMembership(input.activeMemberships);
   return {
@@ -65,6 +68,7 @@ export function buildAuthContext(input: {
     role: input.platformRole,
     organizationId: membership?.organizationId ?? null,
     orgRole: membership?.orgRole ?? null,
+    adminPermissions: [...(input.staffPermissions ?? [])],
   };
 }
 

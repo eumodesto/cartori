@@ -45,10 +45,10 @@ export async function listOpsOrders(take = 80) {
       customerEmail: true,
       createdAt: true,
       items: { select: { certificateName: true } },
+      // Todos os pagamentos: o mais recente vira o status exibido; o conjunto decide a exclusão.
       payments: {
-        select: { status: true },
+        select: { status: true, createdAt: true },
         orderBy: { createdAt: "desc" },
-        take: 1,
       },
     },
     orderBy: { createdAt: "desc" },

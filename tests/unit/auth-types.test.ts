@@ -29,6 +29,7 @@ function profile(overrides: Partial<AuthProfile> = {}): AuthProfile {
     phone: null,
     cpf: null,
     role: "CLIENT",
+    staffPermissions: [],
     avatarUrl: null,
     notificationPrefs: {},
     organization: null,

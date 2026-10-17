@@ -237,6 +237,17 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
     variables: [V.customerName, V.appLink],
   },
   {
+    key: "account_invited",
+    group: "conta",
+    label: "Conta criada pela equipe",
+    description: "Enviado quando a administração cadastra uma conta (cliente, operador ou administrador).",
+    subject: "Sua conta na InterJuri está pronta, {{customerName}}",
+    body:
+      "Olá, {{customerName}}!\n\nA equipe InterJuri criou uma conta para você com este e-mail.\n\nPara o primeiro acesso, abra o link abaixo, clique em Entrar e depois em \"Esqueci minha senha\". Você recebe um link para criar a sua senha.\n\n{{appLink}}\n\nSe você não esperava este e-mail, pode ignorá-lo." +
+      SIGN,
+    variables: [V.customerName, V.appLink],
+  },
+  {
     key: "order_created",
     group: "compra",
     label: "Nova compra",

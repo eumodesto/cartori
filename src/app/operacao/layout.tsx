@@ -4,10 +4,9 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { type NavGroup } from "@/components/layout/app-sidebar";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { areaLinksGroup } from "@/components/layout/area-links";
+import { areaLinksGroup, managementNavGroup } from "@/components/layout/area-links";
 import { useAuth } from "@/components/auth/auth-provider";
 import { isStaffProfile } from "@/lib/auth-types";
-import { Inbox } from "lucide-react";
 
 /** Guarda de UI da seção; as páginas filhas só montam para a equipe. Quem autoriza é /api/ops. */
 export default function OperacaoLayout({ children }: { children: React.ReactNode }) {
@@ -31,18 +30,7 @@ export default function OperacaoLayout({ children }: { children: React.ReactNode
   }
 
   const groups: NavGroup[] = [
-    {
-      label: "Mesa operacional",
-      items: [
-        {
-          id: "queue",
-          label: "Fila de pedidos",
-          href: "/operacao/pedidos",
-          icon: <Inbox className="w-4 h-4" />,
-          isActive: pathname.startsWith("/operacao/pedidos"),
-        },
-      ],
-    },
+    ...managementNavGroup(profile, pathname),
     ...areaLinksGroup(profile, "operacao"),
   ];
 

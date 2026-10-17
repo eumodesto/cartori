@@ -20,6 +20,8 @@ export type AuthProfile = {
   phone: string | null;
   cpf: string | null;
   role: UserRole;
+  /** Áreas da administração liberadas (ADMIN). Vazio = acesso total. */
+  staffPermissions: string[];
   avatarUrl: string | null;
   notificationPrefs: Record<string, boolean>;
   organization: AuthOrganization | null;

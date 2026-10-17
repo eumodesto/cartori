@@ -1,5 +1,6 @@
 import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { canUseAdminResource } from "@/lib/admin-permissions";
 import { prisma } from "@/lib/prisma";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -118,6 +119,7 @@ export async function requireAuth(): Promise<AuthResult> {
       id: true,
       authId: true,
       role: true,
+      staffPermissions: true,
       organizationMemberships: {
         where: { status: "ACTIVE" },
         select: { organizationId: true, orgRole: true },
@@ -152,13 +154,15 @@ export async function requireAuth(): Promise<AuthResult> {
       authId: row.authId,
       platformRole: row.role,
       activeMemberships: row.organizationMemberships,
+      staffPermissions: row.staffPermissions,
     }),
   };
 }
 
 /**
  * Administração da plataforma (usuários, e-mails, configurações): só ADMIN.
- * OPERATOR não administra. `resourceType` identifica o recurso nos logs de negação.
+ * OPERATOR não administra. `resourceType` identifica o recurso nos logs de negação e define a
+ * permissão exigida de um ADMIN restrito (admin-permissions); recurso sem mapa exige acesso total.
  */
 export async function requirePlatformAdmin(resourceType: string): Promise<AuthResult> {
   const auth = await requireAuth();
@@ -171,6 +175,15 @@ export async function requirePlatformAdmin(resourceType: string): Promise<AuthRe
       reason: "not_admin",
     });
     return { ok: false, response: forbiddenResponse() };
+  }
+  if (!canUseAdminResource(auth.context.platformRole, auth.context.adminPermissions, resourceType)) {
+    logAuthzDeny({
+      userId: auth.context.userId,
+      role: auth.context.platformRole,
+      resourceType,
+      reason: "admin_permission_missing",
+    });
+    return { ok: false, response: forbiddenResponse("Seu nível de acesso não inclui esta área.") };
   }
   return auth;
 }

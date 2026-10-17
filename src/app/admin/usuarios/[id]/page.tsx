@@ -2,14 +2,24 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import { AccessLevelFields } from "@/components/admin/access-level-fields";
 import { UserOrders } from "@/components/admin/user-orders";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth/auth-provider";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { hasFullAdminAccess } from "@/lib/admin-permissions";
 import { maskCpfCnpj } from "@/lib/utils";
 
 type ManagedUser = {
@@ -17,6 +27,7 @@ type ManagedUser = {
   name: string | null;
   email: string;
   role: "CLIENT" | "OPERATOR" | "ADMIN";
+  staffPermissions: string[];
   phone: string | null;
   cpf: string | null;
   createdAt: string;
@@ -26,18 +37,13 @@ type ManagedUser = {
   dossiersCount: number;
 };
 
-const ROLE_OPTIONS = [
-  { value: "CLIENT", label: "Cliente" },
-  { value: "OPERATOR", label: "Operador (mesa operacional)" },
-  { value: "ADMIN", label: "Administrador" },
-];
-
 export default function UsuarioDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
   const { profile } = useAuth();
+  const router = useRouter();
   const [user, setUser] = React.useState<ManagedUser | null>(null);
   const [error, setError] = React.useState("");
   const [fetching, setFetching] = React.useState(true);
@@ -45,12 +51,25 @@ export default function UsuarioDetailPage({
   const [name, setName] = React.useState("");
   const [phone, setPhone] = React.useState("");
   const [role, setRole] = React.useState<ManagedUser["role"]>("CLIENT");
+  const [permissions, setPermissions] = React.useState<string[]>([]);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [deleteConfirm, setDeleteConfirm] = React.useState("");
+  const [deleting, setDeleting] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [message, setMessage] = React.useState<
     { type: "success" | "error"; text: string } | null
   >(null);
 
   const isSelf = profile?.id === params.id;
+  const actorFull = profile ? hasFullAdminAccess(profile.role, profile.staffPermissions ?? []) : false;
+  // Administrador restrito não altera administradores; ninguém altera o próprio nível.
+  const accessLocked = isSelf || (user?.role === "ADMIN" && !actorFull);
+  const accessLockReason = isSelf
+    ? "Você não pode alterar o próprio nível de acesso. Peça a outro administrador."
+    : accessLocked
+      ? "Só um administrador com acesso total altera administradores."
+      : undefined;
 
   React.useEffect(() => {
     setFetching(true);
@@ -66,6 +85,7 @@ export default function UsuarioDetailPage({
         setName(u.name || "");
         setPhone(u.phone || "");
         setRole(u.role);
+        setPermissions(u.staffPermissions || []);
       })
       .catch(() => setError("Falha ao carregar o usuário."))
       .finally(() => setFetching(false));
@@ -79,7 +99,9 @@ export default function UsuarioDetailPage({
       const res = await fetch(`/api/admin/users/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, role }),
+        body: JSON.stringify(
+          accessLocked ? { name, phone } : { name, phone, role, staffPermissions: permissions }
+        ),
       });
       const data = await res.json();
       if (!data.success) {
@@ -155,17 +177,16 @@ export default function UsuarioDetailPage({
               />
             </div>
 
-            <Select
-              label="Papel de acesso"
-              options={ROLE_OPTIONS}
-              value={role}
-              onChange={(e) => setRole(e.target.value as ManagedUser["role"])}
-              disabled={isSelf}
-              helperText={
-                isSelf
-                  ? "Você não pode alterar o próprio papel de administrador."
-                  : "Operador acessa a mesa operacional. Administrador acessa a gestão de usuários."
-              }
+            <AccessLevelFields
+              role={role}
+              permissions={permissions}
+              onChange={(next) => {
+                setRole(next.role);
+                setPermissions(next.permissions);
+              }}
+              canManageAdmins={actorFull}
+              disabled={accessLocked}
+              disabledReason={accessLockReason}
             />
 
             <div className="flex justify-end pt-2">
@@ -176,6 +197,82 @@ export default function UsuarioDetailPage({
           </form>
 
           <UserOrders userId={user.id} />
+
+          {!isSelf && (
+            <section className="rounded-2xl border border-semantic-error-border bg-semantic-error-bg/40 p-6 space-y-3">
+              <h2 className="text-sm font-semibold text-neutral-900">Excluir conta</h2>
+              <p className="text-sm text-neutral-700">
+                Remove o login e o cadastro. Os pedidos ({user.ordersCount}) ficam guardados para registro
+                fiscal e voltam a aparecer se a pessoa criar conta de novo com o mesmo e-mail. Dossiês são
+                apagados.
+              </p>
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteOpen(true)}
+                disabled={user.role === "ADMIN" && !actorFull}
+              >
+                <Trash2 className="w-4 h-4" aria-hidden />
+                Excluir conta
+              </Button>
+            </section>
+          )}
+
+          <Dialog
+            isOpen={deleteOpen}
+            onClose={() => {
+              if (deleting) return;
+              setDeleteOpen(false);
+              setDeleteConfirm("");
+              setDeleteError("");
+            }}
+          >
+            <DialogHeader onClose={() => !deleting && setDeleteOpen(false)}>
+              <DialogTitle>Excluir {user.name || user.email}?</DialogTitle>
+              <DialogDescription>Não dá para desfazer.</DialogDescription>
+            </DialogHeader>
+            <DialogContent className="space-y-4">
+              {deleteError && <Alert variant="error">{deleteError}</Alert>}
+              <Input
+                label={`Digite ${user.email} para confirmar`}
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                autoComplete="off"
+              />
+            </DialogContent>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setDeleteOpen(false)} disabled={deleting}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                isLoading={deleting}
+                disabled={deleteConfirm.trim().toLowerCase() !== user.email}
+                onClick={async () => {
+                  setDeleting(true);
+                  setDeleteError("");
+                  try {
+                    const res = await fetch(`/api/admin/users/${user.id}`, {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ confirm: deleteConfirm }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!data.success) {
+                      setDeleteError(data.error || "Não foi possível excluir.");
+                      return;
+                    }
+                    router.replace("/admin/usuarios");
+                  } catch {
+                    setDeleteError("Falha de conexão. Nada foi confirmado; recarregue a página.");
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+              >
+                Excluir definitivamente
+              </Button>
+            </DialogFooter>
+          </Dialog>
         </>
       )}
     </div>

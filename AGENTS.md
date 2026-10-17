@@ -6,6 +6,7 @@
 - O browser não define privilégio (`role`, `userId`, `organizationId` no body são ignorados).
 - Autorização é server-side (`requireAuth` / policy). Fail-closed.
 - `User.role` é papel de plataforma (`CLIENT` | `OPERATOR` | `ADMIN`). Não confundir com `OrganizationMemberRole.ADMIN`.
+- ADMIN restrito: `User.staffPermissions` limita as áreas de administração (vazio = acesso total). Gate: `requirePlatformAdmin(resource)` + `admin-permissions.ts`. Mexer em ADMIN exige acesso total; sempre resta um ADMIN com acesso total.
 - Tenant empresarial = `OrganizationMember` **ACTIVE**. Não existe FK `User.organizationId`.
 - Organization ≠ Partner. Membership ≠ Partner.
 - `Order.organizationId` é contexto, não ACL universal. Pedido B2C: `order.userId === context.userId`.

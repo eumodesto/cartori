@@ -50,6 +50,7 @@ function toProfile(user: {
   phone: string | null;
   cpf: string | null;
   role: UserRole;
+  staffPermissions: string[];
   avatarUrl: string | null;
   notificationPrefs: unknown;
   organizationMemberships: Array<{ organization: ProfileOrganization }>;
@@ -63,6 +64,7 @@ function toProfile(user: {
     phone: user.phone,
     cpf: user.cpf,
     role: user.role,
+    staffPermissions: user.staffPermissions,
     avatarUrl: user.avatarUrl,
     notificationPrefs: resolveNotificationPrefs(user.notificationPrefs),
     organization: organization ? toAuthOrganization(organization) : null,
