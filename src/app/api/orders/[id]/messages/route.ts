@@ -4,6 +4,7 @@ import { notifyAdmins } from "@/lib/admin-notifications";
 import { requireOrderCaseAccess } from "@/lib/case-access";
 import { queueCaseEmail } from "@/lib/case-email";
 import { loadOrderCase, postCaseMessage } from "@/lib/case-store";
+import { prisma } from "@/lib/prisma";
 import { sanitizeCaseBody } from "@/lib/case-types";
 
 export async function GET(
@@ -50,7 +51,16 @@ export async function POST(
       preview: text,
     });
   } else {
-    await notifyAdmins("admin_customer_message", params.id, { messagePreview: text });
+    // Quem já respondeu pela equipe neste pedido recebe a resposta do cliente, além dos ADMIN.
+    const staffAuthors = await prisma.caseMessage.findMany({
+      where: { orderId: params.id, authorKind: CaseAuthorKind.STAFF, authorUserId: { not: null } },
+      select: { authorUserId: true },
+      distinct: ["authorUserId"],
+    });
+    await notifyAdmins("admin_customer_message", params.id, {
+      messagePreview: text,
+      alsoStaffUserIds: staffAuthors.flatMap((row) => (row.authorUserId ? [row.authorUserId] : [])),
+    });
   }
 
   const data = await loadOrderCase(params.id, access.staff ? "staff" : "customer");

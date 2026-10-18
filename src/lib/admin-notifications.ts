@@ -20,12 +20,19 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
 export async function notifyAdmins(
   event: AdminNotificationCategory,
   orderId: string,
-  extra: { messagePreview?: string } = {}
+  extra: { messagePreview?: string; alsoStaffUserIds?: string[] } = {}
 ): Promise<void> {
   try {
+    const also = extra.alsoStaffUserIds ?? [];
     const [admins, order] = await Promise.all([
+      // ADMIN da plataforma e, quando informado, a equipe (operador) que já atua no pedido.
       prisma.user.findMany({
-        where: { role: UserRole.ADMIN },
+        where: {
+          OR: [
+            { role: UserRole.ADMIN },
+            ...(also.length ? [{ id: { in: also }, role: UserRole.OPERATOR }] : []),
+          ],
+        },
         select: { id: true, email: true },
       }),
       prisma.order.findUnique({
