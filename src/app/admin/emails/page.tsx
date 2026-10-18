@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { EmailOutboxLog } from "@/components/admin/email-outbox-log";
 import { Eye, RotateCcw, Save } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
@@ -444,6 +445,7 @@ export default function EmailsPage() {
           )}
         </div>
       </div>
+      <EmailOutboxLog />
     </div>
   );
 }

@@ -110,3 +110,37 @@ export async function queueOrderStatusEmail(
     },
   });
 }
+
+export type CustomerPaymentEvent = "approved" | "rejected" | "refunded";
+
+const PAYMENT_EVENT_TEMPLATE: Record<CustomerPaymentEvent, string> = {
+  approved: orderStatusTemplateKey("PAID"),
+  rejected: "payment_rejected",
+  refunded: "payment_refunded",
+};
+
+/** Avisa o cliente do resultado do pagamento (Mercado Pago ou registro manual). Nunca lança. */
+export async function notifyCustomerPayment(orderId: string, event: CustomerPaymentEvent) {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, protocol: true, customerName: true, customerEmail: true, userId: true },
+    });
+    if (!order) return null;
+    return await queueTemplateEmail({
+      key: PAYMENT_EVENT_TEMPLATE[event],
+      to: order.customerEmail,
+      toUserId: order.userId,
+      orderId: order.id,
+      vars: {
+        customerName: order.customerName,
+        protocol: order.protocol,
+        statusLabel: event === "approved" ? statusLabelForEmail("PAID") : "",
+        orderLink: appUrl(`/painel/pedidos/${order.id}`),
+      },
+    });
+  } catch (error) {
+    console.error("notifyCustomerPayment falhou:", event, error);
+    return null;
+  }
+}

@@ -113,12 +113,12 @@ export async function POST(req: NextRequest) {
     );
     const order = await createOrder(draft);
 
-    // Notificações do pedido (não bloqueiam o checkout).
+    // Notificações do pedido. Aguardadas: na Vercel, envio solto pode ser cortado ao responder; nunca lançam.
     const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.interjuri.com.br").replace(/\/$/, "")}/painel/pedidos/${order.id}`;
     const itemsList = order.items
       .map((item) => `- ${item.certificateName} (${item.city}/${item.state})`)
       .join("\n");
-    void queueTemplateEmail({
+    await queueTemplateEmail({
       key: "order_created",
       to: order.customerEmail,
       toUserId: order.userId,
@@ -131,13 +131,13 @@ export async function POST(req: NextRequest) {
         orderLink,
       },
     });
-    void notifyAdmins("admin_order_pending", order.id);
+    await notifyAdmins("admin_order_pending", order.id);
     if (
       order.items.some(
         (item) => item.certificateType === "certidao-negativa-de-testamento"
       )
     ) {
-      void queueTemplateEmail({
+      await queueTemplateEmail({
         key: "docs_request_testamento",
         to: order.customerEmail,
         toUserId: order.userId,

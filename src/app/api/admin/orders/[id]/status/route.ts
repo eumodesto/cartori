@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { OrderStatus } from "@prisma/client";
 import { notifyAdmins } from "@/lib/admin-notifications";
 import { canStaffSetOrderStatus, requirePlatformAdmin } from "@/lib/authorization";
-import { queueOrderStatusEmail } from "@/lib/case-email";
+import { notifyCustomerPayment, queueOrderStatusEmail } from "@/lib/case-email";
 import { updateOrderOperationalStatus } from "@/lib/case-store";
 import { sanitizeCaseBody } from "@/lib/case-types";
 import {
@@ -56,8 +56,16 @@ export async function PATCH(
       from: result.from,
       to: result.to,
     });
-    if (target === "PAYMENT_APPROVED") await notifyAdmins("admin_order_paid", params.id);
-    if (target === "PAYMENT_REJECTED") await notifyAdmins("admin_payment_rejected", params.id);
+    if (target === "PAYMENT_APPROVED") {
+      await Promise.all([notifyAdmins("admin_order_paid", params.id), notifyCustomerPayment(params.id, "approved")]);
+    }
+    if (target === "PAYMENT_REJECTED") {
+      await Promise.all([
+        notifyAdmins("admin_payment_rejected", params.id),
+        notifyCustomerPayment(params.id, "rejected"),
+      ]);
+    }
+    if (target === "REFUNDED") await notifyCustomerPayment(params.id, "refunded");
     return NextResponse.json({ success: true });
   }
 

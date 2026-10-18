@@ -191,7 +191,7 @@ export async function createManagedUser(input: {
     });
     // Mesmo vínculo do primeiro login: pedidos feitos sem conta com este e-mail passam para ela.
     await prisma.order.updateMany({ where: { userId: null, customerEmail: email }, data: { userId: row.id } });
-    void queueTemplateEmail({
+    await queueTemplateEmail({
       key: "account_invited",
       to: email,
       toUserId: row.id,

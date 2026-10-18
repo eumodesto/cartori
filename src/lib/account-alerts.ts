@@ -245,7 +245,11 @@ async function staffAlerts(context: AuthContext, now: Date): Promise<UnreadAlert
       }),
       canEmails
         ? prisma.emailOutbox.findMany({
-            where: { status: "FAILED", createdAt: { gte: new Date(now.getTime() - 7 * DAY_MS) } },
+            // Falha, ou pendente há mais de 10 minutos (sem chave, remetente recusado…).
+            where: {
+              createdAt: { gte: new Date(now.getTime() - 7 * DAY_MS) },
+              OR: [{ status: "FAILED" }, { status: "PENDING", createdAt: { lt: new Date(now.getTime() - 10 * 60 * 1000) } }],
+            },
             orderBy: { createdAt: "desc" },
             take: 50,
             select: { id: true, createdAt: true },
@@ -357,7 +361,7 @@ async function staffAlerts(context: AuthContext, now: Date): Promise<UnreadAlert
       audience: "staff",
       tone: "error",
       title: `${failedEmails.length} e-mail(s) não enviado(s)`,
-      body: "Falhas de envio nos últimos 7 dias. Confira as configurações de e-mail.",
+      body: "Falhas ou pendências nos últimos 7 dias. Veja o registro de envios e reenvie.",
       href: "/admin/emails",
       createdAt: failedEmails[0].createdAt.toISOString(),
     });

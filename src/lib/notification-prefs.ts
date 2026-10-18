@@ -77,7 +77,9 @@ export function sanitizeNotificationPrefs(raw: unknown): NotificationPrefs {
 export function notificationCategoryForTemplate(
   key: string
 ): NotificationCategory | null {
-  if (key === "order_created" || key.startsWith("order_status_")) return "order_updates";
+  if (key === "order_created" || key.startsWith("order_status_") || key.startsWith("payment_")) {
+    return "order_updates";
+  }
   if (key === "docs_request_testamento") return "documents";
   const admin = ADMIN_NOTIFICATION_CATEGORIES.find((c) => c.template === key);
   if (admin) return admin.id;

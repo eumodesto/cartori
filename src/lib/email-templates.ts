@@ -258,6 +258,28 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
       SIGN,
     variables: [V.customerName, V.protocol, V.itemsList, V.total, V.orderLink],
   },
+  {
+    key: "payment_rejected",
+    group: "compra",
+    label: "Pagamento recusado",
+    description: "Enviado ao cliente quando o pagamento é recusado (Mercado Pago ou registro manual).",
+    subject: "InterJuri · pagamento do pedido {{protocol}} não aprovado",
+    body:
+      "Olá, {{customerName}}!\n\nO pagamento do pedido {{protocol}} não foi aprovado. O pedido continua aberto: você pode tentar de novo por PIX ou com outro cartão.\n\nPagar pelo painel:\n{{orderLink}}" +
+      SIGN,
+    variables: [V.customerName, V.protocol, V.orderLink],
+  },
+  {
+    key: "payment_refunded",
+    group: "cancelamento",
+    label: "Compra estornada",
+    description: "Enviado ao cliente quando o pagamento é estornado e o pedido é cancelado.",
+    subject: "InterJuri · estorno do pedido {{protocol}}",
+    body:
+      "Olá, {{customerName}}!\n\nO pagamento do pedido {{protocol}} foi estornado e o pedido foi cancelado. O prazo para o valor voltar depende do banco ou da operadora do cartão.\n\nDetalhes no painel:\n{{orderLink}}" +
+      SIGN,
+    variables: [V.customerName, V.protocol, V.orderLink],
+  },
   ...STATUS_TEMPLATES,
   {
     key: "docs_request_testamento",

@@ -41,3 +41,14 @@ describe("templates de e-mail", () => {
     }
   );
 });
+
+describe("e-mails de pagamento ao cliente", () => {
+  it("templates existem e seguem a preferência de atualizações do pedido", async () => {
+    const { getEmailTemplateDef } = await import("@/lib/email-templates");
+    const { notificationCategoryForTemplate } = await import("@/lib/notification-prefs");
+    for (const key of ["payment_rejected", "payment_refunded", "order_status_PAID"]) {
+      expect(getEmailTemplateDef(key), key).toBeDefined();
+      expect(notificationCategoryForTemplate(key)).toBe("order_updates");
+    }
+  });
+});

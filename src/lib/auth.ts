@@ -223,8 +223,8 @@ export async function syncAuthUser(input: {
       },
     });
 
-    // E-mail de boas-vindas (nova conta). Não bloqueia o cadastro.
-    void queueTemplateEmail({
+    // E-mail de boas-vindas (nova conta). Aguardado: na Vercel, envio solto pode ser cortado; nunca lança.
+    await queueTemplateEmail({
       key: "account_created",
       to: row.email,
       toUserId: row.id,
