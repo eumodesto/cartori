@@ -3,6 +3,12 @@ export const DPO_EMAIL = "dpo@interjuri.com.br";
 export const FACEBOOK_URL = "https://www.facebook.com/cartori.certidoes";
 export const INSTAGRAM_URL = "https://www.instagram.com/cartori.certidoes";
 
+/** WhatsApp de atendimento: (11) 5306-3514. */
+export const WHATSAPP_DISPLAY = "(11) 5306-3514";
+export const WHATSAPP_URL = `https://wa.me/551153063514?text=${encodeURIComponent(
+  "Olá! Vim pelo site da InterJuri e preciso de ajuda com uma certidão."
+)}`;
+
 export const SUPPORT_COMPANY = {
   legalName: "CARTORE EXPRESS LTDA - EPP",
   brand: "InterJuri",
@@ -19,6 +25,14 @@ export const SUPPORT_CHANNELS = [
     href: `mailto:${SUPPORT_EMAIL}`,
     action: SUPPORT_EMAIL,
     external: false,
+  },
+  {
+    id: "whatsapp",
+    title: "WhatsApp",
+    description: "Dúvidas rápidas sobre pedidos, prazos e documentos.",
+    href: WHATSAPP_URL,
+    action: WHATSAPP_DISPLAY,
+    external: true,
   },
   {
     id: "dpo",

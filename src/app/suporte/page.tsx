@@ -27,6 +27,7 @@ export const metadata: Metadata = {
 
 const ICONS = {
   atendimento: Mail,
+  whatsapp: MessageCircle,
   dpo: Shield,
   amanda: MessageCircle,
   conta: LayoutDashboard,

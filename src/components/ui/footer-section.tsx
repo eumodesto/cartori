@@ -6,8 +6,15 @@ import Link from "next/link";
 import { HomeHashLink } from "@/components/storefront/home-hash-link";
 import { BusinessSignupLink } from "@/components/auth/business-signup-link";
 import type { ReactNode } from "react";
-import { Facebook, Instagram } from "lucide-react";
-import { FACEBOOK_URL, INSTAGRAM_URL } from "@/lib/support-contacts";
+import { Facebook, Instagram, Mail } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
+import {
+  FACEBOOK_URL,
+  INSTAGRAM_URL,
+  SUPPORT_EMAIL,
+  WHATSAPP_DISPLAY,
+  WHATSAPP_URL,
+} from "@/lib/support-contacts";
 
 interface FooterLink {
   title: string;
@@ -39,8 +46,10 @@ const footerLinks: FooterSectionData[] = [
     ],
   },
   {
-    label: "Redes",
+    label: "Contato",
     links: [
+      { title: `WhatsApp ${WHATSAPP_DISPLAY}`, href: WHATSAPP_URL, icon: WhatsAppIcon },
+      { title: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}`, icon: Mail },
       { title: "Facebook", href: FACEBOOK_URL, icon: Facebook },
       { title: "Instagram", href: INSTAGRAM_URL, icon: Instagram },
     ],

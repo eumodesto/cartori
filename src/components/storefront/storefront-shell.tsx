@@ -3,6 +3,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/components/cart/cart-provider";
+import { WhatsAppFloat } from "@/components/storefront/whatsapp-float";
 
 export function StorefrontShell({ children }: { children: React.ReactNode }) {
   const { itemCount } = useCart();
@@ -12,6 +13,7 @@ export function StorefrontShell({ children }: { children: React.ReactNode }) {
       <Header cartCount={itemCount} />
       <div className="flex-1">{children}</div>
       <Footer />
+      <WhatsAppFloat />
     </div>
   );
 }
