@@ -5,7 +5,14 @@ import Link from "next/link";
 import { Download, RefreshCw, Trash2, X } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  BulkActionBar,
+  CategoryChips,
+  ListToolbar,
+  RowCheckbox,
+  SelectAllCheckbox,
+  useRowSelection,
+} from "@/components/ui/data-list";
 import {
   Dialog,
   DialogContent,
@@ -27,11 +34,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  BULK_ORDER_LIMIT,
-  DELETE_CONFIRM_WORD,
-  ordersToCsv,
-} from "@/lib/order-bulk";
+import { downloadCsv } from "@/lib/csv";
+import { PERIOD_OPTIONS, inPeriod, matchesSearch } from "@/lib/list-filters";
+import { BULK_ORDER_LIMIT, DELETE_CONFIRM_WORD, ordersToCsv } from "@/lib/order-bulk";
+import { ORDER_CATEGORIES, certificateOptions, inOrderCategory } from "@/lib/order-categories";
 import {
   DISPLAY_STATUS_META,
   STAFF_STATUS_OPTIONS,
@@ -61,18 +67,18 @@ const STATUS_FILTERS = [
   ...Object.entries(DISPLAY_STATUS_META).map(([value, meta]) => ({ value, label: meta.label })),
 ];
 
-function normalize(value: string) {
-  return value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-}
-
 export default function OperacaoPage() {
   const [orders, setOrders] = React.useState<OpsOrder[]>([]);
   const [canDelete, setCanDelete] = React.useState(false);
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(true);
+
+  const [category, setCategory] = React.useState("");
   const [query, setQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("");
-  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  const [certificateFilter, setCertificateFilter] = React.useState("");
+  const [period, setPeriod] = React.useState("");
+
   const [notice, setNotice] = React.useState<Notice | null>(null);
   const [dialog, setDialog] = React.useState<"status" | "delete" | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -90,11 +96,8 @@ export default function OperacaoPage() {
           return;
         }
         setError("");
-        const next: OpsOrder[] = data.orders || [];
-        setOrders(next);
+        setOrders(data.orders || []);
         setCanDelete(Boolean(data.canDelete));
-        // Seleção só guarda o que ainda existe.
-        setSelected((prev) => new Set(next.filter((order) => prev.has(order.id)).map((order) => order.id)));
       })
       .catch(() => setError("Falha ao carregar a fila operacional."))
       .finally(() => setLoading(false));
@@ -104,54 +107,38 @@ export default function OperacaoPage() {
     load();
   }, [load]);
 
-  const visible = React.useMemo(() => {
-    const q = normalize(query.trim());
-    return orders.filter((order) => {
-      if (statusFilter && displayOrderStatus(order.status, order.paymentStatus) !== statusFilter) return false;
-      if (!q) return true;
-      return normalize(
-        [order.protocol, order.customerName, order.customerEmail, ...order.certificates].join(" ")
-      ).includes(q);
-    });
-  }, [orders, query, statusFilter]);
+  const selection = useRowSelection(orders);
+  const display = (order: OpsOrder) => displayOrderStatus(order.status, order.paymentStatus);
 
-  const selectedOrders = orders.filter((order) => selected.has(order.id));
-  const allVisibleSelected = visible.length > 0 && visible.every((order) => selected.has(order.id));
+  const visible = orders.filter((order) => {
+    if (!inOrderCategory(category, display(order))) return false;
+    if (statusFilter && display(order) !== statusFilter) return false;
+    if (certificateFilter && !order.certificates.includes(certificateFilter)) return false;
+    if (!inPeriod(order.createdAt, period)) return false;
+    return matchesSearch(query, [order.protocol, order.customerName, order.customerEmail, ...order.certificates]);
+  });
+
+  const resetFilters = () => {
+    setCategory("");
+    setQuery("");
+    setStatusFilter("");
+    setCertificateFilter("");
+    setPeriod("");
+  };
+
+  const selectedOrders = selection.selectedRows;
   const statusEligible = targetStatus
     ? selectedOrders.filter((order) => order.allowedStatuses.includes(targetStatus))
     : [];
   const deleteEligible = selectedOrders.filter((order) => order.deletable);
 
-  function toggle(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function toggleAllVisible() {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (allVisibleSelected) visible.forEach((order) => next.delete(order.id));
-      else visible.forEach((order) => next.add(order.id));
-      return next;
-    });
-  }
-
-  function exportCsv() {
-    const rows = (selectedOrders.length ? selectedOrders : visible).map((order) => ({
-      ...order,
-      statusLabel: displayStatusMeta(order.status, order.paymentStatus).label,
-    }));
-    const blob = new Blob([ordersToCsv(rows)], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `pedidos-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+  function exportCsv(rows: OpsOrder[]) {
+    downloadCsv(
+      "pedidos",
+      ordersToCsv(
+        rows.map((order) => ({ ...order, statusLabel: displayStatusMeta(order.status, order.paymentStatus).label }))
+      )
+    );
   }
 
   function closeDialog() {
@@ -183,7 +170,7 @@ export default function OperacaoPage() {
         text: `${done} pedido(s) ${verb}.${skipped.length ? ` ${skipped.length} ficaram de fora:` : ""}`,
         skipped,
       });
-      setSelected(new Set());
+      selection.clear();
       setDialog(null);
       setTargetStatus("");
       setNote("");
@@ -199,7 +186,7 @@ export default function OperacaoPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Mesa operacional"
+        title="Pedidos"
         description="Pedidos de todos os clientes. Atualize o status, envie mensagem e peça documentos. O cliente recebe e-mail para voltar ao painel."
       />
       {error && <Alert variant="error">{error}</Alert>}
@@ -225,65 +212,74 @@ export default function OperacaoPage() {
         </Alert>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-        <div className="sm:max-w-sm w-full">
-          <Input
-            label="Buscar"
-            placeholder="Protocolo, cliente, e-mail ou certidão"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </div>
-        <div className="sm:w-60">
-          <Select
-            label="Status"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
-            options={STATUS_FILTERS}
-          />
-        </div>
-        <Button variant="ghost" size="md" onClick={() => load()} disabled={loading} className="sm:ml-auto">
-          <RefreshCw className={loading ? "w-4 h-4 animate-spin" : "w-4 h-4"} aria-hidden />
-          Atualizar
-        </Button>
-      </div>
+      <CategoryChips
+        total={orders.length}
+        value={category}
+        onChange={setCategory}
+        items={ORDER_CATEGORIES.map((item) => ({
+          id: item.id,
+          label: item.label,
+          count: orders.filter((order) => item.statuses.includes(display(order))).length,
+        }))}
+      />
 
-      {selected.size > 0 && (
-        <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 shadow-sm">
-          <span className="text-sm font-semibold text-brand-950">{selected.size} selecionado(s)</span>
-          <span className="hidden sm:inline text-neutral-300">|</span>
+      <ListToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchPlaceholder="Protocolo, cliente, e-mail ou certidão"
+        shown={visible.length}
+        total={orders.length}
+        onReset={resetFilters}
+        actions={
+          <>
+            <Button variant="outline" size="md" onClick={() => exportCsv(visible)} disabled={!visible.length}>
+              <Download className="w-4 h-4" aria-hidden />
+              Exportar lista
+            </Button>
+            <Button variant="ghost" size="md" onClick={() => load()} disabled={loading} aria-label="Atualizar">
+              <RefreshCw className={loading ? "w-4 h-4 animate-spin" : "w-4 h-4"} aria-hidden />
+            </Button>
+          </>
+        }
+      >
+        <Select aria-label="Status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} options={STATUS_FILTERS} />
+        <Select
+          aria-label="Certidão"
+          value={certificateFilter}
+          onChange={(e) => setCertificateFilter(e.target.value)}
+          options={certificateOptions(orders)}
+        />
+        <Select aria-label="Data do pedido" value={period} onChange={(e) => setPeriod(e.target.value)} options={PERIOD_OPTIONS} />
+      </ListToolbar>
+
+      <BulkActionBar
+        count={selection.count}
+        onClear={selection.clear}
+        note={
+          selection.count > BULK_ORDER_LIMIT ? (
+            <span className="text-semantic-error">Ações em massa aceitam até {BULK_ORDER_LIMIT} pedidos por vez.</span>
+          ) : null
+        }
+      >
+        <Button size="sm" onClick={() => setDialog("status")} disabled={selection.count > BULK_ORDER_LIMIT}>
+          Alterar status
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => exportCsv(selectedOrders)}>
+          <Download className="w-4 h-4" aria-hidden />
+          Exportar CSV
+        </Button>
+        {canDelete && (
           <Button
             size="sm"
-            onClick={() => setDialog("status")}
-            disabled={selected.size > BULK_ORDER_LIMIT}
+            variant="destructive"
+            onClick={() => setDialog("delete")}
+            disabled={selection.count > BULK_ORDER_LIMIT}
           >
-            Alterar status
+            <Trash2 className="w-4 h-4" aria-hidden />
+            Excluir
           </Button>
-          <Button size="sm" variant="outline" onClick={exportCsv}>
-            <Download className="w-4 h-4" aria-hidden />
-            Exportar CSV
-          </Button>
-          {canDelete && (
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => setDialog("delete")}
-              disabled={selected.size > BULK_ORDER_LIMIT}
-            >
-              <Trash2 className="w-4 h-4" aria-hidden />
-              Excluir
-            </Button>
-          )}
-          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="ml-auto">
-            Limpar seleção
-          </Button>
-          {selected.size > BULK_ORDER_LIMIT && (
-            <p className="basis-full text-xs text-semantic-error">
-              Ações em massa aceitam até {BULK_ORDER_LIMIT} pedidos por vez.
-            </p>
-          )}
-        </div>
-      )}
+        )}
+      </BulkActionBar>
 
       {loading && orders.length === 0 ? (
         <p className="text-sm text-neutral-500">Carregando…</p>
@@ -296,10 +292,9 @@ export default function OperacaoPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
-                <Checkbox
-                  aria-label="Selecionar todos os pedidos visíveis"
-                  checked={allVisibleSelected}
-                  onChange={toggleAllVisible}
+                <SelectAllCheckbox
+                  checked={selection.allSelected(visible)}
+                  onChange={() => selection.toggleAll(visible)}
                 />
               </TableHead>
               <TableHead>Protocolo</TableHead>
@@ -312,14 +307,13 @@ export default function OperacaoPage() {
             {visible.map((order) => {
               const meta = displayStatusMeta(order.status, order.paymentStatus);
               const step = orderStepLabel(order.status);
-              const isSelected = selected.has(order.id);
               return (
-                <TableRow key={order.id} className={isSelected ? "bg-brand-50/60" : undefined}>
+                <TableRow key={order.id} isSelected={selection.isSelected(order.id)}>
                   <TableCell>
-                    <Checkbox
-                      aria-label={`Selecionar pedido ${order.protocol}`}
-                      checked={isSelected}
-                      onChange={() => toggle(order.id)}
+                    <RowCheckbox
+                      label={`Selecionar pedido ${order.protocol}`}
+                      checked={selection.isSelected(order.id)}
+                      onChange={() => selection.toggle(order.id)}
                     />
                   </TableCell>
                   <TableCell>
@@ -353,7 +347,7 @@ export default function OperacaoPage() {
 
       <Dialog isOpen={dialog === "status"} onClose={closeDialog}>
         <DialogHeader onClose={closeDialog}>
-          <DialogTitle>Alterar status de {selected.size} pedido(s)</DialogTitle>
+          <DialogTitle>Alterar status de {selection.count} pedido(s)</DialogTitle>
           <DialogDescription>
             Cada pedido segue a mesma regra da tela individual. Pagamento não muda por aqui.
           </DialogDescription>
@@ -368,8 +362,8 @@ export default function OperacaoPage() {
           />
           {targetStatus && (
             <p className="text-sm text-neutral-700">
-              Vale para <strong>{statusEligible.length}</strong> de {selected.size}.
-              {statusEligible.length < selected.size &&
+              Vale para <strong>{statusEligible.length}</strong> de {selection.count}.
+              {statusEligible.length < selection.count &&
                 " Os demais não aceitam esse status agora e ficam como estão."}
             </p>
           )}
@@ -408,9 +402,9 @@ export default function OperacaoPage() {
         </DialogHeader>
         <DialogContent className="space-y-4">
           <p className="text-sm text-neutral-700">
-            <strong>{deleteEligible.length}</strong> de {selected.size} podem ser excluídos.
+            <strong>{deleteEligible.length}</strong> de {selection.count} podem ser excluídos.
           </p>
-          {deleteEligible.length < selected.size && (
+          {deleteEligible.length < selection.count && (
             <Alert variant="warning">
               Só saem pedidos que nunca viraram compra: rascunho, aguardando pagamento ou cancelado, sem pagamento
               aprovado, em análise ou estornado (e sem PIX gerado na última hora). Para os demais, use

@@ -3,11 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Copy, FileText, Plus, QrCode } from "lucide-react";
+import { Copy, Download, FileText, Plus, QrCode } from "lucide-react";
 import { MetricCard } from "@/components/cartori/metric-card";
 import { PixQr } from "@/components/storefront/pix-qr";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  BulkActionBar,
+  CategoryChips,
+  ListToolbar,
+  RowCheckbox,
+  SelectAllCheckbox,
+  useRowSelection,
+} from "@/components/ui/data-list";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
@@ -25,8 +34,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { downloadCsv, formatCsvDate, toCsv } from "@/lib/csv";
+import { PERIOD_OPTIONS, inPeriod, matchesSearch } from "@/lib/list-filters";
+import { ORDER_CATEGORIES, certificateOptions, inOrderCategory } from "@/lib/order-categories";
 import {
   PublicOrder,
+  displayOrderStatus,
   displayStatusMeta,
   isOrderPaid,
   livePixCode,
@@ -57,6 +70,11 @@ export function MyOrders({
   const [copied, setCopied] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [payId, setPayId] = React.useState<string | null>(null);
+  const [category, setCategory] = React.useState("");
+  const [query, setQuery] = React.useState("");
+  const [certificateFilter, setCertificateFilter] = React.useState("");
+  const [period, setPeriod] = React.useState("");
+  const selection = useRowSelection(orders);
 
   const load = React.useCallback(async () => {
     const res = await fetch("/api/orders", { cache: "no-store" });
@@ -152,6 +170,41 @@ export function MyOrders({
 
   const payIsPaid = isOrderPaid(payOrder);
 
+  const display = (order: PublicOrder) => displayOrderStatus(order.status, order.payment?.status);
+  const withNames = orders.map((order) => ({ ...order, certificates: order.items.map((item) => item.certificateName) }));
+  // Na visão resumida (início do painel) não há filtros: mostra a lista inteira.
+  const visible = compact
+    ? withNames
+    : withNames.filter((order) => {
+        if (!inOrderCategory(category, display(order))) return false;
+        if (certificateFilter && !order.certificates.includes(certificateFilter)) return false;
+        if (!inPeriod(order.createdAt, period)) return false;
+        return matchesSearch(query, [order.protocol, ...order.certificates]);
+      });
+
+  const resetFilters = () => {
+    setCategory("");
+    setQuery("");
+    setCertificateFilter("");
+    setPeriod("");
+  };
+
+  const exportCsv = (rows: PublicOrder[]) =>
+    downloadCsv(
+      "meus-pedidos",
+      toCsv(
+        ["Protocolo", "Data", "Certidões", "Cidades", "Status", "Valor"],
+        rows.map((order) => [
+          order.protocol,
+          formatCsvDate(order.createdAt),
+          order.items.map((item) => item.certificateName).join(", "),
+          Array.from(new Set(order.items.map((item) => `${item.city}/${item.state}`))).join(", "),
+          displayStatusMeta(order.status, order.payment?.status).label,
+          formatCurrency(order.totalAmount),
+        ])
+      )
+    );
+
   return (
     <div className="space-y-6">
       {!compact && (
@@ -186,9 +239,63 @@ export function MyOrders({
           </Link>
         </div>
       ) : (
+        <>
+        {!compact && (
+          <>
+            <CategoryChips
+              total={orders.length}
+              value={category}
+              onChange={setCategory}
+              items={ORDER_CATEGORIES.map((item) => ({
+                id: item.id,
+                label: item.label,
+                count: orders.filter((order) => item.statuses.includes(display(order))).length,
+              }))}
+            />
+            <ListToolbar
+              query={query}
+              onQueryChange={setQuery}
+              searchPlaceholder="Protocolo ou certidão"
+              shown={visible.length}
+              total={orders.length}
+              onReset={resetFilters}
+              actions={
+                <Button variant="outline" size="md" onClick={() => exportCsv(visible)} disabled={!visible.length}>
+                  <Download className="w-4 h-4" aria-hidden />
+                  Exportar lista
+                </Button>
+              }
+            >
+              <Select
+                aria-label="Certidão"
+                value={certificateFilter}
+                onChange={(e) => setCertificateFilter(e.target.value)}
+                options={certificateOptions(withNames)}
+              />
+              <Select aria-label="Data do pedido" value={period} onChange={(e) => setPeriod(e.target.value)} options={PERIOD_OPTIONS} />
+            </ListToolbar>
+            <BulkActionBar count={selection.count} onClear={selection.clear}>
+              <Button size="sm" variant="outline" onClick={() => exportCsv(selection.selectedRows)}>
+                <Download className="w-4 h-4" aria-hidden />
+                Exportar CSV
+              </Button>
+            </BulkActionBar>
+          </>
+        )}
+        {visible.length === 0 ? (
+          <p className="text-sm text-neutral-500">Nenhum pedido com esses filtros.</p>
+        ) : (
         <Table>
           <TableHeader>
             <TableRow>
+              {!compact && (
+                <TableHead className="w-10">
+                  <SelectAllCheckbox
+                    checked={selection.allSelected(visible)}
+                    onChange={() => selection.toggleAll(visible)}
+                  />
+                </TableHead>
+              )}
               <TableHead>Protocolo</TableHead>
               <TableHead>Certidões</TableHead>
               <TableHead>Status</TableHead>
@@ -198,12 +305,21 @@ export function MyOrders({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => {
+            {visible.map((order) => {
               const meta = displayStatusMeta(order.status, order.payment?.status);
               const names = order.items.map((item) => item.certificateName).join(", ");
               const isPending = order.status === "PENDING_PAYMENT";
               return (
-                <TableRow key={order.id} isSelected={order.id === highlightId}>
+                <TableRow key={order.id} isSelected={order.id === highlightId || selection.isSelected(order.id)}>
+                  {!compact && (
+                    <TableCell>
+                      <RowCheckbox
+                        label={`Selecionar pedido ${order.protocol}`}
+                        checked={selection.isSelected(order.id)}
+                        onChange={() => selection.toggle(order.id)}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell className="font-mono text-xs">
                     <Link
                       href={`/painel/pedidos/${order.id}`}
@@ -246,6 +362,8 @@ export function MyOrders({
             })}
           </TableBody>
         </Table>
+        )}
+        </>
       )}
 
       {/* Modal de pagamento (QR + detalhes) — apenas em Pedidos */}

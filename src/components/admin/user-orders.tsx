@@ -2,8 +2,17 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { Download } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  BulkActionBar,
+  CategoryChips,
+  ListToolbar,
+  RowCheckbox,
+  SelectAllCheckbox,
+  useRowSelection,
+} from "@/components/ui/data-list";
 import { Select } from "@/components/ui/select";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +25,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { AdminUserOrder } from "@/lib/admin-orders";
+import { downloadCsv, formatCsvDate, toCsv } from "@/lib/csv";
+import { PERIOD_OPTIONS, inPeriod, matchesSearch } from "@/lib/list-filters";
+import { ORDER_CATEGORIES, inOrderCategory } from "@/lib/order-categories";
 import { MANUAL_REASON_MIN, type ManualPaymentAction } from "@/lib/manual-payment-policy";
 import { DISPLAY_STATUS_META, orderStepLabel, staffStatusLabel } from "@/lib/order-status";
 import { formatCurrency } from "@/lib/utils";
@@ -145,6 +157,33 @@ export function UserOrders({ userId }: { userId: string }) {
   const [error, setError] = React.useState("");
   const [editing, setEditing] = React.useState<string | null>(null);
   const [message, setMessage] = React.useState("");
+  const [category, setCategory] = React.useState("");
+  const [query, setQuery] = React.useState("");
+  const [period, setPeriod] = React.useState("");
+  const rows = React.useMemo(() => orders ?? [], [orders]);
+  const selection = useRowSelection(rows);
+
+  const visible = rows.filter(
+    (order) =>
+      inOrderCategory(category, order.display) &&
+      inPeriod(order.createdAt, period) &&
+      matchesSearch(query, [order.protocol, ...order.certificates])
+  );
+
+  const exportCsv = (list: AdminUserOrder[]) =>
+    downloadCsv(
+      "pedidos-do-usuario",
+      toCsv(
+        ["Protocolo", "Data", "Certidões", "Status", "Valor"],
+        list.map((order) => [
+          order.protocol,
+          formatCsvDate(order.createdAt),
+          order.certificates.join(", "),
+          DISPLAY_STATUS_META[order.display].label,
+          formatCurrency(order.totalAmount),
+        ])
+      )
+    );
 
   const load = React.useCallback(() => {
     fetch(`/api/admin/users/${userId}/orders`, { cache: "no-store" })
@@ -171,9 +210,52 @@ export function UserOrders({ userId }: { userId: string }) {
       ) : orders && orders.length === 0 ? (
         <p className="text-sm text-neutral-500">Este usuário ainda não fez pedidos.</p>
       ) : orders ? (
+        <>
+        <CategoryChips
+          total={rows.length}
+          value={category}
+          onChange={setCategory}
+          items={ORDER_CATEGORIES.map((item) => ({
+            id: item.id,
+            label: item.label,
+            count: rows.filter((order) => item.statuses.includes(order.display)).length,
+          }))}
+        />
+        <ListToolbar
+          query={query}
+          onQueryChange={setQuery}
+          searchPlaceholder="Protocolo ou certidão"
+          shown={visible.length}
+          total={rows.length}
+          onReset={() => {
+            setCategory("");
+            setQuery("");
+            setPeriod("");
+          }}
+          actions={
+            <Button variant="outline" size="md" onClick={() => exportCsv(visible)} disabled={!visible.length}>
+              <Download className="w-4 h-4" aria-hidden />
+              Exportar lista
+            </Button>
+          }
+        >
+          <Select aria-label="Data do pedido" value={period} onChange={(e) => setPeriod(e.target.value)} options={PERIOD_OPTIONS} />
+        </ListToolbar>
+        <BulkActionBar count={selection.count} onClear={selection.clear}>
+          <Button size="sm" variant="outline" onClick={() => exportCsv(selection.selectedRows)}>
+            <Download className="w-4 h-4" aria-hidden />
+            Exportar CSV
+          </Button>
+        </BulkActionBar>
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <SelectAllCheckbox
+                  checked={selection.allSelected(visible)}
+                  onChange={() => selection.toggleAll(visible)}
+                />
+              </TableHead>
               <TableHead>Protocolo</TableHead>
               <TableHead>Certidões</TableHead>
               <TableHead>Valor</TableHead>
@@ -183,12 +265,19 @@ export function UserOrders({ userId }: { userId: string }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => {
+            {visible.map((order) => {
               const meta = DISPLAY_STATUS_META[order.display];
               const step = orderStepLabel(order.status);
               return (
                 <React.Fragment key={order.id}>
-                  <TableRow isSelected={editing === order.id}>
+                  <TableRow isSelected={editing === order.id || selection.isSelected(order.id)}>
+                    <TableCell>
+                      <RowCheckbox
+                        label={`Selecionar pedido ${order.protocol}`}
+                        checked={selection.isSelected(order.id)}
+                        onChange={() => selection.toggle(order.id)}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Link
                         href={`/operacao/pedidos/${order.id}`}
@@ -222,7 +311,7 @@ export function UserOrders({ userId }: { userId: string }) {
                   </TableRow>
                   {editing === order.id && (
                     <TableRow isSelected>
-                      <TableCell colSpan={6}>
+                      <TableCell colSpan={7}>
                         <StatusEditor
                           order={order}
                           onCancel={() => setEditing(null)}
@@ -240,6 +329,7 @@ export function UserOrders({ userId }: { userId: string }) {
             })}
           </TableBody>
         </Table>
+        </>
       ) : null}
     </section>
   );

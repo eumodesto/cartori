@@ -3,12 +3,20 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UserPlus } from "lucide-react";
+import { Download, RefreshCw, Trash2, UserPlus, X } from "lucide-react";
 import { AccessLevelFields } from "@/components/admin/access-level-fields";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  BulkActionBar,
+  CategoryChips,
+  ListToolbar,
+  RowCheckbox,
+  SelectAllCheckbox,
+  useRowSelection,
+} from "@/components/ui/data-list";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -27,6 +36,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { accessLevelLabel, hasFullAdminAccess } from "@/lib/admin-permissions";
+import { downloadCsv, formatCsvDate, toCsv } from "@/lib/csv";
+import { PERIOD_OPTIONS, inPeriod, matchesSearch } from "@/lib/list-filters";
+import { BULK_ORDER_LIMIT, DELETE_CONFIRM_WORD } from "@/lib/order-bulk";
 import { cn, maskCpfCnpj } from "@/lib/utils";
 
 type ManagedUser = {
@@ -62,15 +74,25 @@ function RoleBadge({ role, permissions }: { role: ManagedUser["role"]; permissio
   );
 }
 
-const TABS = [
-  { id: "all", label: "Todos" },
-  { id: "CLIENT", label: "Clientes" },
-  { id: "staff", label: "Equipe" },
+/** Categorias: nível de acesso e contas de empresa. */
+const CATEGORIES = [
+  { id: "CLIENT", label: "Clientes", test: (u: ManagedUser) => u.role === "CLIENT" },
+  { id: "OPERATOR", label: "Operadores", test: (u: ManagedUser) => u.role === "OPERATOR" },
+  { id: "ADMIN", label: "Administradores", test: (u: ManagedUser) => u.role === "ADMIN" },
+  { id: "company", label: "Empresas", test: (u: ManagedUser) => Boolean(u.organization) },
 ] as const;
 
-type TabId = (typeof TABS)[number]["id"];
+const ORDERS_FILTER = [
+  { value: "", label: "Com ou sem pedidos" },
+  { value: "with", label: "Com pedidos" },
+  { value: "without", label: "Sem pedidos" },
+];
 
-const isStaffUser = (user: ManagedUser) => user.role === "ADMIN" || user.role === "OPERATOR";
+const CONTACT_FILTER = [
+  { value: "", label: "Qualquer cadastro" },
+  { value: "no-phone", label: "Sem telefone" },
+  { value: "no-cpf", label: "Sem CPF" },
+];
 
 type NewUserForm = {
   name: string;
@@ -82,52 +104,136 @@ type NewUserForm = {
 
 const EMPTY_FORM: NewUserForm = { name: "", email: "", phone: "", role: "CLIENT", permissions: [] };
 
+type Skip = { id: string; email: string | null; reason: string };
+type Notice = { variant: "success" | "warning" | "error"; text: string; skipped?: Skip[] };
+
 export default function UsuariosPage() {
   const router = useRouter();
   const { profile } = useAuth();
   const actorFull = profile ? hasFullAdminAccess(profile.role, profile.staffPermissions ?? []) : false;
+
+  const [users, setUsers] = React.useState<ManagedUser[]>([]);
+  const [error, setError] = React.useState("");
+  const [fetching, setFetching] = React.useState(true);
+
+  const [category, setCategory] = React.useState("");
+  const [query, setQuery] = React.useState("");
+  const [ordersFilter, setOrdersFilter] = React.useState("");
+  const [contactFilter, setContactFilter] = React.useState("");
+  const [period, setPeriod] = React.useState("");
+
   const [createOpen, setCreateOpen] = React.useState(false);
   const [form, setForm] = React.useState<NewUserForm>(EMPTY_FORM);
   const [creating, setCreating] = React.useState(false);
   const [createError, setCreateError] = React.useState("");
-  const [users, setUsers] = React.useState<ManagedUser[]>([]);
-  const [error, setError] = React.useState("");
-  const [fetching, setFetching] = React.useState(true);
-  const [tab, setTab] = React.useState<TabId>("all");
-  const [query, setQuery] = React.useState("");
 
-  React.useEffect(() => {
-    fetch("/api/admin/users", { cache: "no-store" })
+  const [dialog, setDialog] = React.useState<"role" | "delete" | null>(null);
+  const [bulkRole, setBulkRole] = React.useState("");
+  const [confirmWord, setConfirmWord] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [notice, setNotice] = React.useState<Notice | null>(null);
+
+  const load = React.useCallback(() => {
+    setFetching(true);
+    return fetch("/api/admin/users", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (!data.success) {
           setError(data.error || "Não foi possível carregar os usuários.");
           return;
         }
+        setError("");
         setUsers(data.users || []);
       })
       .catch(() => setError("Falha ao carregar os usuários."))
       .finally(() => setFetching(false));
   }, []);
 
-  const normalized = query
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+  React.useEffect(() => {
+    load();
+  }, [load]);
+
+  const selection = useRowSelection(users);
 
   const filtered = users.filter((user) => {
-    if (tab === "CLIENT" && user.role !== "CLIENT") return false;
-    if (tab === "staff" && !isStaffUser(user)) return false;
-    if (!normalized) return true;
-    const haystack = [user.name, user.email, user.cpf, user.organization?.name]
-      .filter(Boolean)
-      .join(" ")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-    return haystack.includes(normalized);
+    const cat = CATEGORIES.find((item) => item.id === category);
+    if (cat && !cat.test(user)) return false;
+    if (ordersFilter === "with" && user.ordersCount === 0) return false;
+    if (ordersFilter === "without" && user.ordersCount > 0) return false;
+    if (contactFilter === "no-phone" && user.phone) return false;
+    if (contactFilter === "no-cpf" && user.cpf) return false;
+    if (!inPeriod(user.createdAt, period)) return false;
+    return matchesSearch(query, [user.name, user.email, user.cpf, user.phone, user.organization?.name]);
   });
+
+  const resetFilters = () => {
+    setCategory("");
+    setQuery("");
+    setOrdersFilter("");
+    setContactFilter("");
+    setPeriod("");
+  };
+
+  const selectedUsers = selection.selectedRows;
+  const selfSelected = selectedUsers.some((user) => user.id === profile?.id);
+
+  const exportCsv = (rows: ManagedUser[]) => {
+    downloadCsv(
+      "usuarios",
+      toCsv(
+        ["Nome", "E-mail", "Telefone", "CPF", "Nível de acesso", "Empresa", "Pedidos", "Cadastro"],
+        rows.map((user) => [
+          user.name,
+          user.email,
+          user.phone,
+          user.cpf ? maskCpfCnpj(user.cpf) : "",
+          accessLevelLabel(user.role, user.staffPermissions || []),
+          user.organization?.name,
+          user.ordersCount,
+          formatCsvDate(user.createdAt),
+        ])
+      )
+    );
+  };
+
+  const closeDialog = () => {
+    if (busy) return;
+    setDialog(null);
+    setBulkRole("");
+    setConfirmWord("");
+  };
+
+  const runBulk = async (payload: Record<string, unknown>) => {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/users/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, userIds: selectedUsers.map((user) => user.id) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!data.success) {
+        setNotice({ variant: "error", text: data.error || "Não foi possível aplicar a ação." });
+        return;
+      }
+      const skipped: Skip[] = data.skipped || [];
+      const verb = payload.action === "delete" ? "excluída(s)" : "atualizada(s)";
+      setNotice({
+        variant: skipped.length ? "warning" : "success",
+        text: `${data.done.length} conta(s) ${verb}.${skipped.length ? ` ${skipped.length} ficaram de fora:` : ""}`,
+        skipped,
+      });
+      selection.clear();
+      setDialog(null);
+      setBulkRole("");
+      setConfirmWord("");
+      await load();
+    } catch {
+      setNotice({ variant: "error", text: "Falha de conexão. Nada foi confirmado; recarregue a lista." });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const closeCreate = () => {
     if (creating) return;
@@ -170,56 +276,122 @@ export default function UsuariosPage() {
       <PageHeader
         title="Usuários"
         description="Clientes, operadores e administradores. Cadastre, ajuste o nível de acesso ou exclua contas."
+        badge={
+          <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-800">
+            {users.length} contas
+          </span>
+        }
         actions={
           <Button onClick={() => setCreateOpen(true)}>
             <UserPlus className="w-4 h-4" aria-hidden />
             Novo usuário
           </Button>
         }
-        badge={
-          <span className="inline-flex items-center rounded-full border border-brand-200 bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-800">
-            {users.length} contas
-          </span>
-        }
       />
 
       {error && <Alert variant="error">{error}</Alert>}
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-0 p-1">
-          {TABS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-semibold rounded-md transition-colors",
-                tab === item.id
-                  ? "bg-brand-950 text-neutral-0"
-                  : "text-neutral-600 hover:text-neutral-900"
+      {notice && (
+        <Alert variant={notice.variant}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p>{notice.text}</p>
+              {notice.skipped && notice.skipped.length > 0 && (
+                <ul className="mt-1 list-disc pl-5 text-xs">
+                  {notice.skipped.map((skip) => (
+                    <li key={skip.id}>
+                      {skip.email ?? skip.id.slice(0, 8)}: {skip.reason}
+                    </li>
+                  ))}
+                </ul>
               )}
-            >
-              {item.label}
+            </div>
+            <button type="button" onClick={() => setNotice(null)} aria-label="Fechar aviso">
+              <X className="w-4 h-4" />
             </button>
-          ))}
-        </div>
-        <div className="sm:w-72">
-          <Input
-            placeholder="Buscar por nome, e-mail ou CPF..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-      </div>
+          </div>
+        </Alert>
+      )}
 
-      {fetching ? (
+      <CategoryChips
+        total={users.length}
+        value={category}
+        onChange={setCategory}
+        items={CATEGORIES.map((item) => ({
+          id: item.id,
+          label: item.label,
+          count: users.filter(item.test).length,
+        }))}
+      />
+
+      <ListToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchPlaceholder="Nome, e-mail, CPF, telefone ou empresa"
+        shown={filtered.length}
+        total={users.length}
+        onReset={resetFilters}
+        actions={
+          <>
+            <Button variant="outline" size="md" onClick={() => exportCsv(filtered)} disabled={!filtered.length}>
+              <Download className="w-4 h-4" aria-hidden />
+              Exportar lista
+            </Button>
+            <Button variant="ghost" size="md" onClick={() => load()} disabled={fetching} aria-label="Atualizar">
+              <RefreshCw className={fetching ? "w-4 h-4 animate-spin" : "w-4 h-4"} aria-hidden />
+            </Button>
+          </>
+        }
+      >
+        <Select aria-label="Pedidos" value={ordersFilter} onChange={(e) => setOrdersFilter(e.target.value)} options={ORDERS_FILTER} />
+        <Select aria-label="Dados do cadastro" value={contactFilter} onChange={(e) => setContactFilter(e.target.value)} options={CONTACT_FILTER} />
+        <Select aria-label="Data de cadastro" value={period} onChange={(e) => setPeriod(e.target.value)} options={PERIOD_OPTIONS} />
+      </ListToolbar>
+
+      <BulkActionBar
+        count={selection.count}
+        onClear={selection.clear}
+        note={
+          selection.count > BULK_ORDER_LIMIT ? (
+            <span className="text-semantic-error">Ações em massa aceitam até {BULK_ORDER_LIMIT} contas por vez.</span>
+          ) : selfSelected ? (
+            <span className="text-neutral-600">A sua conta está na seleção e será pulada.</span>
+          ) : null
+        }
+      >
+        <Button size="sm" onClick={() => setDialog("role")} disabled={selection.count > BULK_ORDER_LIMIT}>
+          Alterar nível
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => exportCsv(selectedUsers)}>
+          <Download className="w-4 h-4" aria-hidden />
+          Exportar CSV
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => setDialog("delete")}
+          disabled={selection.count > BULK_ORDER_LIMIT}
+        >
+          <Trash2 className="w-4 h-4" aria-hidden />
+          Excluir
+        </Button>
+      </BulkActionBar>
+
+      {fetching && users.length === 0 ? (
         <p className="text-sm text-neutral-500">Carregando usuários...</p>
       ) : filtered.length === 0 ? (
-        <p className="text-sm text-neutral-500">Nenhum usuário encontrado.</p>
+        <p className="text-sm text-neutral-500">
+          {users.length === 0 ? "Nenhum usuário cadastrado." : "Nenhum usuário com esses filtros."}
+        </p>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <SelectAllCheckbox
+                  checked={selection.allSelected(filtered)}
+                  onChange={() => selection.toggleAll(filtered)}
+                />
+              </TableHead>
               <TableHead>Usuário</TableHead>
               <TableHead>Nível de acesso</TableHead>
               <TableHead>Documento</TableHead>
@@ -229,7 +401,14 @@ export default function UsuariosPage() {
           </TableHeader>
           <TableBody>
             {filtered.map((user) => (
-              <TableRow key={user.id}>
+              <TableRow key={user.id} isSelected={selection.isSelected(user.id)}>
+                <TableCell>
+                  <RowCheckbox
+                    label={`Selecionar ${user.name || user.email}`}
+                    checked={selection.isSelected(user.id)}
+                    onChange={() => selection.toggle(user.id)}
+                  />
+                </TableCell>
                 <TableCell>
                   <Link
                     href={`/admin/usuarios/${user.id}`}
@@ -248,14 +427,81 @@ export default function UsuariosPage() {
                 <TableCell className="text-xs text-neutral-600">
                   {user.organization?.name || "—"}
                 </TableCell>
-                <TableCell className="text-xs text-neutral-600">
-                  {user.ordersCount}
-                </TableCell>
+                <TableCell className="text-xs text-neutral-600">{user.ordersCount}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       )}
+
+      <Dialog isOpen={dialog === "role"} onClose={closeDialog}>
+        <DialogHeader onClose={closeDialog}>
+          <DialogTitle>Alterar nível de {selection.count} conta(s)</DialogTitle>
+          <DialogDescription>
+            Em massa, só entre Cliente e Operador. Administrador é definido na página de cada conta.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogContent className="space-y-3">
+          <Select
+            label="Novo nível"
+            placeholder="Escolha o nível"
+            value={bulkRole}
+            onChange={(e) => setBulkRole(e.target.value)}
+            options={[
+              { value: "CLIENT", label: "Cliente" },
+              { value: "OPERATOR", label: "Operador" },
+            ]}
+          />
+          {selectedUsers.some((user) => user.role === "ADMIN") && (
+            <p className="text-xs text-neutral-600">
+              {actorFull
+                ? "Administradores na seleção perdem o acesso de administrador."
+                : "Administradores na seleção serão pulados: exige acesso total."}
+            </p>
+          )}
+        </DialogContent>
+        <DialogFooter>
+          <Button variant="ghost" onClick={closeDialog} disabled={busy}>
+            Cancelar
+          </Button>
+          <Button onClick={() => runBulk({ action: "role", role: bulkRole })} disabled={busy || !bulkRole}>
+            {busy ? "Aplicando…" : `Aplicar em ${selection.count}`}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog isOpen={dialog === "delete"} onClose={closeDialog}>
+        <DialogHeader onClose={closeDialog}>
+          <DialogTitle>Excluir {selection.count} conta(s)</DialogTitle>
+          <DialogDescription>
+            Remove login e cadastro. Pedidos ficam guardados e voltam se a pessoa criar conta de novo com o mesmo
+            e-mail. Não dá para desfazer.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogContent className="space-y-4">
+          <p className="text-xs text-neutral-600">
+            A sua conta, administradores (sem acesso total) e o último administrador com acesso total são pulados.
+          </p>
+          <Input
+            label={`Digite ${DELETE_CONFIRM_WORD} para confirmar`}
+            value={confirmWord}
+            onChange={(e) => setConfirmWord(e.target.value)}
+            autoComplete="off"
+          />
+        </DialogContent>
+        <DialogFooter>
+          <Button variant="ghost" onClick={closeDialog} disabled={busy}>
+            Cancelar
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => runBulk({ action: "delete", confirm: confirmWord })}
+            disabled={busy || confirmWord.trim().toUpperCase() !== DELETE_CONFIRM_WORD}
+          >
+            {busy ? "Excluindo…" : `Excluir ${selection.count}`}
+          </Button>
+        </DialogFooter>
+      </Dialog>
 
       <Dialog isOpen={createOpen} onClose={closeCreate} size="lg">
         <form onSubmit={submitCreate} className="flex min-h-0 flex-col">

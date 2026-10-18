@@ -1,4 +1,5 @@
 /** Ações em massa da mesa operacional. Regras puras: valem no servidor e na tela. */
+import { formatCsvDate, toCsv } from "@/lib/csv";
 
 export const BULK_ORDER_LIMIT = 100;
 export const DELETE_CONFIRM_WORD = "EXCLUIR";
@@ -50,26 +51,17 @@ export type CsvOrderRow = {
   statusLabel: string;
 };
 
-function csvCell(value: string) {
-  // Aspas duplicadas; prefixo ' evita fórmula ao abrir no Excel.
-  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
-  return `"${safe.replace(/"/g, '""')}"`;
-}
-
-/** CSV com ; (padrão do Excel em pt-BR) e BOM para os acentos abrirem certos. */
+/** CSV dos pedidos (formato em lib/csv). */
 export function ordersToCsv(rows: CsvOrderRow[]) {
-  const header = ["Protocolo", "Data", "Cliente", "E-mail", "Certidões", "Status"];
-  const lines = rows.map((row) =>
-    [
+  return toCsv(
+    ["Protocolo", "Data", "Cliente", "E-mail", "Certidões", "Status"],
+    rows.map((row) => [
       row.protocol,
-      new Date(row.createdAt).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+      formatCsvDate(row.createdAt),
       row.customerName,
       row.customerEmail,
       row.certificates.join(", "),
       row.statusLabel,
-    ]
-      .map(csvCell)
-      .join(";")
+    ])
   );
-  return "﻿" + [header.map(csvCell).join(";"), ...lines].join("\r\n");
 }

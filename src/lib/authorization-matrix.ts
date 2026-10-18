@@ -102,6 +102,13 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     notes: "Permissão users. Administrador restrito cuida de clientes e operadores; mexer em ADMIN exige acesso total. Ninguém muda o próprio nível; sempre resta um ADMIN com acesso total (userChangeError).",
   },
   {
+    resource: "usuários em massa (POST /api/admin/users/bulk)",
+    CLIENT: "DENY",
+    OPERATOR: "DENY",
+    ADMIN: "ALLOW",
+    notes: "Permissão users. Nível só entre CLIENT e OPERATOR; exclusão com palavra de confirmação. Cada conta passa por userChangeError.",
+  },
+  {
     resource: "ADMIN restrito (User.staffPermissions)",
     CLIENT: "DENY",
     OPERATOR: "DENY",
