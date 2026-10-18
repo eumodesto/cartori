@@ -289,10 +289,12 @@ export function CatalogBrowser({
             {resolvedHeading.eyebrow}
           </span>
         )}
-        <h2 className="text-3xl font-extrabold text-slate-900 font-serif">
-          {resolvedHeading.title}
-        </h2>
-        <p className="text-sm text-slate-600">{resolvedHeading.subtitle}</p>
+        {resolvedHeading.title && (
+          <h2 className="text-3xl font-extrabold text-slate-900 font-serif">
+            {resolvedHeading.title}
+          </h2>
+        )}
+        {resolvedHeading.subtitle && <p className="text-sm text-slate-600">{resolvedHeading.subtitle}</p>}
 
         {!lockedCert && (
         <FilterTags

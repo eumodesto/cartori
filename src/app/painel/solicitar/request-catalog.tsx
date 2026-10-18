@@ -15,11 +15,8 @@ export function RequestCatalog({ certificates }: { certificates: CertificateType
         <CatalogBrowser
           certificates={certificates}
           scrollTargetId="painel-catalogo"
-          heading={{
-            eyebrow: "Catálogo completo",
-            title: "Selecione a certidão",
-            subtitle: "Todas as certidões disponíveis para a sua conta.",
-          }}
+          // Sem título próprio: o cabeçalho da página já explica.
+          heading={{ eyebrow: "", title: "", subtitle: "" }}
         />
       </section>
     </div>
