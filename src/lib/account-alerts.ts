@@ -108,6 +108,23 @@ async function customerAlerts(userId: string, now: Date): Promise<UnreadAlert[]>
     const order = byId.get(event.orderId);
     if (!order) continue;
     const payload = asRecord(event.payload);
+    if (payload.display === "CANCEL_REQUESTED" || payload.source === "cancel_rejected") {
+      const requested = payload.display === "CANCEL_REQUESTED";
+      alerts.push({
+        id: `status:${event.id}`,
+        kind: "status",
+        audience: "customer",
+        tone: requested ? "warning" : "error",
+        title: requested ? "Cancelamento solicitado" : "Cancelamento não aprovado",
+        body: requested
+          ? "Recebemos o pedido. O setor responsável confirma por e-mail em até 2 dias úteis."
+          : previewText(typeof payload.note === "string" && payload.note ? payload.note : "O pedido segue normalmente."),
+        href: link(order.id),
+        protocol: order.protocol,
+        createdAt: event.createdAt.toISOString(),
+      });
+      continue;
+    }
     const display = eventDisplay(payload);
     const note = typeof payload.note === "string" ? payload.note.trim() : "";
     const label = display ? DISPLAY_STATUS_META[display].label : "Atualizado";
@@ -199,7 +216,7 @@ async function staffAlerts(context: AuthContext, now: Date): Promise<UnreadAlert
   const canEmails = hasAdminPermission(context.platformRole, context.adminPermissions, "emails");
   const canUsers = hasAdminPermission(context.platformRole, context.adminPermissions, "users");
 
-  const [messages, uploads, events, newPending, stalePaid, staleCustomer, failedEmails, signups] =
+  const [messages, uploads, events, newPending, stalePaid, staleCustomer, failedEmails, signups, cancellations] =
     await Promise.all([
       prisma.caseMessage.findMany({
         where: { authorKind: CaseAuthorKind.CLIENT, createdAt: { gte: since } },
@@ -263,6 +280,12 @@ async function staffAlerts(context: AuthContext, now: Date): Promise<UnreadAlert
             select: { id: true, createdAt: true },
           })
         : [],
+      prisma.cancellationRequest.findMany({
+        where: { status: "PENDING" },
+        orderBy: { createdAt: "asc" },
+        take: TAKE,
+        select: { id: true, reason: true, createdAt: true, order: orderSelect },
+      }),
     ]);
 
   const alerts: UnreadAlert[] = [];
@@ -309,6 +332,20 @@ async function staffAlerts(context: AuthContext, now: Date): Promise<UnreadAlert
       href: link(event.order.id),
       protocol: event.order.protocol,
       createdAt: event.createdAt.toISOString(),
+    });
+  }
+
+  for (const request of cancellations) {
+    alerts.push({
+      id: `staff-cancel:${request.id}`,
+      kind: "payment",
+      audience: "staff",
+      tone: "warning",
+      title: "Cancelamento solicitado",
+      body: `${request.order.customerName}: ${previewText(request.reason, 100)}`,
+      href: link(request.order.id),
+      protocol: request.order.protocol,
+      createdAt: request.createdAt.toISOString(),
     });
   }
 

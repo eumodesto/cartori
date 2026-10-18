@@ -80,6 +80,12 @@ const ORDER_STEP_LABEL: Record<string, string> = {
  * `paymentStatus` é o do pagamento mais recente. Estorno vence qualquer etapa;
  * recusa só aparece enquanto o pedido ainda espera pagamento.
  */
+/** Selo exibido enquanto há pedido de cancelamento em análise (sobrepõe o status do pedido). */
+export const CANCEL_REQUESTED_META: { label: string; semantic: StatusType } = {
+  label: "Cancelamento solicitado",
+  semantic: "warning",
+};
+
 export function displayOrderStatus(status: string, paymentStatus?: string | null): DisplayOrderStatus {
   if (paymentStatus === "REFUNDED") return "REFUNDED";
   if (status === "DRAFT" || status === "PENDING_PAYMENT") {

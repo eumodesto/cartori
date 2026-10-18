@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { pendingCancellationOrderIds } from "@/lib/cancellation-store";
 import { orderOwnerFromContext, requireAuth } from "@/lib/authorization";
 import { queueTemplateEmail } from "@/lib/email";
 import { createOrder, listOrdersByUser } from "@/lib/order-store";
@@ -31,9 +32,10 @@ export async function GET() {
   }
 
   const orders = await listOrdersByUser(auth.context.userId);
+  const pending = await pendingCancellationOrderIds(orders.map((order) => order.id));
   return NextResponse.json({
     success: true,
-    orders: orders.map(toClientOrder),
+    orders: orders.map((order) => ({ ...toClientOrder(order), cancelRequested: pending.has(order.id) })),
   });
 }
 

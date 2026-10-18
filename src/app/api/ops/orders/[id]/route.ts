@@ -6,6 +6,8 @@ import { requireStaffOps } from "@/lib/case-access";
 import { queueOrderStatusEmail } from "@/lib/case-email";
 import { loadOrderCase, updateOrderOperationalStatus } from "@/lib/case-store";
 import { sanitizeCaseBody } from "@/lib/case-types";
+import { hasAdminPermission } from "@/lib/admin-permissions";
+import { getOrderJourney } from "@/lib/cancellation-store";
 
 export async function GET(
   _req: NextRequest,
@@ -25,6 +27,8 @@ export async function GET(
     success: true,
     ...data,
     staff: true,
+    journey: await getOrderJourney(params.id),
+    canApproveRefund: hasAdminPermission(staff.context.platformRole, staff.context.adminPermissions, "payments"),
     allowedStatuses: staffTransitionTargets(data.order.status, {
       hasApprovedPayment: Boolean(approved),
     }),
@@ -72,6 +76,8 @@ export async function PATCH(
     success: true,
     ...data,
     staff: true,
+    journey: await getOrderJourney(params.id),
+    canApproveRefund: hasAdminPermission(staff.context.platformRole, staff.context.adminPermissions, "payments"),
     allowedStatuses: staffTransitionTargets(updated.order.status, {
       hasApprovedPayment: Boolean(approved),
     }),

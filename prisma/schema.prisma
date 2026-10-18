@@ -209,6 +209,7 @@ model Order {
   payments       Payment[]
   caseMessages   CaseMessage[]
   caseAttachments CaseAttachment[]
+  cancellationRequests CancellationRequest[]
   caseEvents     CaseEvent[]
   emailOutbox    EmailOutbox[]
 
@@ -581,4 +582,26 @@ model AlertRead {
   readAt  DateTime @default(now())
 
   @@id([userId, alertId])
+}
+
+/// Pedido de cancelamento/estorno feito pelo cliente; o setor responsável aprova ou recusa.
+/// Aprovar registra o estorno (manual-payment REFUNDED, só ADMIN com "payments"); o dinheiro
+/// volta pelo Mercado Pago ou banco. status: PENDING | APPROVED | REJECTED.
+model CancellationRequest {
+  id             String    @id @default(uuid())
+  orderId        String
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  requestedById  String?
+  status         String    @default("PENDING")
+  reason         String    @db.Text
+  orderTotal     Decimal   @db.Decimal(10, 2)
+  feeAmount      Decimal   @db.Decimal(10, 2)
+  refundAmount   Decimal   @db.Decimal(10, 2)
+  resolvedById   String?
+  resolutionNote String?   @db.Text
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([orderId, createdAt])
+  @@index([status, createdAt])
 }

@@ -130,6 +130,20 @@ export const AUTHORIZATION_MATRIX: AuthorizationMatrixRow[] = [
     notes: "Só pedido que nunca virou compra (canDeleteOrder), conferido de novo na transação. Palavra de confirmação. Log no servidor.",
   },
   {
+    resource: "pedir cancelamento (POST /api/orders/[id]/cancellation)",
+    CLIENT: "ALLOW",
+    OPERATOR: "DENY",
+    ADMIN: "DENY",
+    notes: "Só o titular (order.userId). Regras e valores no servidor (cancellation-policy): 7 dias após o pagamento, antes da emissão, taxa de R$ 60 retida. Sem pagamento cancela na hora.",
+  },
+  {
+    resource: "responder cancelamento (POST /api/ops/orders/[id]/cancellation)",
+    CLIENT: "DENY",
+    OPERATOR: "ALLOW",
+    ADMIN: "ALLOW",
+    notes: "Recusar: equipe. Aprovar: só ADMIN com payments (registra REFUNDED via manual-payment; o dinheiro volta no Mercado Pago/banco).",
+  },
+  {
     resource: "marcar pedido como pago pelo fluxo normal",
     CLIENT: "DENY",
     OPERATOR: "DENY",

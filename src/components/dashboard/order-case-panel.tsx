@@ -3,6 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { Download, Paperclip, Send } from "lucide-react";
+import { CancellationReview } from "@/components/dashboard/cancellation-review";
+import { OrderJourneyCard } from "@/components/dashboard/order-journey-card";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -12,7 +14,14 @@ import {
   CASE_ATTACHMENT_KINDS,
   type PublicOrderCase,
 } from "@/lib/case-types";
-import { displayStatusMeta, orderStepLabel, staffStatusLabel } from "@/lib/order-status";
+import type { OrderJourney } from "@/lib/cancellation-policy";
+import {
+  CANCEL_REQUESTED_META,
+  displayOrderStatus,
+  displayStatusMeta,
+  orderStepLabel,
+  staffStatusLabel,
+} from "@/lib/order-status";
 
 function authorLabel(kind: string) {
   if (kind === "STAFF") return "InterJuri";
@@ -27,7 +36,9 @@ export function OrderCasePanel({
   orderId: string;
   staff?: boolean;
 }) {
-  const [data, setData] = React.useState<(PublicOrderCase & { allowedStatuses?: string[] }) | null>(null);
+  const [data, setData] = React.useState<
+    (PublicOrderCase & { allowedStatuses?: string[]; journey?: OrderJourney | null; canApproveRefund?: boolean }) | null
+  >(null);
   const [error, setError] = React.useState("");
   const [loading, setLoading] = React.useState(true);
   const [body, setBody] = React.useState("");
@@ -182,7 +193,8 @@ export function OrderCasePanel({
     );
   }
 
-  const meta = displayStatusMeta(data.order.status, data.order.paymentStatus);
+  const cancelPending = data.journey?.request?.status === "PENDING";
+  const meta = cancelPending ? CANCEL_REQUESTED_META : displayStatusMeta(data.order.status, data.order.paymentStatus);
   const step = orderStepLabel(data.order.status);
 
   return (
@@ -226,6 +238,32 @@ export function OrderCasePanel({
           </div>
         )}
       </div>
+
+      {!staff && data.journey && (
+        <OrderJourneyCard
+          orderId={orderId}
+          display={displayOrderStatus(data.order.status, data.order.paymentStatus)}
+          internalStatus={data.order.status}
+          journey={data.journey}
+          onChanged={(next) => {
+            const value = next as typeof data;
+            if (value?.order) {
+              setData(value);
+              setStatus(value.order.status);
+            }
+          }}
+        />
+      )}
+      {staff && data.journey && (
+        <CancellationReview
+          orderId={orderId}
+          journey={data.journey}
+          canApprove={Boolean(data.canApproveRefund)}
+          onDone={() => {
+            load().catch(() => undefined);
+          }}
+        />
+      )}
 
       {error && <Alert variant="error">{error}</Alert>}
 

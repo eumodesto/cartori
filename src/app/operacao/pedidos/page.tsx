@@ -37,8 +37,9 @@ import {
 import { downloadCsv } from "@/lib/csv";
 import { PERIOD_OPTIONS, inPeriod, matchesSearch } from "@/lib/list-filters";
 import { BULK_ORDER_LIMIT, DELETE_CONFIRM_WORD, ordersToCsv } from "@/lib/order-bulk";
-import { ORDER_CATEGORIES, certificateOptions, inOrderCategory } from "@/lib/order-categories";
+import { CANCEL_CATEGORY, ORDER_CATEGORIES, certificateOptions, inOrderCategory } from "@/lib/order-categories";
 import {
+  CANCEL_REQUESTED_META,
   DISPLAY_STATUS_META,
   STAFF_STATUS_OPTIONS,
   displayOrderStatus,
@@ -57,6 +58,7 @@ type OpsOrder = {
   certificates: string[];
   allowedStatuses: string[];
   deletable: boolean;
+  cancelRequested?: boolean;
 };
 
 type BulkSkip = { id: string; protocol: string | null; reason: string };
@@ -111,7 +113,7 @@ export default function OperacaoPage() {
   const display = (order: OpsOrder) => displayOrderStatus(order.status, order.paymentStatus);
 
   const visible = orders.filter((order) => {
-    if (!inOrderCategory(category, display(order))) return false;
+    if (!inOrderCategory(category, display(order), order.cancelRequested)) return false;
     if (statusFilter && display(order) !== statusFilter) return false;
     if (certificateFilter && !order.certificates.includes(certificateFilter)) return false;
     if (!inPeriod(order.createdAt, period)) return false;
@@ -216,11 +218,14 @@ export default function OperacaoPage() {
         total={orders.length}
         value={category}
         onChange={setCategory}
-        items={ORDER_CATEGORIES.map((item) => ({
-          id: item.id,
-          label: item.label,
-          count: orders.filter((order) => item.statuses.includes(display(order))).length,
-        }))}
+        items={[
+          ...ORDER_CATEGORIES.map((item) => ({
+            id: item.id,
+            label: item.label,
+            count: orders.filter((order) => item.statuses.includes(display(order))).length,
+          })),
+          { ...CANCEL_CATEGORY, count: orders.filter((order) => order.cancelRequested).length },
+        ]}
       />
 
       <ListToolbar
@@ -305,7 +310,9 @@ export default function OperacaoPage() {
           </TableHeader>
           <TableBody>
             {visible.map((order) => {
-              const meta = displayStatusMeta(order.status, order.paymentStatus);
+              const meta = order.cancelRequested
+                ? CANCEL_REQUESTED_META
+                : displayStatusMeta(order.status, order.paymentStatus);
               const step = orderStepLabel(order.status);
               return (
                 <TableRow key={order.id} isSelected={selection.isSelected(order.id)}>

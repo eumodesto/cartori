@@ -82,17 +82,31 @@ export default function TermosPage() {
         </p>
       </LegalSection>
 
-      <LegalSection id="cancelamento" title="6. Política de cancelamento e arrependimento">
+      <LegalSection id="cancelamento" title="6. Política de cancelamento e estorno">
         <p>
-          Em conformidade com o art. 49 do Código de Defesa do Consumidor, o Usuário tem o
-          direito de cancelar o pedido em até 7 (sete) dias corridos. Contudo, excepciona-se o
-          direito a reembolso total nos casos em que a prestação do serviço já tenha sido
-          iniciada e os valores das taxas públicas (emolumentos cartorários) já tenham sido
-          recolhidos ao cartório oficial, uma vez que tais taxas não são reembolsáveis pelo
-          Estado. Neste cenário, não haverá estorno dos valores recolhidos aos cofres públicos.
+          Em conformidade com o art. 49 do Código de Defesa do Consumidor, o Usuário pode
+          cancelar o pedido em até 7 (sete) dias corridos após a confirmação do pagamento,
+          enquanto a certidão não tiver sido emitida. Com a certidão emitida, o serviço está
+          concluído e não cabe cancelamento.
         </p>
+        <ul className="list-disc pl-5 space-y-2">
+          <li>
+            <strong>Pedido ainda não pago:</strong> pode ser cancelado no painel, na hora e sem
+            custo.
+          </li>
+          <li>
+            <strong>Pedido pago:</strong> o cancelamento é pedido no painel e fica em análise
+            (status &quot;Cancelamento solicitado&quot;) até o setor responsável confirmar, em até
+            2 dias úteis. A taxa de serviço de R$ 60,00 fica retida, porque o pedido já foi
+            preparado pela equipe; o restante do valor é estornado.
+          </li>
+          <li>
+            O estorno sai no mesmo meio de pagamento. O prazo para o valor aparecer depende do
+            banco ou da operadora do cartão.
+          </li>
+        </ul>
         <p>
-          Para solicitações de suporte e cancelamento, o Usuário deve contatar o e-mail{" "}
+          Para dúvidas sobre cancelamento, o Usuário pode contatar o e-mail{" "}
           <LegalMail href="atendimento@interjuri.com.br">atendimento@interjuri.com.br</LegalMail>.
         </p>
       </LegalSection>

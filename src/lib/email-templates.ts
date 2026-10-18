@@ -31,6 +31,9 @@ export interface EmailTemplateDef {
 }
 
 const V = {
+  refundAmount: { name: "refundAmount", description: "Valor a estornar", sample: "R$ 211,90" },
+  feeAmount: { name: "feeAmount", description: "Taxa de serviço retida", sample: "R$ 60,00" },
+  resolutionNote: { name: "resolutionNote", description: "Observação da equipe na análise", sample: "Estorno feito no PIX de origem." },
   actionLink: {
     name: "actionLink",
     description: "Link de acesso de uso único (expira; não fica salvo no registro de envios)",
@@ -145,6 +148,17 @@ const ADMIN_TEMPLATES: EmailTemplateDef[] = [
       "Nova mensagem do cliente no pedido {{protocol}}.\n\nCliente: {{customerName}} ({{customerEmail}})\n\n“{{messagePreview}}”\n\nResponder na mesa operacional:\n{{adminOrderLink}}" +
       ADMIN_SIGN,
     variables: [V.customerName, V.customerEmail, V.protocol, V.messagePreview, V.adminOrderLink],
+  },
+  {
+    key: "admin_cancel_request",
+    group: "admin",
+    label: "Admin · Pedido de cancelamento",
+    description: "Avisa os administradores quando um cliente pede cancelamento e estorno.",
+    subject: "[InterJuri] Cancelamento solicitado · {{protocol}}",
+    body:
+      "Um cliente pediu o cancelamento e o estorno de um pedido pago.\n\nPedido: {{protocol}}\nCliente: {{customerName}} ({{customerEmail}})\nTotal: {{total}}\n\nMotivo: “{{messagePreview}}”\n\nAnalise e confirme ou recuse na mesa operacional:\n{{adminOrderLink}}" +
+      ADMIN_SIGN,
+    variables: [V.customerName, V.customerEmail, V.protocol, V.total, V.messagePreview, V.adminOrderLink],
   },
   {
     key: "admin_order_pending",
@@ -322,6 +336,39 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
       "Olá, {{customerName}}!\n\nO pagamento do pedido {{protocol}} não foi aprovado. O pedido continua aberto: você pode tentar de novo por PIX ou com outro cartão.\n\nPagar pelo painel:\n{{orderLink}}" +
       SIGN,
     variables: [V.customerName, V.protocol, V.orderLink],
+  },
+  {
+    key: "cancel_requested",
+    group: "cancelamento",
+    label: "Cancelamento solicitado",
+    description: "Confirma ao cliente que o pedido de cancelamento foi recebido e está em análise.",
+    subject: "InterJuri · recebemos o pedido de cancelamento do {{protocol}}",
+    body:
+      "Olá, {{customerName}}!\n\nRecebemos o seu pedido de cancelamento do pedido {{protocol}}. O setor responsável vai analisar e confirmar por e-mail em até 2 dias úteis. Até lá, o pedido fica pausado.\n\nSe aprovado, estornamos {{refundAmount}}. A taxa de serviço de {{feeAmount}} fica retida, conforme a política de cancelamento.\n\nAcompanhe pelo painel:\n{{orderLink}}" +
+      SIGN,
+    variables: [V.customerName, V.protocol, V.refundAmount, V.feeAmount, V.orderLink],
+  },
+  {
+    key: "cancel_request_approved",
+    group: "cancelamento",
+    label: "Cancelamento confirmado",
+    description: "Enviado quando a equipe aprova o cancelamento e registra o estorno.",
+    subject: "InterJuri · cancelamento do {{protocol}} confirmado",
+    body:
+      "Olá, {{customerName}}!\n\nO cancelamento do pedido {{protocol}} foi confirmado e estornamos {{refundAmount}}. A taxa de serviço de {{feeAmount}} ficou retida.\n\nO prazo para o valor aparecer depende do banco ou da operadora do cartão.\n{{resolutionNote}}\n\nDetalhes no painel:\n{{orderLink}}" +
+      SIGN,
+    variables: [V.customerName, V.protocol, V.refundAmount, V.feeAmount, V.resolutionNote, V.orderLink],
+  },
+  {
+    key: "cancel_request_rejected",
+    group: "cancelamento",
+    label: "Cancelamento não aprovado",
+    description: "Enviado quando a equipe recusa o pedido de cancelamento.",
+    subject: "InterJuri · pedido de cancelamento do {{protocol}}",
+    body:
+      "Olá, {{customerName}}!\n\nAnalisamos o seu pedido de cancelamento do pedido {{protocol}} e ele não pôde ser aprovado.\n{{resolutionNote}}\n\nO pedido segue normalmente. Se tiver dúvidas, responda pelas mensagens do pedido:\n{{orderLink}}" +
+      SIGN,
+    variables: [V.customerName, V.protocol, V.resolutionNote, V.orderLink],
   },
   {
     key: "payment_refunded",

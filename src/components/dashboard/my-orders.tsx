@@ -36,8 +36,9 @@ import {
 } from "@/components/ui/table";
 import { downloadCsv, formatCsvDate, toCsv } from "@/lib/csv";
 import { PERIOD_OPTIONS, inPeriod, matchesSearch } from "@/lib/list-filters";
-import { ORDER_CATEGORIES, certificateOptions, inOrderCategory } from "@/lib/order-categories";
+import { CANCEL_CATEGORY, ORDER_CATEGORIES, certificateOptions, inOrderCategory } from "@/lib/order-categories";
 import {
+  CANCEL_REQUESTED_META,
   PublicOrder,
   displayOrderStatus,
   displayStatusMeta,
@@ -171,12 +172,13 @@ export function MyOrders({
   const payIsPaid = isOrderPaid(payOrder);
 
   const display = (order: PublicOrder) => displayOrderStatus(order.status, order.payment?.status);
+  const cancelRequested = (order: PublicOrder) => Boolean((order as PublicOrder & { cancelRequested?: boolean }).cancelRequested);
   const withNames = orders.map((order) => ({ ...order, certificates: order.items.map((item) => item.certificateName) }));
   // Na visão resumida (início do painel) não há filtros: mostra a lista inteira.
   const visible = compact
     ? withNames
     : withNames.filter((order) => {
-        if (!inOrderCategory(category, display(order))) return false;
+        if (!inOrderCategory(category, display(order), cancelRequested(order))) return false;
         if (certificateFilter && !order.certificates.includes(certificateFilter)) return false;
         if (!inPeriod(order.createdAt, period)) return false;
         return matchesSearch(query, [order.protocol, ...order.certificates]);
@@ -246,11 +248,16 @@ export function MyOrders({
               total={orders.length}
               value={category}
               onChange={setCategory}
-              items={ORDER_CATEGORIES.map((item) => ({
-                id: item.id,
-                label: item.label,
-                count: orders.filter((order) => item.statuses.includes(display(order))).length,
-              }))}
+              items={[
+                ...ORDER_CATEGORIES.map((item) => ({
+                  id: item.id,
+                  label: item.label,
+                  count: orders.filter((order) => item.statuses.includes(display(order))).length,
+                })),
+                ...(orders.some(cancelRequested)
+                  ? [{ ...CANCEL_CATEGORY, count: orders.filter(cancelRequested).length }]
+                  : []),
+              ]}
             />
             <ListToolbar
               query={query}
@@ -306,7 +313,9 @@ export function MyOrders({
           </TableHeader>
           <TableBody>
             {visible.map((order) => {
-              const meta = displayStatusMeta(order.status, order.payment?.status);
+              const meta = cancelRequested(order)
+                ? CANCEL_REQUESTED_META
+                : displayStatusMeta(order.status, order.payment?.status);
               const names = order.items.map((item) => item.certificateName).join(", ");
               const isPending = order.status === "PENDING_PAYMENT";
               return (

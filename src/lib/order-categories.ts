@@ -9,8 +9,12 @@ export const ORDER_CATEGORIES: ReadonlyArray<{ id: string; label: string; status
   { id: "closed", label: "Cancelados", statuses: ["CANCELLED", "REFUNDED", "PAYMENT_REJECTED"] },
 ];
 
-export function inOrderCategory(category: string, display: DisplayOrderStatus) {
+/** Chip extra para pedidos com cancelamento em análise (a flag vem da API). */
+export const CANCEL_CATEGORY = { id: "cancel", label: "Cancelamento solicitado" } as const;
+
+export function inOrderCategory(category: string, display: DisplayOrderStatus, cancelRequested = false) {
   if (!category) return true;
+  if (category === CANCEL_CATEGORY.id) return cancelRequested;
   return ORDER_CATEGORIES.find((item) => item.id === category)?.statuses.includes(display) ?? true;
 }
 

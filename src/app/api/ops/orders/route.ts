@@ -3,6 +3,7 @@ import { hasAdminPermission } from "@/lib/admin-permissions";
 import { staffTransitionTargets } from "@/lib/authorization-policy";
 import { requireStaffOps } from "@/lib/case-access";
 import { listOpsOrders } from "@/lib/case-store";
+import { pendingCancellationOrderIds } from "@/lib/cancellation-store";
 import { canDeleteOrder } from "@/lib/order-bulk";
 
 export async function GET() {
@@ -15,6 +16,7 @@ export async function GET() {
     "orders_delete"
   );
   const orders = await listOpsOrders();
+  const pending = await pendingCancellationOrderIds(orders.map((order) => order.id));
   return NextResponse.json({
     success: true,
     canDelete,
@@ -31,6 +33,7 @@ export async function GET() {
         hasApprovedPayment: order.payments.some((payment) => payment.status === "APPROVED"),
       }),
       deletable: canDelete && canDeleteOrder(order.status, order.payments),
+      cancelRequested: pending.has(order.id),
     })),
   });
 }

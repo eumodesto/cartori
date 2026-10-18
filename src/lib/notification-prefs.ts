@@ -37,6 +37,12 @@ export const ADMIN_NOTIFICATION_CATEGORIES = [
     description: "Quando um cliente envia mensagem interna em um pedido.",
   },
   {
+    id: "admin_cancel_request",
+    template: "admin_cancel_request",
+    label: "Pedido de cancelamento",
+    description: "Quando um cliente pede cancelamento e estorno de um pedido pago.",
+  },
+  {
     id: "admin_order_pending",
     template: "admin_order_pending",
     label: "Compra pendente de pagamento",
