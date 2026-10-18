@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { hasFullAdminAccess } from "@/lib/admin-permissions";
+import { formatLoginDate, isOnline, timeAgo } from "@/lib/presence-rules";
 import { maskCpfCnpj } from "@/lib/utils";
 
 type ManagedUser = {
@@ -32,6 +33,8 @@ type ManagedUser = {
   cpf: string | null;
   createdAt: string;
   updatedAt: string;
+  lastLoginAt: string | null;
+  lastSeenAt: string | null;
   organization: { id: string; name: string; plan: string } | null;
   ordersCount: number;
   dossiersCount: number;
@@ -129,7 +132,17 @@ export default function UsuarioDetailPage({
 
       <PageHeader
         title={user?.name || (fetching ? "Carregando..." : "Usuário")}
-        description={user?.email}
+        description={
+          user
+            ? `${user.email} · ${
+                isOnline(user.lastSeenAt)
+                  ? "Online agora"
+                  : user.lastLoginAt
+                    ? `último login em ${formatLoginDate(user.lastLoginAt)}${user.lastSeenAt ? ` · visto ${timeAgo(user.lastSeenAt)}` : ""}`
+                    : "nunca entrou"
+              }`
+            : undefined
+        }
       />
 
       {error && <Alert variant="error">{error}</Alert>}

@@ -91,6 +91,10 @@ model User {
   staffPermissions String[]     @default([])
   /// "Marcar todos como lidos" da caixa de alertas: o que é anterior a esta data conta como lido.
   alertsSeenAt   DateTime?
+  /// Último login (senha, link de confirmação ou OAuth).
+  lastLoginAt    DateTime?
+  /// Última requisição autenticada (gravada no máximo 1x por minuto): base do "Online".
+  lastSeenAt     DateTime?
   alertReads     AlertRead[]
   organizationMemberships OrganizationMember[]
   orders         Order[]

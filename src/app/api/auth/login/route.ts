@@ -1,3 +1,4 @@
+import { recordLogin } from "@/lib/presence";
 import { NextRequest } from "next/server";
 import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
 import { completePendingCompany } from "@/lib/pending-company";
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
         : undefined,
     });
     await completePendingCompany(supabase, data.user);
+    await recordLogin(profile.id);
     return json({ success: true, profile });
   } catch (syncError) {
     if (syncError instanceof IdentityConflictError) {

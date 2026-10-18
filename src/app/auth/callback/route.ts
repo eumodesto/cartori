@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
 import { completePendingCompany } from "@/lib/pending-company";
+import { recordLogin } from "@/lib/presence";
 import { isSupabaseConfigured, supabasePublicConfig } from "@/lib/supabase/config";
 import { supabaseAuthCookieOptions } from "@/lib/supabase/cookie-options";
 import { requestOrigin } from "@/lib/supabase/site-url";
@@ -49,12 +50,13 @@ export async function GET(request: NextRequest) {
   } = await supabase.auth.getUser();
   if (user?.email) {
     try {
-      await syncAuthUser({
+      const profile = await syncAuthUser({
         authId: user.id,
         email: user.email,
         name: typeof user.user_metadata?.name === "string" ? user.user_metadata.name : undefined,
       });
       await completePendingCompany(supabase, user);
+      await recordLogin(profile.id);
     } catch (error) {
       if (error instanceof IdentityConflictError) {
         console.warn("[auth] identity_conflict", { reason: error.reason, source: "oauth_callback" });

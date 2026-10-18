@@ -2,6 +2,7 @@ import { UserRole } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { canUseAdminResource } from "@/lib/admin-permissions";
 import { prisma } from "@/lib/prisma";
+import { touchLastSeen } from "@/lib/presence";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createServerSupabase } from "@/lib/supabase/server";
 import {
@@ -120,6 +121,7 @@ export async function requireAuth(): Promise<AuthResult> {
       authId: true,
       role: true,
       staffPermissions: true,
+      lastSeenAt: true,
       organizationMemberships: {
         where: { status: "ACTIVE" },
         select: { organizationId: true, orgRole: true },
@@ -146,6 +148,8 @@ export async function requireAuth(): Promise<AuthResult> {
       count: row.organizationMemberships.length,
     });
   }
+
+  await touchLastSeen(row.id, row.lastSeenAt);
 
   return {
     ok: true,

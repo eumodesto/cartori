@@ -39,6 +39,7 @@ import { accessLevelLabel, hasFullAdminAccess } from "@/lib/admin-permissions";
 import { downloadCsv, formatCsvDate, toCsv } from "@/lib/csv";
 import { PERIOD_OPTIONS, inPeriod, matchesSearch } from "@/lib/list-filters";
 import { BULK_ORDER_LIMIT, DELETE_CONFIRM_WORD } from "@/lib/order-bulk";
+import { formatLoginDate, isOnline, timeAgo } from "@/lib/presence-rules";
 import { cn, maskCpfCnpj } from "@/lib/utils";
 
 type ManagedUser = {
@@ -50,6 +51,8 @@ type ManagedUser = {
   phone: string | null;
   cpf: string | null;
   createdAt: string;
+  lastLoginAt: string | null;
+  lastSeenAt: string | null;
   organization: { id: string; name: string; plan: string } | null;
   ordersCount: number;
   dossiersCount: number;
@@ -74,8 +77,30 @@ function RoleBadge({ role, permissions }: { role: ManagedUser["role"]; permissio
   );
 }
 
+/** Último login e "Online" (visto nos últimos 5 minutos). */
+function LastAccess({ user }: { user: ManagedUser }) {
+  if (isOnline(user.lastSeenAt)) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-semantic-success-border bg-semantic-success-bg px-2 py-0.5 text-[11px] font-semibold text-semantic-success">
+        <span className="h-2 w-2 rounded-full bg-semantic-success" aria-hidden />
+        Online
+      </span>
+    );
+  }
+  if (!user.lastLoginAt) return <span className="text-xs text-neutral-400">Nunca entrou</span>;
+  return (
+    <div>
+      <p className="text-xs text-neutral-700">{formatLoginDate(user.lastLoginAt)}</p>
+      {user.lastSeenAt && (
+        <p className="text-[11px] text-neutral-500">Visto {timeAgo(user.lastSeenAt)}</p>
+      )}
+    </div>
+  );
+}
+
 /** Categorias: nível de acesso e contas de empresa. */
 const CATEGORIES = [
+  { id: "online", label: "Online agora", test: (u: ManagedUser) => isOnline(u.lastSeenAt) },
   { id: "CLIENT", label: "Clientes", test: (u: ManagedUser) => u.role === "CLIENT" },
   { id: "OPERATOR", label: "Operadores", test: (u: ManagedUser) => u.role === "OPERATOR" },
   { id: "ADMIN", label: "Administradores", test: (u: ManagedUser) => u.role === "ADMIN" },
@@ -86,6 +111,14 @@ const ORDERS_FILTER = [
   { value: "", label: "Com ou sem pedidos" },
   { value: "with", label: "Com pedidos" },
   { value: "without", label: "Sem pedidos" },
+];
+
+const LOGIN_FILTER = [
+  { value: "", label: "Qualquer acesso" },
+  { value: "7", label: "Entrou nos últimos 7 dias" },
+  { value: "30", label: "Entrou nos últimos 30 dias" },
+  { value: "inactive", label: "Sem entrar há 30 dias" },
+  { value: "never", label: "Nunca entrou" },
 ];
 
 const CONTACT_FILTER = [
@@ -120,6 +153,7 @@ export default function UsuariosPage() {
   const [query, setQuery] = React.useState("");
   const [ordersFilter, setOrdersFilter] = React.useState("");
   const [contactFilter, setContactFilter] = React.useState("");
+  const [loginFilter, setLoginFilter] = React.useState("");
   const [period, setPeriod] = React.useState("");
 
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -163,6 +197,11 @@ export default function UsuariosPage() {
     if (contactFilter === "no-phone" && user.phone) return false;
     if (contactFilter === "no-cpf" && user.cpf) return false;
     if (!inPeriod(user.createdAt, period)) return false;
+    if (loginFilter === "never" && user.lastLoginAt) return false;
+    if (loginFilter === "inactive" && user.lastLoginAt && inPeriod(user.lastLoginAt, "30")) return false;
+    if ((loginFilter === "7" || loginFilter === "30") && (!user.lastLoginAt || !inPeriod(user.lastLoginAt, loginFilter))) {
+      return false;
+    }
     return matchesSearch(query, [user.name, user.email, user.cpf, user.phone, user.organization?.name]);
   });
 
@@ -171,6 +210,7 @@ export default function UsuariosPage() {
     setQuery("");
     setOrdersFilter("");
     setContactFilter("");
+    setLoginFilter("");
     setPeriod("");
   };
 
@@ -181,7 +221,7 @@ export default function UsuariosPage() {
     downloadCsv(
       "usuarios",
       toCsv(
-        ["Nome", "E-mail", "Telefone", "CPF", "Nível de acesso", "Empresa", "Pedidos", "Cadastro"],
+        ["Nome", "E-mail", "Telefone", "CPF", "Nível de acesso", "Empresa", "Pedidos", "Cadastro", "Último login"],
         rows.map((user) => [
           user.name,
           user.email,
@@ -191,6 +231,7 @@ export default function UsuariosPage() {
           user.organization?.name,
           user.ordersCount,
           formatCsvDate(user.createdAt),
+          user.lastLoginAt ? formatCsvDate(user.lastLoginAt) : "",
         ])
       )
     );
@@ -344,6 +385,7 @@ export default function UsuariosPage() {
       >
         <Select aria-label="Pedidos" value={ordersFilter} onChange={(e) => setOrdersFilter(e.target.value)} options={ORDERS_FILTER} />
         <Select aria-label="Dados do cadastro" value={contactFilter} onChange={(e) => setContactFilter(e.target.value)} options={CONTACT_FILTER} />
+        <Select aria-label="Último acesso" value={loginFilter} onChange={(e) => setLoginFilter(e.target.value)} options={LOGIN_FILTER} />
         <Select aria-label="Data de cadastro" value={period} onChange={(e) => setPeriod(e.target.value)} options={PERIOD_OPTIONS} />
       </ListToolbar>
 
@@ -397,6 +439,7 @@ export default function UsuariosPage() {
               <TableHead>Documento</TableHead>
               <TableHead>Organização</TableHead>
               <TableHead>Pedidos</TableHead>
+              <TableHead>Último acesso</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -428,6 +471,9 @@ export default function UsuariosPage() {
                   {user.organization?.name || "—"}
                 </TableCell>
                 <TableCell className="text-xs text-neutral-600">{user.ordersCount}</TableCell>
+                <TableCell>
+                  <LastAccess user={user} />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

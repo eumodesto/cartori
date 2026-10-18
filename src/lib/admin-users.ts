@@ -21,6 +21,8 @@ export type ManagedUser = {
   cpf: string | null;
   createdAt: string;
   updatedAt: string;
+  lastLoginAt: string | null;
+  lastSeenAt: string | null;
   organization: { id: string; name: string; plan: string } | null;
   ordersCount: number;
   dossiersCount: number;
@@ -37,6 +39,8 @@ type UserRow = Prisma.UserGetPayload<{
     cpf: true;
     createdAt: true;
     updatedAt: true;
+    lastLoginAt: true;
+    lastSeenAt: true;
     organizationMemberships: {
       select: { organization: { select: { id: true; name: true; plan: true } } };
     };
@@ -54,6 +58,8 @@ const userSelect = {
   cpf: true,
   createdAt: true,
   updatedAt: true,
+  lastLoginAt: true,
+  lastSeenAt: true,
   organizationMemberships: {
     where: { status: "ACTIVE" as const },
     select: { organization: { select: { id: true, name: true, plan: true } } },
@@ -75,6 +81,8 @@ function toManagedUser(row: UserRow): ManagedUser {
     cpf: row.cpf,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    lastLoginAt: row.lastLoginAt?.toISOString() ?? null,
+    lastSeenAt: row.lastSeenAt?.toISOString() ?? null,
     organization: org ? { id: org.id, name: org.name, plan: org.plan } : null,
     ordersCount: row._count.orders,
     dossiersCount: row._count.dossiers,

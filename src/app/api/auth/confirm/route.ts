@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
 import { isAuthLinkType } from "@/lib/auth-email-links";
 import { completePendingCompany } from "@/lib/pending-company";
+import { recordLogin } from "@/lib/presence";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createRouteSupabase } from "@/lib/supabase/route";
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const meta = user.user_metadata ?? {};
-    await syncAuthUser({
+    const profile = await syncAuthUser({
       authId: user.id,
       email: user.email,
       name: typeof meta.name === "string" ? meta.name : undefined,
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
       cpf: typeof meta.cpf === "string" ? meta.cpf : undefined,
     });
     if (type === "signup" || type === "magiclink") await completePendingCompany(supabase, user);
+    await recordLogin(profile.id);
   } catch (error) {
     if (error instanceof IdentityConflictError) {
       console.warn("[auth] identity_conflict", { reason: error.reason, source: "email_confirm" });
