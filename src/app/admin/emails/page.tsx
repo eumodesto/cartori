@@ -287,6 +287,11 @@ export default function EmailsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <PasswordInput
             label="Token de integração (Resend API Key)"
+            // Sem autopreenchimento: o navegador colocava a senha de login aqui.
+            name="resend-api-key"
+            autoComplete="new-password"
+            data-1p-ignore=""
+            data-lpignore="true"
             value={resendKey}
             onChange={(e) => setResendKey(e.target.value)}
             placeholder={

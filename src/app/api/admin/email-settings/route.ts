@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePlatformAdmin } from "@/lib/authorization";
 import { getEmailSettingsView, saveEmailSettings } from "@/lib/email-settings";
-import { WEBMAIL_DOMAINS, senderAddress } from "@/lib/email-sender";
+import { WEBMAIL_DOMAINS, isResendApiKey, senderAddress } from "@/lib/email-sender";
 import { isValidEmail } from "@/lib/validators";
 
 export async function GET() {
@@ -20,6 +20,16 @@ export async function PUT(req: NextRequest) {
   const patch: { resendApiKey?: string; fromEmail?: string } = {};
 
   if (typeof body.resendApiKey === "string" && body.resendApiKey.trim()) {
+    if (!isResendApiKey(body.resendApiKey)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Isto não parece uma chave do Resend (ela começa com re_). Se o navegador preencheu o campo sozinho com a sua senha, apague e cole a chave de resend.com/api-keys.",
+        },
+        { status: 400 }
+      );
+    }
     patch.resendApiKey = body.resendApiKey.trim();
   }
   if (typeof body.fromEmail === "string") {

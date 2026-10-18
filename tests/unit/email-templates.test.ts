@@ -71,3 +71,13 @@ describe("e-mails de acesso (saem pelo Resend)", () => {
     expect(isAuthLinkType("invite")).toBe(false);
   });
 });
+
+describe("remetente e chave do Resend", () => {
+  it("barra webmail e aceita Nome <e-mail> do domínio", async () => {
+    const { senderProblem, isResendApiKey } = await import("@/lib/email-sender");
+    expect(senderProblem("Fulano <fulano@gmail.com>")).toMatch(/gmail\.com/);
+    expect(senderProblem("InterJuri <nao-responda@interjuri.com.br>")).toBeNull();
+    expect(isResendApiKey("re_AbCdEf1234567890xyz")).toBe(true);
+    expect(isResendApiKey("minhaSenha123")).toBe(false);
+  });
+});

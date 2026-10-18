@@ -32,3 +32,8 @@ export function senderProblem(from: string): string | null {
   }
   return null;
 }
+
+/** Chave de API do Resend: começa com "re_" e não tem espaços. Barra senha colada por autopreenchimento. */
+export function isResendApiKey(value: string) {
+  return /^re_[A-Za-z0-9_-]{16,}$/.test(value.trim());
+}
