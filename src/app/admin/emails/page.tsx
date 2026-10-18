@@ -4,6 +4,7 @@ import * as React from "react";
 import { EmailOutboxLog } from "@/components/admin/email-outbox-log";
 import { Eye, RotateCcw, Save, Send } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { senderProblem } from "@/lib/email-sender";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -248,6 +249,11 @@ export default function EmailsPage() {
       />
 
       {error && <Alert variant="error">{error}</Alert>}
+      {settings && settings.resendConfigured && senderProblem(settings.fromEmail || "") && (
+        <Alert variant="error" title="Nenhum e-mail está saindo">
+          {senderProblem(settings.fromEmail || "")} Depois de salvar, use &quot;Enviar teste&quot; e reenvie os pendentes.
+        </Alert>
+      )}
 
       {/* Integração de envio */}
       <form

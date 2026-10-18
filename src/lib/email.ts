@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { renderBrandedEmail } from "@/lib/email-layout";
+import { senderProblem } from "@/lib/email-sender";
 import { resolveEmailCredentials, resolveEmailTemplate } from "@/lib/email-settings";
 import { renderTemplateString } from "@/lib/email-templates";
 import {
@@ -41,6 +42,8 @@ export async function deliverEmail(
   if (!apiKey || !from || from.includes("placeholder")) {
     return { sent: false, error: "EMAIL_FROM / RESEND_API_KEY ausentes" };
   }
+  const problem = senderProblem(from);
+  if (problem) return { sent: false, error: problem };
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",

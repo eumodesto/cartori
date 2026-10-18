@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requirePlatformAdmin } from "@/lib/authorization";
 import { getEmailSettingsView, saveEmailSettings } from "@/lib/email-settings";
+import { WEBMAIL_DOMAINS, senderAddress } from "@/lib/email-sender";
 import { isValidEmail } from "@/lib/validators";
-
-const WEBMAIL_DOMAINS = new Set([
-  "gmail.com",
-  "googlemail.com",
-  "hotmail.com",
-  "outlook.com",
-  "live.com",
-  "yahoo.com",
-  "yahoo.com.br",
-  "icloud.com",
-  "bol.com.br",
-  "uol.com.br",
-  "terra.com.br",
-]);
 
 export async function GET() {
   const gate = await requirePlatformAdmin("admin.email");
@@ -38,7 +25,7 @@ export async function PUT(req: NextRequest) {
   if (typeof body.fromEmail === "string") {
     const from = body.fromEmail.trim();
     // Aceita "e-mail" ou "Nome <e-mail>" (formato do Resend).
-    const address = (from.match(/<([^>]+)>\s*$/)?.[1] ?? from).trim().toLowerCase();
+    const address = senderAddress(from);
     if (from && !isValidEmail(address)) {
       return NextResponse.json(
         { success: false, error: "E-mail remetente inválido. Use e-mail ou Nome <e-mail>." },
