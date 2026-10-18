@@ -13,7 +13,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 
 function DashboardHome() {
-  const { profile, isBusiness, canRegisterCompany, loading } = useAuth();
+  const { profile, isBusiness, hasBusinessFeatures, canRegisterCompany, loading } = useAuth();
   const searchParams = useSearchParams();
   const [partnerOpen, setPartnerOpen] = React.useState(false);
   const [benefitsOpen, setBenefitsOpen] = React.useState(false);
@@ -39,6 +39,8 @@ function DashboardHome() {
         description={
           isBusiness
             ? "Pedidos da conta e contexto da empresa cadastrada."
+            : hasBusinessFeatures
+            ? "Administrador: os recursos empresariais do painel estão liberados."
             : "Acesso pessoal: pedidos e novas solicitações. Recursos empresariais liberam ao cadastrar o CNPJ da empresa."
         }
         actions={

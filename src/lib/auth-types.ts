@@ -77,3 +77,11 @@ export function isBusinessLockedHref(href: string) {
 export function isPartnerLockedHref(href: string) {
   return isBusinessLockedHref(href);
 }
+
+/**
+ * Recursos de empresa no painel (menus e telas B2B): conta com empresa cadastrada ou administrador
+ * da plataforma, que vê tudo o que um cliente empresa vê. Só UI; dados de tenant seguem no servidor.
+ */
+export function canUseBusinessFeatures(profile: AuthProfile | null | undefined) {
+  return isBusinessAccount(profile) || isPlatformAdminProfile(profile);
+}

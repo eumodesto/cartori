@@ -13,7 +13,7 @@ export function PartnerGate({
   title: string;
   children?: React.ReactNode;
 }) {
-  const { isBusiness, canRegisterCompany, loading } = useAuth();
+  const { hasBusinessFeatures, canRegisterCompany, loading } = useAuth();
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -24,7 +24,7 @@ export function PartnerGate({
     return <p className="text-sm text-neutral-500">Carregando...</p>;
   }
 
-  if (isBusiness) {
+  if (hasBusinessFeatures) {
     return (
       <div className="max-w-3xl space-y-3">
         <h1 className="text-2xl font-serif font-bold text-neutral-900">{title}</h1>

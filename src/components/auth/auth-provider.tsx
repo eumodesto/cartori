@@ -5,6 +5,7 @@ import {
   AuthProfile,
   canRegisterCompany,
   isBusinessAccount,
+  canUseBusinessFeatures,
   isPartnerAccount,
 } from "@/lib/auth-types";
 
@@ -13,6 +14,8 @@ type AuthContextValue = {
   loading: boolean;
   configured: boolean;
   isBusiness: boolean;
+  /** Empresa cadastrada ou administrador da plataforma: libera os recursos B2B do painel. */
+  hasBusinessFeatures: boolean;
   isPartner: boolean;
   canRegisterCompany: boolean;
   refresh: () => Promise<void>;
@@ -50,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       configured,
       isBusiness: isBusinessAccount(profile),
+      hasBusinessFeatures: canUseBusinessFeatures(profile),
       isPartner: isPartnerAccount(profile),
       canRegisterCompany: canRegisterCompany(profile),
       refresh,

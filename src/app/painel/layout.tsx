@@ -13,7 +13,7 @@ import { Layers, FileText, FilePlus2, Search, Building2, Users, Wallet, FolderOp
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { profile, isBusiness, loading, configured } = useAuth();
+  const { profile, hasBusinessFeatures, loading, configured } = useAuth();
   const [partnerOpen, setPartnerOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -31,7 +31,7 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
   }, []);
 
   const lockItem = (href: string) =>
-    !isBusiness && isBusinessLockedHref(href)
+    !hasBusinessFeatures && isBusinessLockedHref(href)
       ? { locked: true, onLockedClick: () => setPartnerOpen(true) }
       : {};
 
