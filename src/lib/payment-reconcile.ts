@@ -233,6 +233,20 @@ export async function reconcileFetchedPayment(
         data: { status: nextPaymentStatus },
       });
       if (nextPaymentStatus === PaymentStatus.REJECTED) {
+        // Histórico do pedido (e alerta do cliente/equipe): o pedido segue aguardando pagamento.
+        await prisma.caseEvent.create({
+          data: {
+            orderId: order.id,
+            type: CaseEventType.STATUS_CHANGED,
+            payload: {
+              from: order.status,
+              to: order.status,
+              display: "PAYMENT_REJECTED",
+              source: "mercadopago",
+              mpStatus: snapshot.status || null,
+            },
+          },
+        });
         await notifyAdmins("admin_payment_rejected", order.id);
       }
       return {
@@ -258,6 +272,19 @@ export async function reconcileFetchedPayment(
     prisma.order.update({
       where: { id: order.id },
       data: { status: OrderStatus.PAID },
+    }),
+    // Histórico do pedido: a aprovação vira evento (alerta "Pagamento aprovado").
+    prisma.caseEvent.create({
+      data: {
+        orderId: order.id,
+        type: CaseEventType.STATUS_CHANGED,
+        payload: {
+          from: order.status,
+          to: OrderStatus.PAID,
+          display: "PAYMENT_APPROVED",
+          source: "mercadopago",
+        },
+      },
     }),
   ]);
   await notifyAdmins("admin_order_paid", order.id);

@@ -87,8 +87,11 @@ model User {
   avatarUrl      String?
   /// Preferências de notificação por e-mail (JSON de booleans por categoria).
   notificationPrefs Json?
-  /// Legado (20260909160000): existe no banco, sem uso no código atual.
+  /// Áreas da administração liberadas a um ADMIN restrito (admin-permissions.ts). Vazio = acesso total.
   staffPermissions String[]     @default([])
+  /// "Marcar todos como lidos" da caixa de alertas: o que é anterior a esta data conta como lido.
+  alertsSeenAt   DateTime?
+  alertReads     AlertRead[]
   organizationMemberships OrganizationMember[]
   orders         Order[]
   dossiers       Dossier[]
@@ -567,4 +570,15 @@ model AppSetting {
   value     String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// Alerta lido um a um (id estável do alerta, ex. "message:<id>"). Os anteriores a User.alertsSeenAt
+/// não precisam de linha: "marcar todos" grava a data e apaga estas linhas.
+model AlertRead {
+  userId  String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertId String
+  readAt  DateTime @default(now())
+
+  @@id([userId, alertId])
 }
