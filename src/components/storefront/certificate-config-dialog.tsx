@@ -22,7 +22,7 @@ import {
   inteiroTeorRadioOptions,
   isInteiroTeorBoth,
 } from "@/lib/inteiro-teor";
-import { expandInteiroTeorCartItems, apostillePriceFor, listPriceFor, priceCertificate } from "@/lib/pricing";
+import { expandInteiroTeorCartItems, apostillePriceFor, priceCertificate } from "@/lib/pricing";
 import {
   CartItem,
   CertificateFormat,
@@ -360,9 +360,6 @@ export function CertificateConfigDialog({
 
   const previewTotal = issuanceItems.reduce((sum, item) => sum + item.itemTotal, 0);
 
-  const digitalList = listPriceFor(certificate, "DIGITAL_ECERTIDAO", selectedUf);
-  const paperList = listPriceFor(certificate, "PHYSICAL_PAPER", selectedUf);
-  const bothList = listPriceFor(certificate, "BOTH", selectedUf);
   const apostilleAmount = apostillePriceFor(certificate, selectedUf);
 
   useEffect(() => {
@@ -691,23 +688,22 @@ export function CertificateConfigDialog({
               options={[
                 {
                   value: "DIGITAL_ECERTIDAO",
-                  label: `E-certidão digital — ${formatCurrency(digitalList)}`,
-                  description: usesUfTable && !selectedUf
-                    ? "Selecione o estado para o preço da tabela UF."
-                    : "PDF com assinatura ICP-Brasil, sem frete.",
+                  // Preço fora das opções; o valor segue no cálculo do pedido.
+                  label: "E-certidão digital",
+                  description: "PDF com assinatura ICP-Brasil, sem frete.",
                 },
                 ...(certificate.hasShippingOption
                   ? [
                       {
                         value: "PHYSICAL_PAPER",
-                        label: `Papel moeda — ${formatCurrency(paperList)} + frete ${formatCurrency(certificate.shippingPrice)}`,
-                        description: "Via física enviada pelos Correios.",
+                        label: "Papel moeda",
+                        description: "Via física enviada pelos Correios, com frete.",
                       },
                       {
                         value: "BOTH",
-                        label: `Digital + físico — ${formatCurrency(bothList)} + frete ${formatCurrency(certificate.shippingPrice)}`,
+                        label: "Digital + físico",
                         description:
-                          "PDF liberado no painel quando o cartório concluir a emissão, mais a via em papel pelos Correios.",
+                          "PDF liberado no painel quando o cartório concluir a emissão, mais a via em papel pelos Correios, com frete.",
                       },
                     ]
                   : []),
