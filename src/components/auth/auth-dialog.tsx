@@ -200,7 +200,7 @@ export function AuthDialog({
       }
       setNoticeTitle("Verifique seu e-mail");
       setNotice(
-        "Se houver uma conta com este e-mail, enviamos um link para criar uma nova senha. Abra o link neste mesmo navegador."
+        "Se houver uma conta com este e-mail, enviamos um link para criar uma nova senha. Confira também a caixa de spam."
       );
     } catch {
       setError("Falha de conexão. Tente de novo.");

@@ -31,6 +31,16 @@ export interface EmailTemplateDef {
 }
 
 const V = {
+  actionLink: {
+    name: "actionLink",
+    description: "Link de acesso de uso único (expira; não fica salvo no registro de envios)",
+    sample: "https://www.interjuri.com.br/auth/confirmar?token_hash=exemplo",
+  },
+  newEmail: {
+    name: "newEmail",
+    description: "Novo e-mail pedido na troca",
+    sample: "maria.nova@exemplo.com.br",
+  },
   customerName: {
     name: "customerName",
     description: "Nome do cliente/solicitante",
@@ -235,6 +245,50 @@ export const EMAIL_TEMPLATE_DEFS: EmailTemplateDef[] = [
       "Olá, {{customerName}}!\n\nSua conta na InterJuri foi criada com sucesso. A partir do seu painel você solicita certidões, acompanha o status e recebe os documentos.\n\nAcesse o painel:\n{{appLink}}" +
       SIGN,
     variables: [V.customerName, V.appLink],
+  },
+  {
+    key: "auth_confirm_signup",
+    group: "conta",
+    label: "Confirmar cadastro",
+    description: "Link para confirmar o e-mail e ativar a conta criada no site.",
+    subject: "Confirme seu cadastro na InterJuri",
+    body:
+      "Olá, {{customerName}}!\n\nFalta um passo para ativar a sua conta na InterJuri. Abra o link abaixo e clique em \"Confirmar e entrar\":\n\n{{actionLink}}\n\nO link vale por tempo limitado e pode ser usado uma vez. Se você não criou esta conta, ignore este e-mail." +
+      SIGN,
+    variables: [V.customerName, V.actionLink],
+  },
+  {
+    key: "auth_password_reset",
+    group: "conta",
+    label: "Redefinir senha",
+    description: "Link de \"Esqueci minha senha\".",
+    subject: "Redefinir sua senha na InterJuri",
+    body:
+      "Olá, {{customerName}}!\n\nRecebemos um pedido para redefinir a senha da sua conta. Abra o link abaixo para criar uma nova senha:\n\n{{actionLink}}\n\nO link vale por tempo limitado e pode ser usado uma vez. Se não foi você, ignore este e-mail: a senha atual continua valendo." +
+      SIGN,
+    variables: [V.customerName, V.actionLink],
+  },
+  {
+    key: "auth_email_change",
+    group: "conta",
+    label: "Confirmar novo e-mail",
+    description: "Enviado ao novo endereço quando a pessoa troca o e-mail da conta.",
+    subject: "Confirme seu novo e-mail na InterJuri",
+    body:
+      "Olá, {{customerName}}!\n\nPara que {{newEmail}} passe a ser o e-mail da sua conta na InterJuri, abra o link abaixo e confirme:\n\n{{actionLink}}\n\nO link vale por tempo limitado e pode ser usado uma vez. Se você não pediu a troca, ignore este e-mail." +
+      SIGN,
+    variables: [V.customerName, V.newEmail, V.actionLink],
+  },
+  {
+    key: "auth_email_change_notice",
+    group: "conta",
+    label: "Aviso de troca de e-mail",
+    description: "Enviado ao e-mail atual avisando que foi pedida a troca para outro endereço.",
+    subject: "Pedido de troca do e-mail da sua conta InterJuri",
+    body:
+      "Olá, {{customerName}}!\n\nFoi pedida a troca do e-mail da sua conta na InterJuri para {{newEmail}}. A troca só vale depois da confirmação no novo endereço.\n\nSe não foi você, troque a sua senha e fale com o suporte: atendimento@interjuri.com.br" +
+      SIGN,
+    variables: [V.customerName, V.newEmail],
   },
   {
     key: "account_invited",

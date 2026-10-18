@@ -21,9 +21,9 @@ export type OutboxRow = {
   protocol: string | null;
 };
 
-function payloadOf(value: Prisma.JsonValue): { subject?: string; text?: string } {
+function payloadOf(value: Prisma.JsonValue): { subject?: string; text?: string; sensitive?: boolean } {
   return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as { subject?: string; text?: string })
+    ? (value as { subject?: string; text?: string; sensitive?: boolean })
     : {};
 }
 
@@ -77,7 +77,12 @@ export async function resendOutbox(ids: string[]) {
   let sent = 0;
   const failed: Array<{ id: string; error: string }> = [];
   for (const row of rows) {
-    const { subject, text } = payloadOf(row.payload);
+    const { subject, text, sensitive } = payloadOf(row.payload);
+    if (sensitive) {
+      // Link de acesso não fica salvo: a pessoa pede um novo (cadastro, senha ou troca de e-mail).
+      failed.push({ id: row.id, error: "e-mail de acesso não é reenviado; a pessoa deve pedir um novo link" });
+      continue;
+    }
     if (!subject || !text) {
       await prisma.emailOutbox.update({
         where: { id: row.id },

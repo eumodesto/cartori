@@ -67,6 +67,8 @@ export async function queueTemplateEmail(input: {
   toUserId?: string | null;
   orderId?: string | null;
   vars: Record<string, string | number | null | undefined>;
+  /** Trechos que não ficam gravados no registro (links de acesso). O e-mail sai completo. */
+  redact?: string[];
 }): Promise<string | null> {
   try {
     const email = input.to.trim().toLowerCase();
@@ -87,7 +89,14 @@ export async function queueTemplateEmail(input: {
         toEmail: email,
         toUserId: input.toUserId || null,
         template: input.key,
-        payload: { subject, text, source: resolved.source },
+        payload: input.redact?.length
+          ? {
+              subject,
+              text: input.redact.reduce((acc, secret) => acc.split(secret).join("[link de acesso removido]"), text),
+              source: resolved.source,
+              sensitive: true,
+            }
+          : { subject, text, source: resolved.source },
       },
     });
 

@@ -46,12 +46,21 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const sentAt = user?.recovery_sent_at ? Date.parse(user.recovery_sent_at) : NaN;
-  if (!user || !Number.isFinite(sentAt) || Date.now() - sentAt > RECOVERY_WINDOW_MS) {
+  // Link do Resend: a sessão nasce do token de recuperação (método "recovery" no login atual).
+  const aal = user ? await supabase.auth.mfa.getAuthenticatorAssuranceLevel() : null;
+  const recoveryLogin = (aal?.data?.currentAuthenticationMethods ?? []).some(
+    (item) =>
+      typeof item === "object" &&
+      item.method === "recovery" &&
+      Date.now() - item.timestamp * 1000 <= RECOVERY_WINDOW_MS
+  );
+  const recentRequest = Number.isFinite(sentAt) && Date.now() - sentAt <= RECOVERY_WINDOW_MS;
+  if (!user || (!recoveryLogin && !recentRequest)) {
     return json(
       {
         success: false,
         expired: true,
-        error: "O link de recuperação expirou ou não foi aberto neste navegador. Peça um novo link.",
+        error: "O link de recuperação expirou. Peça um novo link.",
       },
       { status: 401 }
     );

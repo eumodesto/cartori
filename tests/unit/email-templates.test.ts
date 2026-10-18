@@ -52,3 +52,22 @@ describe("e-mails de pagamento ao cliente", () => {
     }
   });
 });
+
+describe("e-mails de acesso (saem pelo Resend)", () => {
+  it("templates existem, sempre enviam e usam o link de acesso", async () => {
+    const { getEmailTemplateDef } = await import("@/lib/email-templates");
+    const { notificationCategoryForTemplate } = await import("@/lib/notification-prefs");
+    for (const key of ["auth_confirm_signup", "auth_password_reset", "auth_email_change"]) {
+      const def = getEmailTemplateDef(key);
+      expect(def?.body, key).toContain("{{actionLink}}");
+      expect(notificationCategoryForTemplate(key)).toBeNull();
+    }
+    expect(getEmailTemplateDef("auth_email_change_notice")?.body).not.toContain("{{actionLink}}");
+  });
+
+  it("só aceita os tipos de link conhecidos", async () => {
+    const { isAuthLinkType } = await import("@/lib/auth-email-links");
+    expect(isAuthLinkType("recovery")).toBe(true);
+    expect(isAuthLinkType("invite")).toBe(false);
+  });
+});

@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requireAuth } from "@/lib/authorization";
 import { prisma } from "@/lib/prisma";
 import { isSupabaseConfigured, supabasePublicConfig } from "@/lib/supabase/config";
-import { createRouteSupabase } from "@/lib/supabase/route";
+import { confirmUrl, generateAuthToken, sendAuthEmail } from "@/lib/auth-email-links";
 import { isValidEmail } from "@/lib/validators";
 
 export async function POST(req: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   const current = await prisma.user.findUnique({
     where: { id: auth.context.userId },
-    select: { email: true },
+    select: { email: true, name: true },
   });
   if (!current?.email) {
     return NextResponse.json({ success: false, error: "Conta não encontrada." }, { status: 404 });
@@ -79,17 +79,40 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Dispara a troca via Supabase (envia confirmação ao novo e-mail).
-  const { supabase, json } = createRouteSupabase();
-  const updated = await supabase.auth.updateUser({ email: newEmail });
-  if (updated.error) {
-    return json(
-      { success: false, error: authErrorMessage(updated.error.message, "Não foi possível iniciar a troca de e-mail.") },
+  // Token gerado no Supabase, e-mails pelo Resend: link no novo endereço, aviso no atual.
+  const token = await generateAuthToken({ type: "email_change", email: current.email, newEmail });
+  if (!token.ok) {
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          token.reason === "exists"
+            ? "Este e-mail já está em uso."
+            : authErrorMessage(token.message, "Não foi possível iniciar a troca de e-mail."),
+      },
       { status: 400 }
     );
   }
+  const name = current.name || current.email;
+  await Promise.all([
+    sendAuthEmail({
+      key: "auth_email_change",
+      to: newEmail,
+      userId: auth.context.userId,
+      customerName: name,
+      newEmail,
+      actionLink: confirmUrl(req, token.tokenHash, "email_change", "/painel/perfil"),
+    }),
+    sendAuthEmail({
+      key: "auth_email_change_notice",
+      to: current.email,
+      userId: auth.context.userId,
+      customerName: name,
+      newEmail,
+    }),
+  ]);
 
-  return json({
+  return NextResponse.json({
     success: true,
     message:
       "Enviamos um link de confirmação para o novo e-mail. A troca é concluída após você confirmar por lá.",

@@ -1,15 +1,14 @@
 import { NextRequest } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { createRouteSupabase } from "@/lib/supabase/route";
-import { cartoriAuthCallbackUrl } from "@/lib/supabase/site-url";
+import { confirmUrl, generateAuthToken, sendAuthEmail } from "@/lib/auth-email-links";
+import { prisma } from "@/lib/prisma";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { safeAppPath } from "@/lib/utils";
 import { isValidEmail } from "@/lib/validators";
 
-const RESET_PASSWORD_PATH = "/redefinir-senha";
 
 /**
- * Envia o link de redefinição de senha (Supabase Auth).
+ * Envia o link de redefinição de senha pelo Resend (o Supabase só gera o token).
  * Resposta é sempre a mesma para e-mail existente ou não (sem enumeração de contas).
  */
 export async function POST(req: NextRequest) {
@@ -34,18 +33,22 @@ export async function POST(req: NextRequest) {
   }
   const next = safeAppPath(String((body as { next?: unknown }).next || ""), "/painel");
 
-  const { supabase, json } = createRouteSupabase();
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: cartoriAuthCallbackUrl(
-      req,
-      `${RESET_PASSWORD_PATH}?next=${encodeURIComponent(next)}`
-    ),
-  });
-  if (error) {
-    // Não revela se a conta existe; registra para diagnóstico (limite de envio, URL não liberada…).
-    console.warn("[auth] password_reset_request_failed", { message: error.message });
+  const token = await generateAuthToken({ type: "recovery", email });
+  if (token.ok) {
+    const profile = await prisma.user.findUnique({ where: { email }, select: { id: true, name: true } });
+    await sendAuthEmail({
+      key: "auth_password_reset",
+      to: email,
+      userId: profile?.id,
+      customerName: profile?.name || email,
+      // O destino final é /redefinir-senha (a rota de confirmação leva até lá).
+      actionLink: confirmUrl(req, token.tokenHash, "recovery", next),
+    });
+  } else if (token.reason !== "not_found") {
+    // Não revela se a conta existe; registra para diagnóstico.
+    console.warn("[auth] password_reset_request_failed", { reason: token.reason, message: token.message });
   }
 
-  // json() devolve os cookies do PKCE: o link precisa ser aberto neste navegador.
-  return json({ success: true });
+  // O link vale em qualquer navegador (não depende mais do cookie PKCE deste).
+  return Response.json({ success: true });
 }
