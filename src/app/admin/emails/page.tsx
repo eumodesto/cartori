@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { EmailOutboxLog } from "@/components/admin/email-outbox-log";
-import { Eye, RotateCcw, Save } from "lucide-react";
+import { Eye, RotateCcw, Save, Send } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { PageHeader } from "@/components/layout/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,9 @@ export default function EmailsPage() {
   const [subject, setSubject] = React.useState("");
   const [body, setBody] = React.useState("");
   const [savingTpl, setSavingTpl] = React.useState(false);
+  const { profile } = useAuth();
+  const [testTo, setTestTo] = React.useState("");
+  const [sendingTest, setSendingTest] = React.useState(false);
   const [tplMessage, setTplMessage] = React.useState<
     { type: "success" | "error"; text: string } | null
   >(null);
@@ -162,6 +166,34 @@ export default function EmailsPage() {
       setTplMessage({ type: "error", text: "Falha ao restaurar o template." });
     } finally {
       setSavingTpl(false);
+    }
+  };
+
+  // Destino do teste começa no e-mail de quem está logado.
+  React.useEffect(() => {
+    if (profile?.email) setTestTo((current) => current || profile.email);
+  }, [profile?.email]);
+
+  const sendTemplateTest = async () => {
+    if (!selected) return;
+    setSendingTest(true);
+    setTplMessage(null);
+    try {
+      const res = await fetch(`/api/admin/email-templates/${selected.key}/test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: testTo, subject, body }),
+      });
+      const data = await res.json().catch(() => ({}));
+      setTplMessage(
+        data.success
+          ? { type: "success", text: `Teste de "${selected.label}" enviado para ${testTo}, com dados de exemplo${dirty ? " e o texto ainda não salvo" : ""}.` }
+          : { type: "error", text: data.error || "Não foi possível enviar o teste." }
+      );
+    } catch {
+      setTplMessage({ type: "error", text: "Falha de conexão ao enviar o teste." });
+    } finally {
+      setSendingTest(false);
     }
   };
 
@@ -369,6 +401,28 @@ export default function EmailsPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-3 sm:flex-row sm:items-end">
+                <div className="sm:flex-1">
+                  <Input
+                    label="Enviar teste deste template para"
+                    type="email"
+                    value={testTo}
+                    onChange={(e) => setTestTo(e.target.value)}
+                    placeholder="voce@empresa.com.br"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={sendTemplateTest}
+                  isLoading={sendingTest}
+                  disabled={!testTo}
+                  leftIcon={<Send className="w-4 h-4" />}
+                >
+                  Enviar teste
+                </Button>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
