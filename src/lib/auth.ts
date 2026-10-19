@@ -1,4 +1,5 @@
 import { Prisma, OrganizationPlan, UserRole } from "@prisma/client";
+import { runInBackground } from "@/lib/background";
 import { prisma } from "@/lib/prisma";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -223,8 +224,8 @@ export async function syncAuthUser(input: {
       },
     });
 
-    // E-mail de boas-vindas (nova conta). Aguardado: na Vercel, envio solto pode ser cortado; nunca lança.
-    await queueTemplateEmail({
+    // Boas-vindas depois da resposta (waitUntil): o cadastro não espera o Resend.
+    runInBackground("account_created_email", queueTemplateEmail({
       key: "account_created",
       to: row.email,
       toUserId: row.id,
@@ -232,7 +233,7 @@ export async function syncAuthUser(input: {
         customerName: row.name || row.email,
         appLink: siteUrl("/painel"),
       },
-    });
+    }));
 
     return toProfile(row);
   } catch (error) {

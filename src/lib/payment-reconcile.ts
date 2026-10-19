@@ -1,5 +1,6 @@
 import { CaseEventType, OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { notifyAdmins } from "@/lib/admin-notifications";
+import { runInBackground } from "@/lib/background";
 import { notifyCustomerPayment } from "@/lib/case-email";
 import { getPaymentById } from "@/lib/mercadopago";
 import { moneyToCents } from "@/lib/money-cents";
@@ -215,7 +216,7 @@ export async function reconcileFetchedPayment(
       mpStatus: snapshot.status,
       from: order.status,
     });
-    await notifyCustomerPayment(order.id, "refunded");
+    runInBackground("refund_notifications", notifyCustomerPayment(order.id, "refunded"));
     return { applied: true, paid: false, reason: "refunded", ...resultBase };
   }
 
@@ -249,10 +250,10 @@ export async function reconcileFetchedPayment(
             },
           },
         });
-        await Promise.all([
-          notifyAdmins("admin_payment_rejected", order.id),
-          notifyCustomerPayment(order.id, "rejected"),
-        ]);
+        runInBackground(
+          "rejected_notifications",
+          Promise.all([notifyAdmins("admin_payment_rejected", order.id), notifyCustomerPayment(order.id, "rejected")])
+        );
       }
       return {
         applied: true,
@@ -292,10 +293,10 @@ export async function reconcileFetchedPayment(
       },
     }),
   ]);
-  await Promise.all([
-    notifyAdmins("admin_order_paid", order.id),
-    notifyCustomerPayment(order.id, "approved"),
-  ]);
+  runInBackground(
+    "paid_notifications",
+    Promise.all([notifyAdmins("admin_order_paid", order.id), notifyCustomerPayment(order.id, "approved")])
+  );
 
   return { applied: true, paid: true, reason: "paid", ...resultBase };
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { runInBackground } from "@/lib/background";
 import { pendingCancellationOrderIds } from "@/lib/cancellation-store";
 import { orderOwnerFromContext, requireAuth } from "@/lib/authorization";
 import { queueTemplateEmail } from "@/lib/email";
@@ -96,15 +97,17 @@ export async function POST(req: NextRequest) {
       where: { id: auth.context.userId },
       select: { name: true, phone: true, cpf: true },
     });
+    // Só grava o perfil quando algo mudou: cada ida ao banco pesa no tempo do checkout.
+    const nextName = String(customer.fullName || "").trim() || current?.name;
+    const nextPhone = digitsOnly(customer.phone || "") || current?.phone;
+    const addCpf = Boolean(cpfDigits && !current?.cpf);
     try {
-      await prisma.user.update({
-        where: { id: auth.context.userId },
-        data: {
-          name: String(customer.fullName || "").trim() || current?.name,
-          phone: digitsOnly(customer.phone || "") || current?.phone,
-          ...(cpfDigits && !current?.cpf ? { cpf: cpfDigits } : {}),
-        },
-      });
+      if (nextName !== current?.name || nextPhone !== current?.phone || addCpf) {
+        await prisma.user.update({
+          where: { id: auth.context.userId },
+          data: { name: nextName, phone: nextPhone, ...(addCpf ? { cpf: cpfDigits } : {}) },
+        });
+      }
     } catch {
       // CPF duplicado não transfere identidade e não deve impedir o pedido.
     }
@@ -115,12 +118,13 @@ export async function POST(req: NextRequest) {
     );
     const order = await createOrder(draft);
 
-    // Notificações do pedido. Aguardadas: na Vercel, envio solto pode ser cortado ao responder; nunca lançam.
+    // Notificações do pedido depois da resposta (waitUntil): não atrasam o checkout e não se perdem.
     const orderLink = `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.interjuri.com.br").replace(/\/$/, "")}/painel/pedidos/${order.id}`;
     const itemsList = order.items
       .map((item) => `- ${item.certificateName} (${item.city}/${item.state})`)
       .join("\n");
-    await queueTemplateEmail({
+    const notifications: Promise<unknown>[] = [];
+    notifications.push(queueTemplateEmail({
       key: "order_created",
       to: order.customerEmail,
       toUserId: order.userId,
@@ -132,14 +136,14 @@ export async function POST(req: NextRequest) {
         itemsList,
         orderLink,
       },
-    });
-    await notifyAdmins("admin_order_pending", order.id);
+    }));
+    notifications.push(notifyAdmins("admin_order_pending", order.id));
     if (
       order.items.some(
         (item) => item.certificateType === "certidao-negativa-de-testamento"
       )
     ) {
-      await queueTemplateEmail({
+      notifications.push(queueTemplateEmail({
         key: "docs_request_testamento",
         to: order.customerEmail,
         toUserId: order.userId,
@@ -149,8 +153,10 @@ export async function POST(req: NextRequest) {
           protocol: order.protocol,
           orderLink,
         },
-      });
+      }));
     }
+
+    runInBackground("order_notifications", Promise.all(notifications));
 
     if (paymentMethod === "CREDIT_CARD") {
       const prepared = await prepareCardOrder(order);
