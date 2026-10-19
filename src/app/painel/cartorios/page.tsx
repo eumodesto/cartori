@@ -68,8 +68,8 @@ export default function CartoriosPage() {
           setCartorios([]);
           return;
         }
-        // Placeholders (busca pela equipe) não são serventias de verdade: ficam fora da consulta.
-        setCartorios(((data.cartorios || []) as CartorioInfo[]).filter((item) => item.source !== "placeholder"));
+        // Fora das capitais, a base só tem o nome provável da serventia (placeholder): aparece marcado.
+        setCartorios((data.cartorios || []) as CartorioInfo[]);
       })
       .catch(() => setError("Falha ao consultar os cartórios."))
       .finally(() => setLoading(false));
@@ -129,6 +129,11 @@ export default function CartoriosPage() {
                       {item.attribution}
                       {item.cns ? ` · CNS ${item.cns}` : ""}
                     </p>
+                    {item.source === "placeholder" && (
+                      <p className="mt-1 inline-flex rounded-full bg-semantic-warning-bg px-2 py-0.5 text-[11px] font-medium text-semantic-warning">
+                        Nome provável: a equipe confirma a serventia no pedido
+                      </p>
+                    )}
                   </div>
                 </div>
                 <p className="flex items-start gap-2 text-sm text-neutral-700">
