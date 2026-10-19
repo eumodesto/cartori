@@ -61,6 +61,8 @@ export function isPartnerAccount(profile: AuthProfile | null | undefined) {
 }
 
 export const B2B_LOCKED_HREFS = [
+  // Ainda em construção: só empresa cadastrada (e administrador) abre.
+  "/painel/dossies",
   "/painel/empresa",
   "/painel/equipe",
   "/painel/financeiro",

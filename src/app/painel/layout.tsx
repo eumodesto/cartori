@@ -61,13 +61,6 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           isActive: pathname.startsWith("/painel/pedidos"),
         },
         {
-          id: "dossiers",
-          label: "Dossiês & Processos",
-          href: "/painel/dossies",
-          icon: <FolderOpen className="w-4 h-4" />,
-          isActive: pathname.startsWith("/painel/dossies"),
-        },
-        {
           id: "search",
           label: "Consulta de cartórios",
           href: "/painel/cartorios",
@@ -79,6 +72,14 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
     {
       label: "Gestão B2B",
       items: [
+        {
+          id: "dossiers",
+          label: "Dossiês & Processos",
+          href: "/painel/dossies",
+          icon: <FolderOpen className="w-4 h-4" />,
+          isActive: pathname.startsWith("/painel/dossies"),
+          ...lockItem("/painel/dossies"),
+        },
         {
           id: "org",
           label: "Empresa & Filiais",
