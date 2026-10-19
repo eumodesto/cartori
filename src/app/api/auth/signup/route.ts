@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
-import { COMPANY_DASHBOARD_PATH } from "@/lib/auth-intent";
 import { lookupCnpj } from "@/lib/cnpj";
-import { PENDING_COMPANY_KEY, type PendingCompany } from "@/lib/pending-company";
+import { completePendingCompany, PENDING_COMPANY_KEY, type PendingCompany } from "@/lib/pending-company";
 import { prisma } from "@/lib/prisma";
 import {
   formatProfessionalRegistry,
@@ -9,8 +8,10 @@ import {
 } from "@/lib/professional-registry";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { authErrorMessage } from "@/lib/supabase/auth-errors";
-import { confirmUrl, generateAuthToken, sendAuthEmail } from "@/lib/auth-email-links";
-import { findAuthUserByEmail } from "@/lib/supabase/admin";
+import { IdentityConflictError, syncAuthUser } from "@/lib/auth";
+import { recordLogin } from "@/lib/presence";
+import { createAdminSupabase, deleteAuthUser } from "@/lib/supabase/admin";
+import { createRouteSupabase } from "@/lib/supabase/route";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { TERMS_VERSION } from "@/lib/terms";
 import { digitsOnly } from "@/lib/utils";
@@ -158,55 +159,56 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // A confirmação sai pelo Resend: o Supabase só gera o token (generateLink não envia e-mail).
-  const message = pendingCompany
-    ? "Enviamos um link de confirmação para o seu e-mail. Ao abrir o link, a conta e a empresa ficam ativas."
-    : "Enviamos um link de confirmação para o seu e-mail. A conta só entra depois que você abrir esse link.";
-  const nextPath = pendingCompany ? COMPANY_DASHBOARD_PATH : "/painel";
-  const data = {
-    name,
-    phone,
-    // CPF vai no metadata para o cadastro no banco ao confirmar o e-mail.
-    ...(cpf ? { cpf } : {}),
-    app: "cartori",
-    account_type: accountType,
-    terms_version: TERMS_VERSION,
-    terms_accepted_at: new Date().toISOString(),
-    ...(pendingCompany ? { [PENDING_COMPANY_KEY]: pendingCompany } : {}),
-  };
+  // Conta entra na hora (sem e-mail de confirmação): criada já confirmada pelo admin do
+  // Supabase, que não envia nada. As boas-vindas saem pelo Resend no cadastro do banco.
+  const admin = createAdminSupabase();
+  if (!admin) return badRequest("Cadastro indisponível no momento. Tente de novo em instantes.", 503);
 
-  let token = await generateAuthToken({ type: "signup", email, password, data });
-  if (!token.ok && token.reason === "exists") {
-    // Já existe: se ainda não confirmou, manda um novo link de confirmação; se já confirmou,
-    // a resposta é a mesma (não revela se o e-mail tem conta).
-    const existing = await findAuthUserByEmail(email);
-    if (!existing || existing.email_confirmed_at) {
-      return Response.json({ success: true, needsConfirmation: true, message });
-    }
-    token = await generateAuthToken({ type: "magiclink", email });
-    if (token.ok) {
-      await sendAuthEmail({
-        key: "auth_confirm_signup",
-        to: email,
-        customerName: name,
-        actionLink: confirmUrl(req, token.tokenHash, "magiclink", nextPath),
-      });
-    }
-    return Response.json({ success: true, needsConfirmation: true, message });
-  }
-  if (!token.ok) {
-    const error =
-      token.reason === "unavailable"
-        ? "Cadastro indisponível no momento. Tente de novo em instantes."
-        : authErrorMessage(token.message, "Não foi possível criar a conta.");
-    return badRequest(error);
-  }
-
-  await sendAuthEmail({
-    key: "auth_confirm_signup",
-    to: email,
-    customerName: name,
-    actionLink: confirmUrl(req, token.tokenHash, "signup", nextPath),
+  const created = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      name,
+      phone,
+      ...(cpf ? { cpf } : {}),
+      app: "cartori",
+      account_type: accountType,
+      terms_version: TERMS_VERSION,
+      terms_accepted_at: new Date().toISOString(),
+      ...(pendingCompany ? { [PENDING_COMPANY_KEY]: pendingCompany } : {}),
+    },
   });
-  return Response.json({ success: true, needsConfirmation: true, message });
+  if (created.error || !created.data.user) {
+    const message = created.error?.message || "";
+    if (/already|registered|exists/i.test(message)) {
+      return badRequest("Já existe uma conta com este e-mail. Entre com a sua senha ou use \"Esqueci minha senha\".", 409);
+    }
+    console.warn("[auth] signup_create_failed", { message });
+    return badRequest(authErrorMessage(message, "Não foi possível criar a conta."));
+  }
+  const authUser = created.data.user;
+
+  // Abre a sessão neste navegador (cookies na resposta).
+  const { supabase, json } = createRouteSupabase();
+  const signed = await supabase.auth.signInWithPassword({ email, password });
+  if (signed.error || !signed.data.user) {
+    await deleteAuthUser(authUser.id);
+    console.warn("[auth] signup_signin_failed", { message: signed.error?.message });
+    return badRequest("Não foi possível entrar na conta agora. Tente de novo.");
+  }
+
+  try {
+    const profile = await syncAuthUser({ authId: authUser.id, email, name, phone, cpf });
+    await completePendingCompany(supabase, signed.data.user);
+    await recordLogin(profile.id);
+    return json({ success: true, profile });
+  } catch (error) {
+    if (error instanceof IdentityConflictError) {
+      await supabase.auth.signOut();
+      await deleteAuthUser(authUser.id);
+      return json({ success: false, error: error.message }, { status: error.status });
+    }
+    throw error;
+  }
 }
