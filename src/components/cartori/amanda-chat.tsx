@@ -19,9 +19,10 @@ import {
 type ChatMessage = AmandaChatMessage;
 
 const SUGGESTIONS = [
-  "Quanto custa a certidão de nascimento?",
-  "Qual o prazo da CENSEC?",
-  "O que é matrícula de imóvel?",
+  "Como está o meu último pedido?",
+  "Quanto falta para minha certidão ficar pronta?",
+  "Como cancelo um pedido?",
+  "Quero falar com uma pessoa",
 ];
 
 export function AmandaChat({
@@ -233,7 +234,7 @@ export function AmandaChat({
                   Olá, eu sou a Amanda.
                 </h3>
                 <p className="text-slate-100 text-xs leading-relaxed">
-                  Pergunte sobre o serviço que você precisa. Eu respondo a sua dúvida e te direciono ao pedido certo.
+                  Pergunte sobre seus pedidos, prazos, certidões ou como usar o site. Se precisar, te passo para uma pessoa da equipe.
                 </p>
               </div>
             </div>

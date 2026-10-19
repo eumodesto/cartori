@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clientHasPurchase, isAmandaClient } from "@/lib/amanda-access";
+import { buildAmandaAccountContext } from "@/lib/amanda-context";
+import { sanitizeAmandaReply } from "@/lib/amanda-guard";
 import { buildAmandaSystemPrompt } from "@/lib/amanda-knowledge";
 import { extractAmandaProducts } from "@/lib/amanda-products";
 import { requireAuth } from "@/lib/authorization";
@@ -34,51 +36,51 @@ function sanitizeMessages(input: unknown): ChatTurn[] {
     }));
 }
 
-async function requireAmandaClient() {
+async function requireAmandaClient(): Promise<{ denied: NextResponse } | { denied: null; userId: string }> {
   const auth = await requireAuth();
   if (!auth.ok) {
-    return NextResponse.json(
+    return { denied: NextResponse.json(
       {
         available: false,
         success: false,
         error: "Entre na conta para falar com a Amanda.",
       },
       { status: 401 }
-    );
+    ) };
   }
   if (!isAmandaClient(auth.context)) {
-    return NextResponse.json(
+    return { denied: NextResponse.json(
       {
         available: false,
         success: false,
         error: "A Amanda fica no painel do cliente.",
       },
       { status: 403 }
-    );
+    ) };
   }
   const purchased = await clientHasPurchase(auth.context.userId);
   if (!purchased) {
-    return NextResponse.json(
+    return { denied: NextResponse.json(
       {
         available: false,
         success: false,
         error: "A Amanda aparece no painel depois do primeiro pedido.",
       },
       { status: 403 }
-    );
+    ) };
   }
-  return null;
+  return { denied: null, userId: auth.context.userId };
 }
 
 export async function GET() {
-  const denied = await requireAmandaClient();
-  if (denied) return NextResponse.json({ available: false });
+  const access = await requireAmandaClient();
+  if (access.denied) return NextResponse.json({ available: false });
   return NextResponse.json({ available: true });
 }
 
 export async function POST(req: NextRequest) {
-  const denied = await requireAmandaClient();
-  if (denied) return denied;
+  const access = await requireAmandaClient();
+  if (access.denied) return access.denied;
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -112,6 +114,11 @@ export async function POST(req: NextRequest) {
   }
 
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  // Dados da conta logada (pedidos, prazos, cancelamento): só do próprio usuário.
+  const accountContext = await buildAmandaAccountContext(access.userId).catch((error) => {
+    console.error("Amanda account context failure:", error);
+    return "";
+  });
 
   try {
     const openaiResponse = await fetch(OPENAI_URL, {
@@ -123,9 +130,9 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model,
         temperature: 0.2,
-        max_tokens: 420,
+        max_tokens: 600,
         messages: [
-          { role: "system", content: buildAmandaSystemPrompt() },
+          { role: "system", content: buildAmandaSystemPrompt(accountContext) },
           ...history,
         ],
       }),
@@ -149,10 +156,10 @@ export async function POST(req: NextRequest) {
       payload?.choices?.[0]?.message?.content?.trim() ||
       "Não consegui montar uma resposta agora. Pode reformular a pergunta?";
 
-    const { text: reply, products } = extractAmandaProducts(
-      rawReply,
-      lastUser.content
-    );
+    // Filtro final: nunca link externo nem indicação de órgão oficial, mesmo se o modelo errar.
+    const guarded = sanitizeAmandaReply(rawReply);
+    if (guarded.removed > 0) console.warn("[amanda] reply_sanitized", { removed: guarded.removed });
+    const { text: reply, products } = extractAmandaProducts(guarded.text, lastUser.content);
 
     return NextResponse.json({ success: true, reply, products });
   } catch (error) {

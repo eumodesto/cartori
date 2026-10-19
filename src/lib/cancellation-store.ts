@@ -283,3 +283,28 @@ export async function resolveCancellation(input: {
   });
   return { ok: true };
 }
+
+/** Pedidos recentes do usuário com etapa, prazo e cancelamento (contexto da Amanda). */
+export async function listUserOrderJourneys(userId: string, take = 8) {
+  const orders = await prisma.order.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take,
+    select: {
+      id: true,
+      protocol: true,
+      status: true,
+      userId: true,
+      customerName: true,
+      customerEmail: true,
+      totalAmount: true,
+      createdAt: true,
+      items: { select: { certificateType: true, estimatedDays: true, certificateName: true, city: true, state: true } },
+      payments: { select: { status: true, createdAt: true, updatedAt: true }, orderBy: { createdAt: "desc" } },
+      cancellationRequests: { orderBy: { createdAt: "desc" }, take: 1 },
+      caseAttachments: { select: { kind: true, uploadedByUserId: true } },
+      caseMessages: { select: { authorKind: true, createdAt: true }, orderBy: { createdAt: "desc" }, take: 1 },
+    },
+  });
+  return orders.map((order) => ({ order, journey: journeyOf(order) }));
+}
