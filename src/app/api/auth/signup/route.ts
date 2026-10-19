@@ -185,6 +185,10 @@ export async function POST(req: NextRequest) {
       return badRequest("Já existe uma conta com este e-mail. Entre com a sua senha ou use \"Esqueci minha senha\".", 409);
     }
     console.warn("[auth] signup_create_failed", { message });
+    // Chave de serviço errada ou ausente (comum no localhost, com o valor de exemplo da Vercel).
+    if (/invalid api key|jwt|apikey/i.test(message)) {
+      return badRequest("Cadastro indisponível: a chave de serviço da Supabase deste ambiente é inválida.", 503);
+    }
     return badRequest(authErrorMessage(message, "Não foi possível criar a conta."));
   }
   const authUser = created.data.user;
