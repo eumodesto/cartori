@@ -109,6 +109,12 @@ export function AuthDialog({
   const [error, setError] = React.useState("");
   const [notice, setNotice] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+  /** Cadastro concluído: mensagem antes de seguir (no checkout, segue no próprio checkout). */
+  const [success, setSuccess] = React.useState("");
+  const successRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (success) successRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [success]);
   /** Recuperação de senha: subestado do modo "Entrar". */
   const [forgot, setForgot] = React.useState(false);
   const [noticeTitle, setNoticeTitle] = React.useState("Confirme o e-mail");
@@ -120,6 +126,7 @@ export function AuthDialog({
   const reset = () => {
     setError("");
     setNotice("");
+    setSuccess("");
     setForgot(false);
     setNoticeTitle("Confirme o e-mail");
     setPassword("");
@@ -163,7 +170,9 @@ export function AuthDialog({
   const finish = async (goPartner: boolean) => {
     await refresh();
     onAuthenticated?.({ wantsPartner: goPartner });
-    onClose();
+    // Diálogo obrigatório (checkout): fecha sozinho quando a conta entra. onClose ali é
+    // "voltar ao carrinho" e não pode rodar depois de um cadastro que deu certo.
+    if (!required) onClose();
     const destination = goPartner ? COMPANY_DASHBOARD_PATH : nextPath;
     if (destination) {
       window.location.assign(destination);
@@ -259,6 +268,16 @@ export function AuthDialog({
         setError(data.error || "Não foi possível continuar.");
         return;
       }
+      if (signup) {
+        setSuccess(
+          required
+            ? "Conta criada com sucesso! Seguindo para o checkout…"
+            : isCompany || companyIntent
+              ? "Conta criada com sucesso! Abrindo o painel da empresa…"
+              : "Conta criada com sucesso! Abrindo o seu painel…"
+        );
+        await new Promise((resolve) => window.setTimeout(resolve, 1500));
+      }
       await finish(companyIntent || isCompany);
     } catch {
       setError("Falha de conexão. Tente de novo.");
@@ -294,6 +313,13 @@ export function AuthDialog({
         </DialogHeader>
         <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
           <DialogContent className="space-y-4">
+            {success && (
+              <div ref={successRef} role="status">
+                <Alert variant="success" title="Tudo certo">
+                  {success}
+                </Alert>
+              </div>
+            )}
             <Tabs
               variant="pill"
               fullWidth
@@ -532,14 +558,14 @@ export function AuthDialog({
             {error && <Alert variant="error" title="Não foi possível continuar">{error}</Alert>}
           </DialogContent>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={Boolean(success)}>
               {required ? "Voltar" : "Cancelar"}
             </Button>
             <Button
               type="submit"
               variant="primary"
               isLoading={loading}
-              disabled={!configured || (signup && !acceptedTerms)}
+              disabled={!configured || (signup && !acceptedTerms) || Boolean(success)}
             >
               {mode === "login"
                 ? forgot
