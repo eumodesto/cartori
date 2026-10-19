@@ -318,7 +318,8 @@ export default function CheckoutPage() {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <form id="checkout-form" onSubmit={handleSubmit} className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-7 space-y-6">
+            <form id="checkout-form" onSubmit={handleSubmit} className="space-y-6">
               {/* Solicitante = dados do cadastro. Só pede o que o cadastro não trouxe (em geral, o CPF). */}
               <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5 space-y-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -457,6 +458,25 @@ export default function CheckoutPage() {
               {error && <Alert variant="error" title="Não foi possível continuar">{error}</Alert>}
             </form>
 
+            {/* Cartão na coluna principal, fora do <form> (o botão Pagar do Mercado Pago não envia o pedido PIX). */}
+            {paymentMethod === "CREDIT_CARD" && profile && (
+              <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5 space-y-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-neutral-900">Pagar com cartão</h2>
+                  <p className="text-xs text-neutral-500 mt-1">
+                    Checkout transparente do Mercado Pago. A InterJuri não vê nem guarda o número do cartão.
+                  </p>
+                </div>
+                <MercadoPagoCardBrick
+                  amount={total}
+                  payerEmail={customer.email}
+                  onPay={handleCardPay}
+                  onError={setError}
+                />
+              </div>
+            )}
+            </div>
+
             <div className="lg:col-span-5 space-y-4">
               <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5">
                 <RadioGroup
@@ -495,24 +515,13 @@ export default function CheckoutPage() {
                     >
                       Pagar com PIX
                     </Button>
-                  ) : null
+                  ) : (
+                    <p className="rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-900">
+                      Preencha os dados do cartão no formulário ao lado e clique em <strong>Pagar</strong>.
+                    </p>
+                  )
                 }
               />
-              {paymentMethod === "CREDIT_CARD" && profile && (
-                <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5 space-y-3">
-                  <div>
-                    <p className="text-sm font-semibold text-neutral-900">Pagar com cartão</p>
-                    <p className="text-xs text-neutral-500 mt-1">
-                      Checkout transparente do Mercado Pago. A InterJuri não vê nem guarda o número do cartão.
-                    </p>
-                  </div>
-                  <MercadoPagoCardBrick
-                    amount={total}
-                    onPay={handleCardPay}
-                    onError={setError}
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>

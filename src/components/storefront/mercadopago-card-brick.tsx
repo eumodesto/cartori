@@ -43,10 +43,13 @@ const MP_SCRIPT = "https://sdk.mercadopago.com/js/v2";
 
 export function MercadoPagoCardBrick({
   amount,
+  payerEmail,
   onPay,
   onError,
 }: {
   amount: number;
+  /** E-mail da conta: já vai preenchido (o brick não pede "Preencha seus dados"). */
+  payerEmail?: string;
   onPay: (formData: CardFormData) => Promise<void>;
   onError?: (message: string) => void;
 }) {
@@ -72,7 +75,10 @@ export function MercadoPagoCardBrick({
       const mp = new window.MercadoPago(publicKey, { locale: "pt-BR" });
       controllerRef.current = await mp.bricks().create("cardPayment", containerId, {
         locale: "pt-BR",
-        initialization: { amount: Number(amount.toFixed(2)) },
+        initialization: {
+          amount: Number(amount.toFixed(2)),
+          ...(payerEmail ? { payer: { email: payerEmail } } : {}),
+        },
         customization: {
           paymentMethods: {
             maxInstallments: 12,
