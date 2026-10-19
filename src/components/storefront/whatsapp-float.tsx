@@ -31,7 +31,7 @@ export function WhatsAppFloat() {
       )}
     >
       <WhatsAppIcon className="h-7 w-7" />
-      <span className="pointer-events-none absolute right-full mr-3 hidden whitespace-nowrap rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white shadow-md group-hover:block md:group-focus-visible:block">
+      <span className="pointer-events-none absolute right-full mr-3 hidden whitespace-nowrap rounded-lg bg-[#0B1B33] px-3 py-1.5 text-xs font-medium text-[#FFFFFF] shadow-md group-hover:block md:group-focus-visible:block">
         Fale no WhatsApp
       </span>
     </a>
