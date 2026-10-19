@@ -22,6 +22,20 @@ const googleTags = {
   frame: ["https://www.googletagmanager.com", "https://td.doubleclick.net"].join(" "),
 };
 
+// Mercado Pago (Card Payment Brick): o SDK baixa scripts, estilos e fontes de mlstatic,
+// abre os campos seguros do cartão em iframes e consulta APIs do Mercado Pago/Livre.
+// Sem isto o formulário do cartão não aparece (bloqueado pela CSP).
+const mercadoPago = [
+  "https://sdk.mercadopago.com",
+  "https://*.mercadopago.com",
+  "https://*.mercadopago.com.br",
+  "https://*.mercadolibre.com",
+  "https://*.mercadolivre.com",
+  "https://*.mercadolivre.com.br",
+  "https://http2.mlstatic.com",
+  "https://*.mlstatic.com",
+].join(" ");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -38,12 +52,12 @@ const nextConfig = {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com ${googleTags.script}`,
-          "style-src 'self' 'unsafe-inline'",
+          `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${mercadoPago} ${googleTags.script}`,
+          `style-src 'self' 'unsafe-inline' ${mercadoPago}`,
           "img-src 'self' data: blob: https:",
-          "font-src 'self' data:",
-          `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mercadopago.com https://sdk.mercadopago.com ${googleTags.connect}`,
-          `frame-src https://www.mercadopago.com https://www.mercadopago.com.br https://sdk.mercadopago.com ${googleTags.frame}`,
+          `font-src 'self' data: ${mercadoPago}`,
+          `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${mercadoPago} ${googleTags.connect}`,
+          `frame-src ${mercadoPago} ${googleTags.frame}`,
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",

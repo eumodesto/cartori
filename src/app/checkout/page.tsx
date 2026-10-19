@@ -11,7 +11,6 @@ import { OrderSummary } from "@/components/storefront/order-summary";
 import { useCart } from "@/components/cart/cart-provider";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { Stepper } from "@/components/ui/stepper";
@@ -67,11 +66,24 @@ export default function CheckoutPage() {
       fullName: profile.name || prev.fullName,
       email: profile.email || prev.email,
       phone: profile.phone ? maskPhone(profile.phone) : prev.phone,
-      cpfCnpj: profile.cpf ? maskCpfCnpj(profile.cpf) : prev.cpfCnpj,
+      cpfCnpj: profile.cpf
+        ? maskCpfCnpj(profile.cpf)
+        : profile.organization?.cnpj
+          ? maskCpfCnpj(profile.organization.cnpj)
+          : prev.cpfCnpj,
       isCompany: Boolean(profile.organization) || prev.isCompany,
       companyName: profile.organization?.name || prev.companyName,
     }));
   }, [profile]);
+
+  const missing = useMemo(
+    () => ({
+      name: !profile?.name?.trim(),
+      phone: !profile?.phone,
+      document: !profile?.cpf && !profile?.organization?.cnpj,
+    }),
+    [profile]
+  );
 
   const needsShipping = useMemo(
     () => items.some((item) => item.hasShipping),
@@ -134,9 +146,6 @@ export default function CheckoutPage() {
     if (!isValidEmail(customer.email)) return "Informe um e-mail válido.";
     if (!isValidPhone(customer.phone)) return "Informe um telefone válido com DDD.";
     if (!isValidCpfCnpj(customer.cpfCnpj)) return "Informe um CPF ou CNPJ válido.";
-    if (customer.isCompany && !customer.companyName?.trim()) {
-      return "Informe a razão social do escritório ou imobiliária.";
-    }
     if (needsShipping) {
       const shipping = customer.shipping;
       if (
@@ -310,59 +319,78 @@ export default function CheckoutPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <form id="checkout-form" onSubmit={handleSubmit} className="lg:col-span-7 space-y-6">
+              {/* Solicitante = dados do cadastro. Só pede o que o cadastro não trouxe (em geral, o CPF). */}
               <div className="rounded-2xl border border-neutral-200 bg-neutral-0 p-5 space-y-4">
-                <h2 className="text-sm font-semibold text-neutral-900">Solicitante</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="sm:col-span-2">
-                    <Input
-                      label="Nome completo"
-                      required
-                      value={customer.fullName}
-                      onChange={(event) => update("fullName", event.target.value)}
-                    />
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h2 className="text-sm font-semibold text-neutral-900">Solicitante</h2>
+                    <p className="text-xs text-neutral-500">Dados da sua conta, usados no pedido e na cobrança.</p>
                   </div>
-                  <Input
-                    label="E-mail"
-                    type="email"
-                    required
-                    value={customer.email}
-                    onChange={(event) => update("email", event.target.value)}
-                  />
-                  <Input
-                    label="Telefone"
-                    required
-                    value={customer.phone}
-                    onChange={(event) => update("phone", maskPhone(event.target.value))}
-                    placeholder="(11) 99999-0000"
-                  />
-                  <Input
-                    label="CPF ou CNPJ"
-                    required
-                    value={customer.cpfCnpj}
-                    onChange={(event) => update("cpfCnpj", maskCpfCnpj(event.target.value))}
-                    placeholder="000.000.000-00"
-                  />
-                  <Input
-                    label="OAB ou CRECI (opcional)"
-                    value={customer.oabOrCreci || ""}
-                    onChange={(event) => update("oabOrCreci", event.target.value)}
-                  />
+                  <Link href="/painel/perfil" className="text-xs font-semibold text-brand-800 hover:underline">
+                    Alterar no perfil
+                  </Link>
                 </div>
-                <div className="rounded-md border border-neutral-200 p-3">
-                  <Checkbox
-                    checked={customer.isCompany}
-                    onChange={(event) => update("isCompany", event.target.checked)}
-                    label="Pedido em nome de escritório ou imobiliária"
-                    description="Para recursos empresariais, cadastre o CNPJ da empresa no Dashboard."
-                  />
-                </div>
-                {customer.isCompany && (
-                  <Input
-                    label="Razão social"
-                    required
-                    value={customer.companyName || ""}
-                    onChange={(event) => update("companyName", event.target.value)}
-                  />
+                <dl className="grid grid-cols-1 gap-3 rounded-xl bg-neutral-50 p-4 text-sm sm:grid-cols-2">
+                  <div>
+                    <dt className="text-[11px] uppercase tracking-wide text-neutral-500">Nome</dt>
+                    <dd className="text-neutral-900">{customer.fullName || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase tracking-wide text-neutral-500">E-mail</dt>
+                    <dd className="break-all text-neutral-900">{customer.email || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase tracking-wide text-neutral-500">Telefone</dt>
+                    <dd className="text-neutral-900">{customer.phone || "—"}</dd>
+                  </div>
+                  {!missing.document && (
+                    <div>
+                      <dt className="text-[11px] uppercase tracking-wide text-neutral-500">
+                        {customer.isCompany ? "CNPJ" : "CPF"}
+                      </dt>
+                      <dd className="text-neutral-900">{customer.cpfCnpj || "—"}</dd>
+                    </div>
+                  )}
+                  {customer.isCompany && customer.companyName && (
+                    <div className="sm:col-span-2">
+                      <dt className="text-[11px] uppercase tracking-wide text-neutral-500">Empresa</dt>
+                      <dd className="text-neutral-900">{customer.companyName}</dd>
+                    </div>
+                  )}
+                </dl>
+
+                {(missing.name || missing.phone || missing.document) && (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    {missing.name && (
+                      <div className="sm:col-span-2">
+                        <Input
+                          label="Nome completo"
+                          required
+                          value={customer.fullName}
+                          onChange={(event) => update("fullName", event.target.value)}
+                        />
+                      </div>
+                    )}
+                    {missing.phone && (
+                      <Input
+                        label="Telefone"
+                        required
+                        value={customer.phone}
+                        onChange={(event) => update("phone", maskPhone(event.target.value))}
+                        placeholder="(11) 99999-0000"
+                      />
+                    )}
+                    {missing.document && (
+                      <Input
+                        label="CPF ou CNPJ"
+                        required
+                        value={customer.cpfCnpj}
+                        onChange={(event) => update("cpfCnpj", maskCpfCnpj(event.target.value))}
+                        placeholder="000.000.000-00"
+                        helperText="O Mercado Pago pede o documento de quem paga. Fica salvo na sua conta."
+                      />
+                    )}
+                  </div>
                 )}
               </div>
 
