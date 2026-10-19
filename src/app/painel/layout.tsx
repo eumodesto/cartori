@@ -60,13 +60,6 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           icon: <FileText className="w-4 h-4" />,
           isActive: pathname.startsWith("/painel/pedidos"),
         },
-        {
-          id: "search",
-          label: "Consulta de cartórios",
-          href: "/painel/cartorios",
-          icon: <Search className="w-4 h-4" />,
-          isActive: pathname.startsWith("/painel/cartorios"),
-        },
       ],
     },
     {
@@ -79,6 +72,14 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           icon: <FolderOpen className="w-4 h-4" />,
           isActive: pathname.startsWith("/painel/dossies"),
           ...lockItem("/painel/dossies"),
+        },
+        {
+          id: "search",
+          label: "Consulta de cartórios",
+          href: "/painel/cartorios",
+          icon: <Search className="w-4 h-4" />,
+          isActive: pathname.startsWith("/painel/cartorios"),
+          ...lockItem("/painel/cartorios"),
         },
         {
           id: "org",
