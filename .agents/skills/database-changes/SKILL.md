@@ -30,6 +30,7 @@ Valor de pagamento — `payment-integrity`.
 - Etapa 0: `prisma/migrations/20260902230000_revoke_data_api_anon_authenticated/` revoga ALL nas tabelas Prisma de então para `anon` e `authenticated`. Não revoga `service_role`. Não ligava RLS. Rollback no mesmo diretório.
 - Lock Data API: `prisma/migrations/20260918010000_lock_public_rls_deny_data_api/` revoga ALL em **todas** as tabelas Prisma atuais (inclui `OrganizationMember`, `Dossier*`) **e** liga RLS sem policies (deny-all para `anon`/`authenticated`). `postgres` tem `rolbypassrls`; Prisma segue. Não é ACL de tenant.
 - Inventário: `npx tsx scripts/inspect-supabase-rls.ts` (live) ou `--schema-only`.
+- Dados de `Cartorio` (endereço, telefone, e-mail): `scripts/import-serventias-cnj.mjs`, upsert por CNS a partir do Justiça Aberta (CNJ). Ver `docs/IMPORTACAO_SERVENTIAS.md`.
 
 ## Invariantes
 
