@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { LegalMail, LegalPage, LegalSection } from "@/components/storefront/legal-page";
+import { DPO_EMAIL, SUPPORT_COMPANY } from "@/lib/support-contacts";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade da InterJuri: proteção de dados LGPD",
-  description:
-    "Saiba como a Cartore Express Ltda. coleta, usa e protege seus dados no InterJuri.com.br, conforme a LGPD, e como exercer seus direitos de titular.",
+  description: `Saiba como a ${SUPPORT_COMPANY.legalName}, operadora da InterJuri, coleta, usa e protege seus dados conforme a LGPD, e como exercer seus direitos de titular.`,
   alternates: { canonical: "/privacidade" },
 };
 
@@ -14,16 +14,36 @@ export default function PrivacidadePage() {
       crumb="Privacidade"
       kicker="LGPD · Lei nº 13.709/2018"
       title="Política de Privacidade"
-      lede="Esta política descreve como a CARTORE EXPRESS LTDA - EPP (CNPJ 57.448.583/0001-35), operadora do site InterJuri.com.br, coleta, utiliza, compartilha e protege os dados pessoais dos Usuários."
+      lede={`Esta política descreve como a ${SUPPORT_COMPANY.legalName} (CNPJ ${SUPPORT_COMPANY.cnpj}), operadora do site InterJuri.com.br, coleta, utiliza, compartilha e protege os dados pessoais dos Usuários.`}
     >
-      <LegalSection id="publico" title="1. Público-alvo">
+      <LegalSection id="controlador" title="1. Quem trata seus dados">
+        <p>
+          A <strong>{SUPPORT_COMPANY.legalName}</strong>, pessoa jurídica de direito privado,
+          inscrita no CNPJ sob o nº <strong>{SUPPORT_COMPANY.cnpj}</strong>, com sede em{" "}
+          {SUPPORT_COMPANY.city}, opera a plataforma InterJuri e é a{" "}
+          <strong>controladora</strong> dos dados pessoais tratados no site (art. 5º, VI, da
+          LGPD): é ela quem decide para que e como os dados são usados para atender os pedidos,
+          receber os pagamentos e prestar o atendimento.
+        </p>
+        <p>
+          Os parceiros descritos nas seções 4 e 5 tratam dados apenas na medida da função de
+          cada um. Os cartórios e demais órgãos emissores recebem somente os dados necessários
+          para emitir a certidão solicitada.
+        </p>
+        <p>
+          Encarregado pelo tratamento de dados (DPO):{" "}
+          <LegalMail href={DPO_EMAIL}>{DPO_EMAIL}</LegalMail>.
+        </p>
+      </LegalSection>
+
+      <LegalSection id="publico" title="2. Público-alvo">
         <p>
           Nossos serviços são direcionados exclusivamente a maiores de 18 anos. Não coletamos
           intencionalmente dados de crianças ou adolescentes.
         </p>
       </LegalSection>
 
-      <LegalSection id="dados" title="2. Quais dados coletamos e bases legais">
+      <LegalSection id="dados" title="3. Quais dados coletamos e bases legais">
         <p>
           Para prestarmos nossos serviços, coletamos informações categorizadas da seguinte forma:
         </p>
@@ -58,7 +78,7 @@ export default function PrivacidadePage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="terceiros" title="3. Ferramentas de terceiros e rastreamento">
+      <LegalSection id="terceiros" title="4. Ferramentas de terceiros e rastreamento">
         <p>
           Para otimizar a experiência do Usuário e realizar campanhas de marketing, o site
           InterJuri.com.br utiliza as seguintes tecnologias de terceiros, que podem coletar dados
@@ -80,7 +100,7 @@ export default function PrivacidadePage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="compartilhamento" title="4. Com quem compartilhamos seus dados">
+      <LegalSection id="compartilhamento" title="5. Com quem compartilhamos seus dados">
         <p>Os dados do Usuário jamais serão vendidos. O compartilhamento ocorre de forma restrita e justificada com:</p>
         <ul className="list-disc pl-5 space-y-2">
           <li>
@@ -95,12 +115,12 @@ export default function PrivacidadePage() {
           <li>
             <strong>Plataformas de marketing</strong> (Google, Meta e Microsoft): apenas dados
             de navegação e cookies, de forma anonimizada ou pseudonimizada, para as finalidades
-            do item 3.
+            do item 4.
           </li>
         </ul>
       </LegalSection>
 
-      <LegalSection id="retencao" title="5. Retenção e minimização de dados">
+      <LegalSection id="retencao" title="6. Retenção e minimização de dados">
         <p>Os dados fornecidos são armazenados em ambiente seguro. Regras de descarte:</p>
         <ul className="list-disc pl-5 space-y-2">
           <li>
@@ -116,7 +136,7 @@ export default function PrivacidadePage() {
         </ul>
       </LegalSection>
 
-      <LegalSection id="direitos" title="6. Direitos do titular dos dados">
+      <LegalSection id="direitos" title="7. Direitos do titular dos dados">
         <p>Em conformidade com o art. 18 da LGPD, você pode solicitar a qualquer momento:</p>
         <ul className="list-disc pl-5 space-y-2">
           <li>acesso, correção ou atualização de dados incompletos ou desatualizados;</li>
@@ -130,7 +150,7 @@ export default function PrivacidadePage() {
           Para exercer seus direitos, fazer solicitações relativas aos seus dados ou tirar
           dúvidas sobre esta política, entre em contato com nosso Encarregado de Proteção de
           Dados (DPO) pelo e-mail{" "}
-          <LegalMail href="dpo@interjuri.com.br">dpo@interjuri.com.br</LegalMail>. Prazo de resposta:
+          <LegalMail href={DPO_EMAIL}>{DPO_EMAIL}</LegalMail>. Prazo de resposta:
           até 15 dias úteis, conforme regulamentação da ANPD.
         </p>
       </LegalSection>

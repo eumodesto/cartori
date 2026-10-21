@@ -13,6 +13,8 @@ import {
 import { StorefrontShell } from "@/components/storefront/storefront-shell";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
+  COMPANY_IDENTIFICATION,
+  COMPANY_NOT_OFFICIAL,
   SUPPORT_CHANNELS,
   SUPPORT_COMPANY,
   SUPPORT_EMAIL,
@@ -115,12 +117,9 @@ export default function SuportePage() {
                 <h2 className="text-sm font-semibold uppercase tracking-wider">Empresa</h2>
               </div>
               <p className="mt-3 text-sm text-neutral-700 leading-relaxed">
-                {SUPPORT_COMPANY.legalName}. CNPJ {SUPPORT_COMPANY.cnpj}. Sede em{" "}
-                {SUPPORT_COMPANY.city}.
+                {COMPANY_IDENTIFICATION} Sede em {SUPPORT_COMPANY.city}.
               </p>
-              <p className="mt-2 text-sm text-neutral-500">
-                A InterJuri é empresa privada de intermediação documental — não é cartório oficial.
-              </p>
+              <p className="mt-2 text-sm text-neutral-500">{COMPANY_NOT_OFFICIAL}</p>
             </section>
           </div>
 
