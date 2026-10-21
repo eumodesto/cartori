@@ -153,7 +153,11 @@ export function formatAddress(row) {
   const street = clean(row.endereco);
   if (!street) return null;
   const number = clean(row.numero);
-  const parts = [number && !street.includes(number) ? `${street}, ${number}` : street];
+  // Só considera o número já presente se ele fecha o logradouro ("Rua A, 10"), não se
+  // aparece no nome ("Rua 13 de Maio" + nº 3).
+  const escaped = number?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const hasNumber = number && new RegExp(`(^|[\\s,])(n[º°o.]*\\s*)?${escaped}$`, "i").test(street);
+  const parts = [number && !hasNumber ? `${street}, ${number}` : street];
   const district = clean(row.bairro);
   if (district) parts.push(district);
   const cep = String(row.cep || "").replace(/\D/g, "");
