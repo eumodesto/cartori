@@ -43,6 +43,10 @@ describe("importação de serventias do Justiça Aberta", () => {
       "Rua A, 10 – Centro – CEP 04112-001"
     );
     expect(formatAddress({ endereco: null, bairro: "Centro", cep: "01001000" })).toBeNull();
+    // Número que aparece no nome da rua não conta como número do prédio.
+    expect(formatAddress({ endereco: "Rua 13 de Maio", numero: "3" })).toBe("Rua 13 de Maio, 3");
+    expect(formatAddress({ endereco: "Rua A, 10", numero: "10" })).toBe("Rua A, 10");
+    expect(formatAddress({ endereco: "Rua A nº 10", numero: "10" })).toBe("Rua A nº 10");
   });
 
   it("limpa caracteres de controle do nome", () => {
