@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { LegalMail, LegalPage, LegalSection } from "@/components/storefront/legal-page";
+import { SUPPORT_COMPANY } from "@/lib/support-contacts";
 
 export const metadata: Metadata = {
   title: "Termos de Uso da InterJuri: regras do serviço de certidões",
-  description:
-    "Termos de uso do InterJuri.com.br, operado pela Cartore Express Ltda. Intermediação documental: não somos cartório oficial. Leia antes de pedir.",
+  description: `Termos de uso do InterJuri.com.br, operado pela ${SUPPORT_COMPANY.legalName}. Intermediação documental: não somos cartório oficial. Leia antes de pedir.`,
   alternates: { canonical: "/termos" },
 };
 
@@ -14,19 +14,21 @@ export default function TermosPage() {
       crumb="Termos de uso"
       kicker="InterJuri.com.br"
       title="Termos e Condições de Uso"
-      lede="Documento aplicável ao uso do site InterJuri.com.br, operado pela CARTORE EXPRESS LTDA - EPP, CNPJ 57.448.583/0001-35, com sede em São Paulo - SP."
+      lede={`Documento aplicável ao uso do site InterJuri.com.br, operado pela ${SUPPORT_COMPANY.legalName}, CNPJ ${SUPPORT_COMPANY.cnpj}, com sede em ${SUPPORT_COMPANY.city}.`}
     >
       <LegalSection id="aviso-legal" title="1. Aviso legal e natureza dos serviços">
         <p>
-          O site InterJuri.com.br é operado e de propriedade da{" "}
-          <strong>CARTORE EXPRESS LTDA - EPP</strong>, pessoa jurídica de direito privado,
-          inscrita no CNPJ sob o nº <strong>57.448.583/0001-35</strong>, com sede na cidade de
-          São Paulo - SP.
+          O InterJuri é uma plataforma privada de assessoria e intermediação documental,
+          operada pela <strong>{SUPPORT_COMPANY.legalName}</strong>, pessoa jurídica de direito
+          privado, inscrita no CNPJ sob o nº <strong>{SUPPORT_COMPANY.cnpj}</strong>, com sede
+          em {SUPPORT_COMPANY.city}. A {SUPPORT_COMPANY.legalName} é a proprietária e operadora
+          do site InterJuri.com.br, a responsável comercial pelos serviços contratados e quem
+          recebe os pagamentos.
         </p>
         <p>
-          O InterJuri é uma empresa privada de assessoria e intermediação documental.{" "}
-          <strong>Não somos</strong> um órgão governamental, Tribunal de Justiça, cartório
-          oficial ou delegação do poder público. Prestamos um serviço de comodidade logística,
+          <strong>Não somos</strong> um cartório, tribunal ou órgão governamental, nem
+          delegação do poder público. Oferecemos serviços privados de intermediação e
+          facilitação de solicitações de certidões e documentos. Prestamos um serviço de comodidade logística,
           que consiste em buscar, solicitar e realizar o pagamento de custas de certidões e
           documentos públicos junto aos órgãos competentes, mediante a cobrança de uma taxa de
           serviço.
@@ -79,6 +81,10 @@ export default function TermosPage() {
           meio do gateway de pagamento Mercado Pago. O InterJuri não tem acesso, não processa e
           não armazena os dados de cartão de crédito ou credenciais bancárias dos Usuários em
           seus próprios servidores.
+        </p>
+        <p>
+          Os pagamentos são recebidos pela {SUPPORT_COMPANY.legalName} (CNPJ{" "}
+          {SUPPORT_COMPANY.cnpj}), operadora do InterJuri.
         </p>
       </LegalSection>
 

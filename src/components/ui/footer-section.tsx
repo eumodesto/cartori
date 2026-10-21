@@ -11,6 +11,7 @@ import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import {
   FACEBOOK_URL,
   INSTAGRAM_URL,
+  SUPPORT_COMPANY,
   SUPPORT_EMAIL,
   WHATSAPP_DISPLAY,
   WHATSAPP_URL,
@@ -165,7 +166,7 @@ export function Footer() {
 
             <div className="mt-12 pt-8 border-t border-white/10">
               <p className="text-neutral-400 text-sm">
-                © 2026 INTERJURI. CARTORE EXPRESS LTDA - EPP. CNPJ 57.448.583/0001-35. Todos os direitos reservados.
+                © 2026 InterJuri, operada pela {SUPPORT_COMPANY.legalName}. CNPJ {SUPPORT_COMPANY.cnpj}. Todos os direitos reservados.
               </p>
             </div>
           </div>

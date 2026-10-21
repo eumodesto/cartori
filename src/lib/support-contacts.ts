@@ -9,13 +9,20 @@ export const WHATSAPP_URL = `https://wa.me/551153063514?text=${encodeURIComponen
   "Olá! Vim pelo site da InterJuri e preciso de ajuda com uma certidão."
 )}`;
 
+/** Empresa que opera a plataforma e recebe os pagamentos (CNPJ ativo na Receita Federal). */
 export const SUPPORT_COMPANY = {
-  legalName: "CARTORE EXPRESS LTDA - EPP",
+  legalName: "ITHAN SOLUÇÕES EMPRESARIAIS LTDA",
   brand: "InterJuri",
-  cnpj: "57.448.583/0001-35",
+  cnpj: "24.342.524/0001-29",
   city: "São Paulo - SP",
   hours: "Atendimento 24h",
 } as const;
+
+/** Identificação comercial padrão (suporte, rodapé, checkout). */
+export const COMPANY_IDENTIFICATION = `InterJuri é uma plataforma privada de assessoria e intermediação documental, operada pela ${SUPPORT_COMPANY.legalName}, inscrita no CNPJ ${SUPPORT_COMPANY.cnpj}.`;
+
+export const COMPANY_NOT_OFFICIAL =
+  "Não somos um cartório, tribunal ou órgão governamental. Oferecemos serviços privados de intermediação e facilitação de solicitações de certidões e documentos.";
 
 export const SUPPORT_CHANNELS = [
   {

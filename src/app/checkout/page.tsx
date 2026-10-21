@@ -17,6 +17,7 @@ import { Stepper } from "@/components/ui/stepper";
 import { MercadoPagoCardBrick } from "@/components/storefront/mercadopago-card-brick";
 import { CustomerData } from "@/lib/types";
 import { isOrderPaid, type PublicOrder } from "@/lib/order-status";
+import { SUPPORT_COMPANY } from "@/lib/support-contacts";
 import { maskCep, maskCpfCnpj, maskPhone } from "@/lib/utils";
 import {
   isValidCpfCnpj,
@@ -497,6 +498,11 @@ export default function CheckoutPage() {
                     },
                   ]}
                 />
+                <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
+                  Pagamento recebido pela {SUPPORT_COMPANY.legalName} (CNPJ {SUPPORT_COMPANY.cnpj}),
+                  operadora da InterJuri. Empresa privada, sem vínculo com cartórios, tribunais ou
+                  órgãos do governo.
+                </p>
               </div>
               <OrderSummary
                 items={items}
