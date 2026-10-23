@@ -8,7 +8,7 @@ import {
 import type { CertificateTypeConfig } from "@/lib/types";
 
 /** Domínio canônico. Fixo para que previews e *.vercel.app nunca virem canônico. */
-export const SITE_URL = "https://www.interjuri.com.br";
+export const SITE_URL = "https://interjuri.com.br";
 export const SITE_NAME = "InterJuri";
 
 export const TITLE_MAX = 60;

@@ -37,7 +37,7 @@ const V = {
   actionLink: {
     name: "actionLink",
     description: "Link de acesso de uso único (expira; não fica salvo no registro de envios)",
-    sample: "https://www.interjuri.com.br/auth/confirmar?token_hash=exemplo",
+    sample: "https://interjuri.com.br/auth/confirmar?token_hash=exemplo",
   },
   newEmail: {
     name: "newEmail",
@@ -57,12 +57,12 @@ const V = {
   orderLink: {
     name: "orderLink",
     description: "Link para o pedido no painel",
-    sample: "https://www.interjuri.com.br/painel/pedidos/abc123",
+    sample: "https://interjuri.com.br/painel/pedidos/abc123",
   },
   appLink: {
     name: "appLink",
     description: "Link para o painel/portal",
-    sample: "https://www.interjuri.com.br/painel",
+    sample: "https://interjuri.com.br/painel",
   },
   total: {
     name: "total",
@@ -87,7 +87,7 @@ const V = {
   adminOrderLink: {
     name: "adminOrderLink",
     description: "Link para o pedido na mesa operacional",
-    sample: "https://www.interjuri.com.br/operacao/pedidos/abc123",
+    sample: "https://interjuri.com.br/operacao/pedidos/abc123",
   },
   paymentMethod: {
     name: "paymentMethod",

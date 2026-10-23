@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 // URL fixa do servidor: o destino nunca vem do browser.
 function siteUrl(): string {
-  return `${(process.env.NEXT_PUBLIC_SITE_URL || "https://www.interjuri.com.br").replace(/\/$/, "")}/`;
+  return `${(process.env.NEXT_PUBLIC_SITE_URL || "https://interjuri.com.br").replace(/\/$/, "")}/`;
 }
 
 export async function GET() {

@@ -4,6 +4,24 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 const LEGACY_CERTIFICATE_PARAMS = ["certidao", "servico"] as const;
 const PROTECTED_PREFIXES = ["/painel", "/operacao", "/admin"];
+const CANONICAL_HOST = "interjuri.com.br";
+/** Aliases *.vercel.app da produção: servem o mesmo site e não podem competir com o domínio. */
+const PRODUCTION_VERCEL_HOSTS = new Set([
+  "cartori.vercel.app",
+  "cartori-cartori.vercel.app",
+  "cartori-git-main-cartori.vercel.app",
+]);
+
+/** Produção acessada por alias da Vercel → domínio canônico (previews seguem abertos). */
+function canonicalHostRedirect(request: NextRequest) {
+  const host = request.headers.get("host")?.toLowerCase() ?? "";
+  if (!PRODUCTION_VERCEL_HOSTS.has(host)) return null;
+  const url = request.nextUrl.clone();
+  url.protocol = "https:";
+  url.host = CANONICAL_HOST;
+  url.port = "";
+  return NextResponse.redirect(url, 308);
+}
 
 /** Links antigos da home (/?certidao=slug) → página real da certidão (a home fica estática). */
 function legacyCertificateRedirect(request: NextRequest) {
@@ -26,6 +44,9 @@ function hasAuthCookie(request: NextRequest) {
 }
 
 export async function middleware(request: NextRequest) {
+  const canonical = canonicalHostRedirect(request);
+  if (canonical) return canonical;
+
   const legacy = legacyCertificateRedirect(request);
   if (legacy) return legacy;
 
